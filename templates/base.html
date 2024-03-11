@@ -1,0 +1,36 @@
+{% extends 'index.html' %}
+{% block body %}
+    <div id="main_header" class="navbar container-fluid position-sticky top-0">
+
+        <div class="main_header_logo">
+            {% include 'top_panel/logo_p.html' %}
+        </div>
+        <div class="main_header_title">
+            {% include 'top_panel/title_p.html' %}
+        </div>
+        <div class="main_header_user">
+            {% if user.is_authenticated %}{% include 'top_panel/user_p.html' %}
+            {% else %}{% include 'top_panel/signin_signout.html' %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="main_content_box" class="navbar container-fluid">
+        <div id="main_left_nav" >Left</div>
+        <div id="main_content" class="overflow-auto">{% block content %}{% endblock %}</div>
+        <div id="main_right_nav" >Right</div>
+    </div>
+    
+    <div id="main_footer" class="navbar position-sticky bottom-0">
+    {% block footer %}
+        <div></div>
+        <div>Footer</div>
+        <div></div>
+        {% endblock %}
+    </div>
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div id="login_form" class="translate-middle position-absolute top-50 start-50">
+        <form method="post">{% csrf_token %}
+            <div>
+                <label>Логин (Фамилия)
+                    <input type="text" class="form-control" name="username" placeholder="напр: Петров">
+                </label>
+            </div>
+            <div>
+                <label>Пароль
+                    <input type="password" class="form-control" name="password" placeholder="1234">
+                </label>
+            </div>
+            {% if error %}
+                <p class="m-0 error_message">{{ error }}</p>
+            {% endif %}
+            <br>
+
+            <a href="#" class="small">Забыли пароль</a>
+            <button type="submit" class="btn btn-success btn-sm" style="float: right">Вход</button>
+        </form>
+    </div>
+{% endblock %}
