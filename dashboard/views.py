@@ -121,6 +121,82 @@ def workday_sheet_view(request):
             day['weekday'] = WEEKDAY[day['date'].weekday()]
 
         context['workday'] = workday
+def technic_view(request):
+    if request.user.is_authenticated:
+        template = 'content/technic/technics.html'
+        context = {'title': 'Техника'}
+        technics = Technic.objects.filter().order_by('title')
+        context['technics'] = technics
+        return render(request, template, context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def edit_technic_view(request):
+    if request.user.is_authenticated:
+        template = 'content/technic/edit_technic.html'
+        context = {'title': 'Добавить технику'}
+
+        technic_id = request.GET.get('tech_id')
+        context['drivers'] = Driver.objects.filter().order_by('user__last_name')
+
+        context['supervisors'] = list()
+        for mechanic in Mechanic.objects.filter():
+            context['supervisors'].append(mechanic)
+        for supply in Supply.objects.filter():
+            context['supervisors'].append(supply)
+        context['supervisors'].sort(key=lambda x: x.user.last_name)
+
+        if technic_id is not None:
+            technic = Technic.objects.get(pk=technic_id)
+            context['technic'] = technic
+            context['title'] = 'Редактировать технику'
+
+        if request.method == 'POST':
+            _title = request.POST.get('title')
+            _type = request.POST.get('type')
+            _attached_driver = request.POST.get('attached_driver')
+            _supervisor = request.POST.get('supervisor')
+            _id_information = request.POST.get('id_information')
+            _description = request.POST.get('description')
+
+            if all([_title, _type, _id_information]):
+                if technic_id is None:
+                    Technic.objects.create(
+                        title=_title,
+                        type=_type,
+                        id_information=_id_information,
+                        attached_driver=Driver.objects.get(pk=_attached_driver) if _attached_driver else None,
+                        supervisor=User.objects.get(pk=_supervisor) if _supervisor else None,
+                        description=_description
+                    )
+                else:
+                    try:
+                        technic = Technic.objects.get(pk=technic_id)
+                        technic.title = _title
+                        technic.type = _type
+                        technic.id_information = _id_information
+                        technic.attached_driver = Driver.objects.get(pk=_attached_driver) if _attached_driver else None
+                        technic.supervisor = User.objects.get(pk=_supervisor) if _supervisor else None
+                        technic.description = _description
+                        technic.save()
+                    except Technic.DoesNotExist:
+                        return HttpResponseRedirect(ENDPOINTS.ERROR)
+                return HttpResponseRedirect(ENDPOINTS.TECHNICS)
+        return render(request, template, context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def delete_technic(request):
+    if request.user.is_authenticated:
+        if isAdministrator(request.user) or isMechanic(request.user):
+            technic_id = request.GET.get('tech_id')
+            if technic_id:
+                try:
+                    technic = Technic.objects.get(pk=technic_id)
+                    technic.delete()
+                except Technic.DoesNotExist:
+                    return HttpResponseRedirect(ENDPOINTS.ERROR)
+    return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
 
 
