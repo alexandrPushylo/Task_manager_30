@@ -60,7 +60,12 @@
 }
 
 #workday_sheet{
+    margin-top: 20px;
     box-shadow: 5px 5px 20px 5px;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
 #technics{
     margin-top: 20px;
     /*box-shadow: 5px 5px 20px 5px;*/

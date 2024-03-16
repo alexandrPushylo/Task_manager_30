@@ -13,6 +13,7 @@ from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMa
 from dashboard.models import Parameter, Telebot
 
 from dashboard.assets import USER_POSTS, ERROR_MESSAGES
+import Task_manager_30.endpoints as ENDPOINTS
 
 from dashboard.utilities import TODAY, WEEKDAY
 from dashboard.utilities import add_user, prepare_workday
@@ -24,7 +25,7 @@ from dashboard.utilities import isAdministrator, isForeman, isMaster, isMechanic
 
 def dashboard(request):
     if request.user.is_anonymous:
-        return HttpResponseRedirect('/login/')
+        return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
     context = {
         'post': request.user
@@ -68,7 +69,7 @@ def login_view(request):
 def logout_view(request):
     if request.user.is_authenticated:
         logout(request)
-    return HttpResponseRedirect('/login/')
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def register_view(request):
@@ -121,6 +122,13 @@ def workday_sheet_view(request):
             day['weekday'] = WEEKDAY[day['date'].weekday()]
 
         context['workday'] = workday
+        # status = request.POST.get('status')
+        # print(id_day)
+        return render(request, template, context)
+
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
 def technic_view(request):
     if request.user.is_authenticated:
         template = 'content/technic/technics.html'
