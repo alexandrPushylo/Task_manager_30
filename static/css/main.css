@@ -61,4 +61,17 @@
 
 #workday_sheet{
     box-shadow: 5px 5px 20px 5px;
+#technics{
+    margin-top: 20px;
+    /*box-shadow: 5px 5px 20px 5px;*/
+    border: 1px solid black;
+    /*border-radius: 10px;*/
+}
+#edit_technic{
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid black;
+    border-radius: 2%;
+    box-shadow: 5px 5px 20px 5px;
+}
 }

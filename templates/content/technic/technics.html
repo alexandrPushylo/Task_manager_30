@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div id="technics" class="container">
+        <div><h3><u>{{ title }}</u></h3></div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>№</th>
+                <th>Название техники</th>
+                <th>Тип техники</th>
+                <th>Идентификационная информация</th>
+                <th>Описание</th>
+                <th>Прикрепленный водитель</th>
+                <th>Руководитель</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for technic in technics %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ technic.title }}</td>
+                    <td>{{ technic.type }}</td>
+                    <td>{{ technic.id_information }}</td>
+                    <td>{{ technic.description }}</td>
+                    <td>{% if technic.attached_driver %}{{ technic.attached_driver }}{% endif %}</td>
+                    <td>{% if technic.supervisor %}{{ technic.supervisor }}{% endif %}</td>
+                    <td class="m-0 ">
+                        <a href="{% url 'edit_technic'  %}?tech_id={{ technic.id }}" class="btn btn-sm btn-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>
+                    <td class="m-0 ps-0">
+                        <a href="{% url 'delete_technic'  %}?tech_id={{ technic.id }}" class="btn btn-sm btn-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>
+                    </td>
+
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+
+{% endblock %}
+{% block footer %}
+    <div></div>
+    <div>
+        <a href="{% url 'edit_technic' %}" class="btn btn-sm btn-success" type="button">Добавить технику</a>
+    </div>
+    <div></div>
+{% endblock %}
