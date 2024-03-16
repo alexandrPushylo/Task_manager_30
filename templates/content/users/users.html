@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div id="users" class="container">
+        <div><h3><u>{{ title }}</u></h3></div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>№</th>
+                <th>Username</th>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Должность</th>
+                <th>Телефон</th>
+                <th>Последний вход</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.user.username }}</td>
+                    <td>{{ user.user.last_name }}</td>
+                    <td>{{ user.user.first_name }}</td>
+                    <td>{% for title, post in user_post.items %}
+                        {% if title == user.title %}{{ post }}{% endif %}
+                    {% endfor %}
+                    </td>
+                    <td>{% if user.telephone %}{{ user.telephone }}{% endif %}</td>
+                    <td>{% if user.user.last_login %}{{ user.user.last_login }}{% endif %}</td>
+                    <td class="m-0 ">
+                        <a href="{% url 'edit_user'  %}?user_id={{ user.user.id }}" class="btn btn-sm btn-outline-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>
+                    <td class="m-0 ps-0">
+                        <a href="#?user_id={{ user.user.id }}" class="btn btn-sm btn-outline-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>
+                    </td>
+
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+
+{% endblock %}
+{% block footer %}
+    <div></div>
+    <div>
+        <a href="#" class="btn btn-sm btn-success" type="button">Добавить пользователя</a>
+    </div>
+    <div></div>
+{% endblock %}

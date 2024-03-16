@@ -74,4 +74,12 @@
     border-radius: 2%;
     box-shadow: 5px 5px 20px 5px;
 }
+#users{
+    margin-top: 20px;
+    /*box-shadow: 5px 5px 20px 5px;*/
+    border: 1px solid black;
+    /*border-radius: 10px;*/
+}
+#edit_user{
+
 }

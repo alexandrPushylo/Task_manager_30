@@ -199,9 +199,51 @@ def delete_technic(request):
     return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
 
+def users_view(request):
+    if request.user.is_authenticated:
+        template = 'content/users/users.html'
+        context = {
+            'title': 'Все пользователи',
+            'users_list': [],
+            'user_post': USER_POSTS
+        }
 
-            # status = request.POST.get('status')
-            # print(id_day)
+        _administrators = Administrator.objects.all()
+        _foreman = Foreman.objects.all()
+        _masters = Master.objects.all()
+        _mechanics = Mechanic.objects.all()
+        _drivers = Driver.objects.all()
+        _supply = Supply.objects.all()
+        _employees = Employee.objects.all()
+
+        for admin in _administrators:
+            context['users_list'].append(admin)
+        for foreman in _foreman:
+            context['users_list'].append(foreman)
+        for master in _masters:
+            context['users_list'].append(master)
+        for supply in _supply:
+            context['users_list'].append(supply)
+        for mechanic in _mechanics:
+            context['users_list'].append(mechanic)
+        for driver in _drivers:
+            context['users_list'].append(driver)
+        for employee in _employees:
+            context['users_list'].append(employee)
         return render(request, template, context)
 
-    return HttpResponseRedirect('/login/')
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def edit_user_view(request):
+    if request.user.is_authenticated:
+        template = 'content/users/edit_user.html'
+        context = {'title': 'Добавить пользователя', 'posts': USER_POSTS}
+        user_id = request.GET.get('user_id')
+        if user_id is not None:
+            _user = User.objects.get(pk=user_id)
+            context['user_list'] = _user
+
+        return render(request, template, context)
+
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
