@@ -18,19 +18,19 @@
             {% for user in users_list %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ user.user.username }}</td>
-                    <td>{{ user.user.last_name }}</td>
-                    <td>{{ user.user.first_name }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.first_name }}</td>
                     <td>{% for title, post in user_post.items %}
-                        {% if title == user.title %}{{ post }}{% endif %}
+                        {% if title == user.post %}{{ post }}{% endif %}
                     {% endfor %}
                     </td>
                     <td>{% if user.telephone %}{{ user.telephone }}{% endif %}</td>
-                    <td>{% if user.user.last_login %}{{ user.user.last_login }}{% endif %}</td>
+                    <td>{% if user.last_login %}{{ user.last_login }}{% endif %}</td>
                     <td class="m-0 ">
-                        <a href="{% url 'edit_user'  %}?user_id={{ user.user.id }}" class="btn btn-sm btn-outline-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>
+                        <a href="{% url 'edit_user'  %}?user_id={{ user.pk }}" class="btn btn-sm btn-outline-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>
                     <td class="m-0 ps-0">
-                        <a href="#?user_id={{ user.user.id }}" class="btn btn-sm btn-outline-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>
+                        <a href="{% url 'delete_user' %}?user_id={{ user.id }}" class="btn btn-sm btn-outline-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>
                     </td>
 
                 </tr>
@@ -46,7 +46,7 @@
 {% block footer %}
     <div></div>
     <div>
-        <a href="#" class="btn btn-sm btn-success" type="button">Добавить пользователя</a>
+        <a href="{% url 'edit_user' %}" class="btn btn-sm btn-success" type="button">Добавить пользователя</a>
     </div>
     <div></div>
 {% endblock %}

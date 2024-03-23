@@ -20,83 +20,44 @@ def get_weekday(_date):
     return ASSETS.WEEKDAY[_date.weekday()]
 
 
-def add_user(data: dict):
+def add_user(data: dict, user_id=None):
     username = data.get('username')
     password = data.get('password')
     first_name = data.get('first_name')
     last_name = data.get('last_name')
-    post = data.get('post') if data.get('post') is not None else 'employee'
-    supervisor_id = data.get('supervisor_id')
+    post = data.get('post') if data.get('post') is not None else ASSETS.EMPLOYEE
+    supervisor_id = int(data.get('supervisor_id')) if data.get('supervisor_id') is not None else None
     telephone = data.get('telephone')
 
-    if all([username, password, first_name, last_name]):
-        new_user = User.objects.create_user(
-            username=username,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-            is_staff=False,
-            is_superuser=False
-        )
-        if post == 'master' and supervisor_id is None:
-            post = 'employee'
-        user_post = get_post_instance(post).objects.create(
-            user=new_user,
-            telephone=telephone
-        )
-        if user_post.title == 'master':
-            user_post.foreman = Foreman.objects.get(pk=supervisor_id)
-        user_post.save()
-
-        return new_user
+    if user_id:
+        if all([username, password, first_name, last_name]):
+            _user = User.objects.get(pk=user_id)
+            _user.username = username
+            _user.first_name = first_name
+            _user.last_name = last_name
+            _user.telephone = telephone
+            _user.password = _user.set_password(password) if _user.password != password else _user.password
+            _user.post = post
+            _user.supervisor_user_id = supervisor_id
+            _user.save()
+            return _user
+    else:
+        if all([username, password, first_name, last_name]):
+            new_user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                telephone=telephone,
+                post=post,
+                supervisor_user_id=supervisor_id,
+                is_staff=False,
+                is_superuser=False
+            )
+            return new_user
     return None
 
 
-def get_users_post_instance(id_user):
-    try:
-        user = User.objects.get(pk=id_user)
-        if isAdministrator(user):
-            _instance = Administrator.objects.get(user=user)
-            return _instance, _instance.title
-        elif isForeman(user):
-            _instance = Foreman.objects.get(user=user)
-            return _instance, _instance.title
-        elif isMaster(user):
-            _instance = Master.objects.get(user=user)
-            return _instance, _instance.title
-        elif isDriver(user):
-            _instance = Driver.objects.get(user=user)
-            return _instance, _instance.title
-        elif isMechanic(user):
-            _instance = Mechanic.objects.get(user=user)
-            return _instance, _instance.title
-        elif isSupply(user):
-            _instance = Supply.objects.get(user=user)
-            return _instance, _instance.title
-        elif isEmployee(user):
-            _instance = Employee.objects.get(user=user)
-            return _instance, _instance.title
-    except User.DoesNotExist:
-        return None, None
-
-
-def get_post_instance(post: str):
-    if post == 'administrator':
-        return Administrator
-    elif post == 'foreman':
-        return Foreman
-    elif post == 'master':
-        return Master
-    elif post == 'driver':
-        return Driver
-    elif post == 'mechanic':
-        return Mechanic
-    elif post == 'supply':
-        return Supply
-    elif post == 'employee':
-        return Employee
-    else:
-        return None
 def is_administrator(user: User) -> bool:
     return True if user.post == ASSETS.ADMINISTRATOR else False
 
@@ -148,3 +109,31 @@ def prepare_workday(_date):
             WorkDaySheet.objects.update_or_create(date=_day, defaults={'status': status})
     else:
         return False
+
+
+def prepare_driver_sheet(workday: WorkDaySheet):
+    driver_list = User.objects.filter(isArchive=False, post=ASSETS.DRIVER)
+    count_driver = len(driver_list)
+
+    driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday)
+    count_driver_sheet = len(driver_sheet_list)
+
+    last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
+    last_driver_sheet = DriverSheet.objects.filter(isArchive=False, date=last_workday)
+
+    if count_driver > count_driver_sheet:
+        if last_driver_sheet.exists():
+            print('Copy')
+            for driver in last_driver_sheet:
+                DriverSheet.objects.get_or_create(date=workday,
+                                                  driver=driver.driver,
+                                                  status=driver.status)
+        else:
+            print('create')
+            for driver in driver_list:
+                DriverSheet.objects.get_or_create(date=workday, driver=driver)
+        print('+')
+    elif count_driver < count_driver_sheet:
+        print('-')
+    else:
+        print('=')

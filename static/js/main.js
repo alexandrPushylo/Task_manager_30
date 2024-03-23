@@ -7,10 +7,12 @@ const selectPost = (e) => {
     // alert(e.value)
     const post = e.value
     const foreman_select = $('#foreman_select');
+    const foreman_select_div = $('#foreman_select_div');
     if (post === 'master') {
-        // foreman_select.removeAttr('disabled');
+        foreman_select_div.show()
         foreman_select.prop("disabled", false);
     } else {
+        foreman_select_div.hide()
         foreman_select.prop("disabled", true);
     }
 }
@@ -42,5 +44,9 @@ const toggleWorkdayStatus = (e) => {
     //         console.log(d)
     // })
 
+}
 
+const toggleButtonStatus = (e) => {
+    const button_save_div = $('.button_save_div')
+    button_save_div.show()
 }

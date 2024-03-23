@@ -1,10 +1,11 @@
 <div class="dropdown">
     <button class="btn btn-outline-light dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <b>{{ user.last_name }}</b>
+        <b>{% if user.last_name %}{{ user.last_name }}{% else %}{{ user.username }}{% endif %}</b>
     </button>
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
              <li><a class="dropdown-item" href="{% url 'dashboard' %}">dashboard</a></li>
              <li><a class="dropdown-item" href="{% url 'work_day' %}">work_day</a></li>
+             <li><a class="dropdown-item" href="{% url 'driver_sheet' %}">Driver sheet</a></li>
              <li><a class="dropdown-item" href="{% url 'technics' %}">technics</a></li>
              <li><a class="dropdown-item" href="{% url 'users' %}">Users</a></li>
              <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>

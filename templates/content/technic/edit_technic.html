@@ -3,12 +3,12 @@
     <div id="edit_technic" class="container w-50 mx-auto">
         <div><h3><u>{{ title }}</u></h3></div>
         <form method="post" id="edit_technic_form">{% csrf_token %}
-            <div class="m-2">
+            <div class="m-2 me-2">
                 <label>Название техники
                     <input class="form-control" name="title" type="text" value="{{ technic.title }}" required/>
                 </label>
 
-                <label class="ms-2">Тип техники
+                <label class="">Тип техники
                     <input class="form-control" name="type" type="text" value="{{ technic.type }}" required/>
                 </label>
             </div>
@@ -19,9 +19,9 @@
                         {% for driver in drivers %}
                             {% if technic.attached_driver.id == driver.id %}
                                 <option selected="selected"
-                                        value="{{ driver.id }}">{{ driver.user.last_name }} {{ driver.user.first_name }}</option>
+                                        value="{{ driver.id }}">{{ driver.last_name }} {{ driver.first_name }}</option>
                             {% else %}
-                                <option value="{{ driver.id }}">{{ driver.user.last_name }} {{ driver.user.first_name }}</option>
+                                <option value="{{ driver.id }}">{{ driver.last_name }} {{ driver.first_name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -29,15 +29,19 @@
 
                 <label class="ms-2">Руководитель
                     <select name="supervisor" class="form-control">
-                        <option></option>
-                        {% for supervisor in supervisors %}
-                            {% if technic.supervisor.id == supervisor.user.id %}
+                    
+                        {% for supervisor, title in supervisors.items %}
+                            {% if technic.supervisor_technic == supervisor %}
                                 <option selected="selected"
-                                        value="{{ supervisor.user.id }}">{{ supervisor.user.last_name }} {{ supervisor.user.first_name }}</option>
+                                        value="{{ supervisor }}">{{ title }}</option>
+                            {% elif not technic.supervisor_technic and supervisor == mechanic %}  
+                                <option selected="selected"
+                                        value="{{ supervisor }}">{{ title }}</option>
                             {% else %}
-                                <option value="{{ supervisor.user.id }}">{{ supervisor.user.last_name }} {{ supervisor.user.first_name }}</option>
+                                <option value="{{ supervisor }}">{{ title }}</option>
                             {% endif %}
                         {% endfor %}
+                    
                     </select>
                 </label>
             </div>

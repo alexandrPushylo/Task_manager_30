@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="driver_sheet" class="container w-50">
+        <div><h3><u>{{ title }}</u></h3></div>
+        <form id="driver_sheet_form" method="post">{% csrf_token %}
+            <table class="table">
+                <thead>
+                <tr>
+                    <th hidden="hidden">id</th>
+                    <th>Дата</th>
+                    <th>Водитель</th>
+                    <th>Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for driver in driver_sheets %}
+                    <tr class="driver_sheet_row">
+                        <td hidden="hidden"><input type="hidden" name="id" value="{{ driver.id }}"/></td>
+                        <td>{{ driver.date.date }}</td>
+                        <td>{{ driver.driver }}</td>
+                        <td class="form-switch"><label>
+                            <input type="checkbox" role="switch" class="form-check-input"
+                                   onchange="toggleButtonStatus(this)"
+                                   name="status_{{ driver.id }}"
+                                   {% if driver.status %}checked{% endif %}/>
+                        </label></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </form>
+
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div style="display: none" class="button_save_div">
+        <button class="btn btn-sm btn-success" type="submit" form="driver_sheet_form">Подтвердить изменения</button>
+    </div>
+    <div></div>
+{% endblock %}
