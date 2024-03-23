@@ -1,118 +1,15 @@
 from django.db import models
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from dashboard.assets import EMPLOYEE, ADMINISTRATOR, MECHANIC
 
 
-#   STAFF------------------------------------------------------------------
-class Administrator(models.Model):
-    title = 'administrator'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
+class User(AbstractUser):
     telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
+    telegram_id_chat = models.CharField(max_length=128, null=True, blank=True, verbose_name='Telegram id chat')
+    post = models.CharField(max_length=50, null=False, blank=False, verbose_name="Должность", default=EMPLOYEE)
+    supervisor_user_id = models.IntegerField(null=True, blank=True, verbose_name='Ид руководителя', default=None)
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Администратор'
-        verbose_name_plural = 'Администраторы'
-        ordering = ['user']
-
-
-class Foreman(models.Model):
-    title = 'foreman'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
-    isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Прораб'
-        verbose_name_plural = 'Прорабы'
-        ordering = ['user']
-
-
-class Master(models.Model):
-    title = 'master'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
-    foreman = models.ForeignKey(Foreman, on_delete=models.SET_NULL, null=True, verbose_name='Прораб')
-    isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Мастер'
-        verbose_name_plural = 'Мастера'
-        ordering = ['user']
-
-
-class Driver(models.Model):
-    title = 'driver'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
-    isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Водитель'
-        verbose_name_plural = 'Водители'
-        ordering = ['user']
-
-
-class Mechanic(models.Model):
-    title = 'mechanic'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
-    isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Механик'
-        verbose_name_plural = 'Механики'
-        ordering = ['user']
-
-
-class Supply(models.Model):
-    title = 'supply'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
-    isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Снабжение'
-        verbose_name_plural = 'Снабжение'
-        ordering = ['user']
-
-
-class Employee(models.Model):
-    title = 'employee'
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Сотрудник')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
-    isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
-
-    def __str__(self):
-        return f"{self.user.last_name} {self.user.first_name}"
-
-    class Meta:
-        verbose_name = 'Работник'
-        verbose_name_plural = 'Работники'
-        ordering = ['user']
-
-
-#   STAFF-END-----------------------------------------------------------------
 
 
 #   TECHNIC-------------------------------------------------------------------
@@ -122,10 +19,10 @@ class Technic(models.Model):
     id_information = models.CharField(max_length=256, null=False, blank=False,
                                       verbose_name="Идентификационная информация")
     description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Описание")
-    attached_driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True,
+    attached_driver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='attached_driver',
                                         verbose_name='Прикрепленный водитель')
-    supervisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                   verbose_name='Руководитель')
+    supervisor_technic = models.CharField(max_length=100, verbose_name='Руководитель', default=MECHANIC)
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
     def __str__(self):
@@ -143,7 +40,7 @@ class Technic(models.Model):
 #   Construction Site---------------------------------------------------------
 class ConstructionSite(models.Model):
     address = models.CharField(max_length=512, verbose_name="Адрес", null=False)
-    foreman = models.ForeignKey(Foreman, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Прораб")
+    foreman = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Прораб")
     status = models.BooleanField(default=True, verbose_name="Статус объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
@@ -169,17 +66,17 @@ class WorkDaySheet(models.Model):
 
     class Meta:
         verbose_name = 'Рабочий день'
-        verbose_name_plural = 'Рабочие дени'
+        verbose_name_plural = 'Рабочие дни'
         ordering = ['-date']
 
 
 class DriverSheet(models.Model):
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, verbose_name="Водитель")
+    driver = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Водитель")
     status = models.BooleanField(default=True, verbose_name="Статус водителя")
     date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
-    def __str__(self): return f"{self.date} {self.driver} [{'Рабочий' if self.status else 'Выходной'}]"
+    def __str__(self): return f"{self.date.date} {self.driver} [{'Работает' if self.status else 'Не работает'}]"
 
     class Meta:
         verbose_name = 'Отметка водителя'
@@ -188,14 +85,14 @@ class DriverSheet(models.Model):
 
 
 class TechnicSheet(models.Model):
-    technic = models.ForeignKey(Technic, on_delete=models.CASCADE, verbose_name='Транспортное средство')
+    technic = models.OneToOneField(Technic, on_delete=models.CASCADE, verbose_name='Транспортное средство')
     driver_sheet = models.ForeignKey(DriverSheet, on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name="Табель водителя")
     date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
     status = models.BooleanField(default=True, verbose_name="Статус техники")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
-    def __str__(self): return f"{self.date} {self.technic} [{'Рабочий' if self.status else 'Выходной'}]"
+    def __str__(self): return f"{self.date.date} {self.technic} [{'Рабочий' if self.status else 'Выходной'}]"
 
     class Meta:
         verbose_name = 'Отметка техники'
@@ -209,13 +106,14 @@ class TechnicSheet(models.Model):
 #   Applications--------------------------------------------------------------
 class ApplicationToday(models.Model):
     construction_site = models.OneToOneField(ConstructionSite, on_delete=models.CASCADE,
-                                          verbose_name="Строительный объект")
-    date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
+                                             verbose_name="Строительный объект")
+    date = models.OneToOneField(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата",
+                                related_name="application_today")
     status = models.CharField(max_length=255, null=True, blank=True, verbose_name="Статус заявки")
     description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Примечание для объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
-    def __str__(self): return f"{self.construction_site} [{self.date}] - {self.status}"
+    def __str__(self): return f"{self.construction_site} [{self.date.date}] - {self.status}"
 
     class Meta:
         verbose_name = "Заявка на объект"
@@ -253,38 +151,35 @@ class ApplicationMaterial(models.Model):
         verbose_name = 'Заявка на материал'
         verbose_name_plural = 'Заявка на материалы'
 
-
-
 #   Applications-END----------------------------------------------------------
 
 
 #   Parameters----------------------------------------------------------------
-class Parameter(models.Model):
-    title = models.CharField(max_length=256, verbose_name='Название переменной')
-    value = models.CharField(max_length=512, null=True, blank=True, verbose_name='Значение переменной')
-    flag = models.BooleanField(default=False, verbose_name='Флаг переменной')
-    description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Описание")
-    time = models.TimeField(null=True, blank=True)
-    date = models.DateField(null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+# class Parameter(models.Model):
+#     title = models.CharField(max_length=256, verbose_name='Название переменной')
+#     value = models.CharField(max_length=512, null=True, blank=True, verbose_name='Значение переменной')
+#     flag = models.BooleanField(default=False, verbose_name='Флаг переменной')
+#     description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Описание")
+#     time = models.TimeField(null=True, blank=True)
+#     date = models.DateField(null=True, blank=True)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+#
+#     def __str__(
+#             self): return f'{self.title} - {self.value} - [{self.flag}] -- [{self.user}] == ({self.time}:{self.date})'
+#
+#     class Meta:
+#         verbose_name = "Переменная"
+#         verbose_name_plural = "Переменные"
+#         ordering = ['title', 'user']
 
-    def __str__(
-            self): return f'{self.title} - {self.value} - [{self.flag}] -- [{self.user}] == ({self.time}:{self.date})'
-
-    class Meta:
-        verbose_name = "Переменная"
-        verbose_name_plural = "Переменные"
-        ordering = ['title', 'user']
-
-
-class Telebot(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
-    id_chat = models.CharField(max_length=128, verbose_name='id chat')
-
-    def __str__(self): return f"{self.user} - [{self.id_chat}]"
-
-    class Meta:
-        ordering = ['user']
+# class Telebot(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+#     id_chat = models.CharField(max_length=128, verbose_name='id chat')
+#
+#     def __str__(self): return f"{self.user} - [{self.id_chat}]"
+#
+#     class Meta:
+#         ordering = ['user']
 
 #   Parameters-END------------------------------------------------------------
 
