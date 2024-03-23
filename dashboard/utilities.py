@@ -1,15 +1,15 @@
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite
 from dashboard.models import ApplicationToday, ApplicationTechnic
 from dashboard.models import Technic
-from dashboard.models import Administrator, Foreman, Master, Mechanic, Driver, Supply, Employee
-from django.contrib.auth.models import User
+# from dashboard.models import Administrator, Foreman, Master, Mechanic, Driver, Supply, Employee
+from dashboard.models import User
 
 #   ------------------------------------------------------------------------------------------------------------------
 
 
 from datetime import date, timedelta, datetime
 
-from dashboard.assets import WEEKDAY, USER_POSTS
+import dashboard.assets as ASSETS
 
 #   ------------------------------------------------------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ TODAY = date.today()
 
 
 def get_weekday(_date):
-    return WEEKDAY[_date.weekday()]
+    return ASSETS.WEEKDAY[_date.weekday()]
 
 
 def add_user(data: dict):
@@ -97,33 +97,33 @@ def get_post_instance(post: str):
         return Employee
     else:
         return None
-
-def isAdministrator(user: User) -> bool:
-    return True if Administrator.objects.filter(user=user).exists() else False
-
-
-def isForeman(user: User) -> bool:
-    return True if Foreman.objects.filter(user=user).exists() else False
+def is_administrator(user: User) -> bool:
+    return True if user.post == ASSETS.ADMINISTRATOR else False
 
 
-def isMaster(user: User) -> bool:
-    return True if Master.objects.filter(user=user).exists() else False
+def is_foreman(user: User) -> bool:
+    return True if user.post == ASSETS.FOREMAN else False
 
 
-def isDriver(user: User) -> bool:
-    return True if Driver.objects.filter(user=user).exists() else False
+def is_master(user: User) -> bool:
+    return True if user.post == ASSETS.MASTER else False
 
 
-def isMechanic(user: User) -> bool:
-    return True if Mechanic.objects.filter(user=user).exists() else False
+def is_driver(user: User) -> bool:
+    return True if user.post == ASSETS.DRIVER else False
 
 
-def isSupply(user: User) -> bool:
-    return True if Supply.objects.filter(user=user).exists() else False
+def is_mechanic(user: User) -> bool:
+    return True if user.post == ASSETS.MECHANIC else False
 
 
-def isEmployee(user: User) -> bool:
-    return True if Employee.objects.filter(user=user).exists() else False
+def is_supply(user: User) -> bool:
+    return True if user.post == ASSETS.SUPPLY else False
+
+
+def is_employee(user: User) -> bool:
+    return True if user.post == ASSETS.EMPLOYEE else False
+
 
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""

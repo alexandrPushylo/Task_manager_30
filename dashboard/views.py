@@ -12,7 +12,8 @@ from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet
 from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMaterial
 from dashboard.models import Parameter, Telebot
 
-from dashboard.assets import USER_POSTS, ERROR_MESSAGES
+# from dashboard.assets import USER_POSTS_set, ERROR_MESSAGES
+import dashboard.assets as ASSETS
 import Task_manager_30.endpoints as ENDPOINTS
 
 from dashboard.utilities import TODAY, WEEKDAY
@@ -31,19 +32,19 @@ def dashboard(request):
         'post': request.user
     }
 
-    if isAdministrator(request.user):
+    if is_administrator(request.user):
         return render(request, 'content/dashboard/admin_dashboard.html', context)
-    elif isForeman(request.user):
+    elif is_foreman(request.user):
         return render(request, 'content/dashboard/foreman_dashboard.html', context)
-    elif isMaster(request.user):
+    elif is_master(request.user):
         return render(request, 'content/dashboard/foreman_dashboard.html', context)
-    elif isMechanic(request.user):
+    elif is_mechanic(request.user):
         return render(request, '', context)
-    elif isSupply(request.user):
+    elif is_supply(request.user):
         return render(request, '', context)
-    elif isEmployee(request.user):
+    elif is_employee(request.user):
         return render(request, '', context)
-    elif isDriver(request.user):
+    elif is_driver(request.user):
         return render(request, '', context)
     else:
         return HttpResponse(status=404)
@@ -51,7 +52,7 @@ def dashboard(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect('/dashboard/')
+        return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
     if request.method == 'GET':
         return render(request, 'content/login.html')
     if request.method == 'POST':
@@ -60,9 +61,9 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect('/dashboard/')  # TODO: redirect to Home page
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)  # TODO: redirect to Home page
         else:
-            return render(request, 'content/login.html', {'error': ERROR_MESSAGES['login']})
+            return render(request, 'content/login.html', {'error': ASSETS.ERROR_MESSAGES['login']})
     return HttpResponse(status=403)
 
 
@@ -75,8 +76,8 @@ def logout_view(request):
 def register_view(request):
     template = 'content/register.html'
     context = {
-        'user_posts': USER_POSTS,
-        'foreman_list': Foreman.objects.filter().values('id', 'user__last_name', 'user__first_name')
+        'user_posts': ASSETS.USER_POSTS_dict,
+        'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
     }
 
     if request.method == 'GET':
@@ -86,11 +87,11 @@ def register_view(request):
         new_user = add_user(data)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
-            return HttpResponseRedirect('/dashboard/')  # TODO: redirect to Home page
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         elif new_user is not None and request.user.is_authenticated:
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         else:
-            context['error'] = ERROR_MESSAGES['register']
+            context['error'] = ASSETS.ERROR_MESSAGES['register']
             return render(request, template, context)
 
     return HttpResponse(status=403)
@@ -119,7 +120,7 @@ def workday_sheet_view(request):
         prepare_workday(current_day)
         workday = WorkDaySheet.objects.filter(date__gte=current_day).values()
         for day in workday:
-            day['weekday'] = WEEKDAY[day['date'].weekday()]
+            day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
 
         context['workday'] = workday
         # status = request.POST.get('status')
@@ -213,7 +214,7 @@ def users_view(request):
         context = {
             'title': 'Все пользователи',
             'users_list': [],
-            'user_post': USER_POSTS
+            'user_post': ASSETS.USER_POSTS_dict
         }
 
         _administrators = Administrator.objects.all()
