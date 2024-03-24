@@ -135,7 +135,6 @@ def driver_sheet_view(request):
         context = {
             'title': 'Табель: водители'
         }
-
         if request.method == "POST":
             driver_sheet_id_list = request.POST.getlist('id')
             for driver_sheet_id in driver_sheet_id_list:
@@ -146,13 +145,12 @@ def driver_sheet_view(request):
                 else:
                     driver_sheet.status = True
                 driver_sheet.save(update_fields=['status'])
-
         if True:
             current_day = request.GET.get('date')
             if current_day is None:
                 current_day = TODAY
             workday = WorkDaySheet.objects.get(date=current_day)
-            if workday.status or True:  #   TODO:#########################
+            if workday.status:
                 prepare_driver_sheet(workday)
             driver_sheet = DriverSheet.objects.filter(isArchive=False, date=workday).order_by('driver__last_name')
             context['driver_sheets'] = driver_sheet
@@ -271,6 +269,8 @@ def delete_technic(request):
                 except Technic.DoesNotExist:
                     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.TECHNICS)
+
+
 #   --------------------------------------------------------------------------------------------------------------------
 
 
@@ -329,6 +329,8 @@ def delete_user(request):
                 except User.DoesNotExist:
                     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.USERS)
+
+
 #   --------------------------------------------------------------------------------------------------------------------
 
 

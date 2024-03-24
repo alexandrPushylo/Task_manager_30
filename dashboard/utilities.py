@@ -120,16 +120,14 @@ def prepare_driver_sheet(workday: WorkDaySheet):
 
     last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
     last_driver_sheet = DriverSheet.objects.filter(isArchive=False, date=last_workday)
-
     if count_driver > count_driver_sheet:
+
         if last_driver_sheet.exists():
-            print('Copy')
             for driver in last_driver_sheet:
                 DriverSheet.objects.get_or_create(date=workday,
                                                   driver=driver.driver,
                                                   status=driver.status)
         else:
-            print('create')
             for driver in driver_list:
                 DriverSheet.objects.get_or_create(date=workday, driver=driver)
         print('+')
@@ -137,6 +135,8 @@ def prepare_driver_sheet(workday: WorkDaySheet):
         print('-')
     else:
         print('=')
+
+
 def prepare_technic_sheet(workday: WorkDaySheet):
     technic_list = Technic.objects.filter(isArchive=False)
     count_technic = len(technic_list)
