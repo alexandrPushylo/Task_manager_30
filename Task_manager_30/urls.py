@@ -42,6 +42,8 @@ urlpatterns = [
     path('edit_technic/', edit_technic_view, name='edit_technic'),
     path('delete_technic/', delete_technic, name='delete_technic'),
 
+    path('construction_site/', construction_site_view, name='construction_site'),
+    path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
 
     path('admin/', admin.site.urls),
     path('login/', login_view, name='login'),
