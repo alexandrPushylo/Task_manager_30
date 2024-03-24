@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="driver_sheet" class="container">
+        <div><h3><u>{{ title }}</u></h3></div>
+        <form id="technic_sheet_form" method="post">{% csrf_token %}
+            <table class="table">
+                <thead>
+                <tr>
+                    <th hidden="hidden">id</th>
+                    {#                    <th>Дата</th>#}
+                    <th>Техника</th>
+                    <th>Иден. информация</th>
+                    <th>Водитель</th>
+                    <th>Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for technic_sheet in technic_sheets %}
+                    <tr class="technic_sheet_row">
+                        <td hidden="hidden"><input type="hidden" name="id" value="{{ technic_sheet.id }}"/></td>
+
+                        <td>{{ technic_sheet.technic.title }}
+                            {% if technic_sheet.technic.attached_driver.last_name %}
+                                ({{ technic_sheet.technic.attached_driver.last_name }})
+                            {% endif %}
+                        </td>
+                        <td>{{ technic_sheet.technic.id_information }}</td>
+                        <td>
+                            <label>
+                                <select class="form-control" name="driver_sheet_{{ technic_sheet.id }}" onchange="toggleButtonStatus(this)">
+                                <option></option>
+                                    {% for driver_sheet in driver_sheets %}
+                                        {% if technic_sheet.driver_sheet.id == driver_sheet.id %}
+                                    <option selected value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name }}</option>
+                                        {% else %}
+                                    <option value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name }}</option>
+                                        {% endif %}
+                                     {% endfor %}   
+                                    
+                                </select>
+                            </label>
+                        </td>
+
+                        <td class="form-switch"><label>
+                            <input type="checkbox" role="switch" class="form-check-input"
+                                   onchange="toggleButtonStatus(this)"
+                                   name="status_{{ technic_sheet.id }}"
+                                   {% if technic_sheet.status %}checked{% endif %}/>
+                        </label>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </form>
+
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div style="display: none" class="button_save_div">
+        <button class="btn btn-sm btn-success" type="submit" form="technic_sheet_form">Подтвердить изменения</button>
+    </div>
+    <div></div>
+{% endblock %}

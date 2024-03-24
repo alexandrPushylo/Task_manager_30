@@ -17,7 +17,8 @@ import dashboard.assets as ASSETS
 import Task_manager_30.endpoints as ENDPOINTS
 
 from dashboard.utilities import TODAY
-from dashboard.utilities import add_user, prepare_workday, prepare_driver_sheet
+from dashboard.utilities import add_user, prepare_workday, prepare_driver_sheet, prepare_technic_sheet
+from dashboard.utilities import autocomplete_technic_sheet
 from dashboard.utilities import is_administrator, is_foreman, is_master, is_driver, is_mechanic, is_supply, is_employee
 
 
@@ -158,6 +159,43 @@ def driver_sheet_view(request):
 
         return render(request, template, context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def technic_sheet_view(request):
+    if request.user.is_authenticated:
+        template = 'content/sheet/technic_sheet.html'
+        context = {'title': 'Табель: техника'}
+        if request.method == 'POST':
+            technic_sheet_id_list = request.POST.getlist('id')
+            for technic_sheet_id in technic_sheet_id_list:
+                technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
+                _status = request.POST.get(f'status_{technic_sheet_id}')
+                _driver_sheet = request.POST.get(f'driver_sheet_{technic_sheet_id}')
+                if _status is None:
+                    technic_sheet.status = False
+                else:
+                    technic_sheet.status = True
+                if _driver_sheet is not None and _driver_sheet != '':
+                    technic_sheet.driver_sheet = DriverSheet.objects.get(id=_driver_sheet)
+                else:
+                    technic_sheet.driver_sheet = None
+                technic_sheet.save(update_fields=['driver_sheet', 'status'])
+
+        if True:
+            current_day = request.GET.get('date')
+            if current_day is None:
+                current_day = TODAY
+            workday = WorkDaySheet.objects.get(date=current_day)
+            if workday.status:
+                prepare_technic_sheet(workday)
+            technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=workday).order_by('technic__title')
+            driver_sheet = DriverSheet.objects.filter(isArchive=False, date=workday, status=True)
+            context['technic_sheets'] = technic_sheet
+            context['driver_sheets'] = driver_sheet
+        return render(request, template, context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
 #   --------------------------------------------------------------------------------------------------------------------
 
 

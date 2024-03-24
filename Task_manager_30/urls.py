@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from dashboard.views import dashboard
 from dashboard.views import login_view, logout_view, register_view
 
-from dashboard.views import workday_sheet_view, driver_sheet_view
+from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
 from dashboard.views import technic_view, edit_technic_view, delete_technic
 from dashboard.views import users_view, edit_user_view, delete_user
@@ -32,6 +32,7 @@ urlpatterns = [
 
     path('work_day/', workday_sheet_view, name='work_day'),
     path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
+    path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
 
     path('users/', users_view, name='users'),
     path('edit_user/', edit_user_view, name='edit_user'),

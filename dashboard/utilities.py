@@ -137,3 +137,52 @@ def prepare_driver_sheet(workday: WorkDaySheet):
         print('-')
     else:
         print('=')
+def prepare_technic_sheet(workday: WorkDaySheet):
+    technic_list = Technic.objects.filter(isArchive=False)
+    count_technic = len(technic_list)
+
+    technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=workday)
+    count_technic_sheet = len(technic_sheet_list)
+
+    last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
+    last_technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=last_workday)
+    driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday, status=True)
+
+    autocomplete_technic_sheet(technic_sheet_list)
+
+    if count_technic > count_technic_sheet:
+        print('+')
+        if last_technic_sheet.exists():
+            for technic in last_technic_sheet:
+                driver_sheet = driver_sheet_list.filter(driver=technic.driver_sheet.driver).first()
+                TechnicSheet.objects.get_or_create(date=workday,
+                                                   technic=technic.technic,
+                                                   status=technic.status,
+                                                   driver_sheet=driver_sheet
+                                                   )
+        else:
+            print('create')
+            for technic in technic_list:
+                driver_sheet = driver_sheet_list.filter(driver=technic.attached_driver).first()
+                TechnicSheet.objects.get_or_create(date=workday,
+                                                   technic=technic,
+                                                   driver_sheet=driver_sheet
+                                                   )
+    elif count_technic < count_technic_sheet:
+        print('-')
+    else:
+        print('=')
+
+
+def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
+    empty_technic_sheet = technic_sheet.filter(driver_sheet__isnull=True,
+                                               technic__attached_driver__isnull=False
+                                               )
+    if empty_technic_sheet.exists():
+        driver_sheet_list = DriverSheet.objects.filter(isArchive=False, status=True)
+        for technic_sheet in empty_technic_sheet:
+            driver_sheet = driver_sheet_list.filter(date=technic_sheet.date,
+                                                    driver=technic_sheet.technic.attached_driver
+                                                    ).first()
+            technic_sheet.driver_sheet = driver_sheet
+            technic_sheet.save()
