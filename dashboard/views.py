@@ -294,3 +294,58 @@ def delete_user(request):
 #   --------------------------------------------------------------------------------------------------------------------
 
 
+def construction_site_view(request):
+    if request.user.is_authenticated:
+        template = 'content/construction_site/construction_sites.html'
+        context = {
+            'title': 'Строительные объекты',
+            'construction_sites': ConstructionSite.objects.filter(isArchive=False)}
+        hide_constr_site_id = request.GET.get('hide')
+        constr_id = request.GET.get('delete')
+        if hide_constr_site_id:
+            constr_site = ConstructionSite.objects.get(id=hide_constr_site_id)
+            constr_site.status = False if constr_site.status else True
+            constr_site.save(update_fields=['status'])
+            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+        elif constr_id:
+            constr_site = ConstructionSite.objects.get(id=constr_id)
+            constr_site.isArchive = False if constr_site.isArchive else True
+            constr_site.save(update_fields=['isArchive'])
+            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+
+        return render(request, template, context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def edit_construction_sites(request):
+    if request.user.is_authenticated:
+        template = 'content/construction_site/edit_construction_site.html'
+        context = {
+            'title': 'Изменить объект',
+            'foreman_list': User.objects.filter(isArchive=False, post=ASSETS.FOREMAN)
+        }
+
+        if request.method == 'POST':
+            _id = request.POST.get('id')
+            _address = request.POST.get('address')
+            _foreman = request.POST.get('foreman')
+            foreman = User.objects.get(id=_foreman) if _foreman is not None and _foreman != '' else None
+            if all([_id, _address]):
+                constr_site = ConstructionSite.objects.get(id=_id)
+                constr_site.address = _address
+                constr_site.foreman = foreman
+                constr_site.save()
+                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+            elif _address is not None:
+                ConstructionSite.objects.create(
+                    address=_address,
+                    foreman=foreman
+                )
+                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+
+        constr_site_id = request.GET.get('id')
+        if constr_site_id:
+            context['constr_site'] = ConstructionSite.objects.get(id=constr_site_id)
+
+        return render(request, template, context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)

@@ -10,6 +10,6 @@ ERROR = '#'
 USERS = '/users/'
 EDIT_USERS = '/edit_users/'
 # DELETE_USERS = '/delete_users/'
-
+CONSTRUCTION_SITES = '/construction_site/'
 
 

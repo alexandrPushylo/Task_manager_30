@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="construction_site" class="container">
+        <div><h3><u>{{ title }}</u></h3></div>
+        <div class="row">
+            {% for construction_site in construction_sites %}
+                <div class="col-auto">
+                    <div class="card m-2 shadow-sm construction_site_card">
+                        <div class="card-body p-1">
+                            <h6 class="card-title fw-bolder" style="text-align: center">{{ construction_site.address }}
+                                <br/>
+                                {% if construction_site.foreman %}
+                                    Прораб: {{ construction_site.foreman.last_name }}
+                                    {{ construction_site.foreman.first_name }}
+                                {% endif %}
+                            </h6>
+                            <hr class="m-0" style="border-width: medium; border-color: {% if construction_site.status %}green{% else %}red{% endif %}"/>
+                        <div class="btn-group position-relative translate-middle-x start-50 mt-1">
+                            <a href="{% url 'construction_site' %}?delete={{ construction_site.id }}" class="btn btn-sm btn-outline-danger" aria-current="page"><i class="fa-solid fa-trash"></i></a>
+                            <a href="{% url 'edit_construction_sites' %}?id={{ construction_site.id }}" class="btn btn-sm btn-outline-primary" aria-current="page"><i class="fa-regular fa-pen-to-square"></i></a>
+                            <a href="{% url 'construction_site' %}?hide={{ construction_site.id }}" {% if construction_site.status %}class="btn btn-sm btn-outline-danger"
+                                   aria-current="page"> Скрыть
+                                   {% else %}class="btn btn-sm btn-outline-success" aria-current="page">
+                                       Отобразить
+                                   {% endif %}</a>
+                        </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a href="{% url 'edit_construction_sites' %}" class="btn btn-sm btn-success" type="button">Добавить объект</a>
+    </div>
+    <div></div>
+{% endblock %}

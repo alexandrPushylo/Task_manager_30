@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div id="edit_construction_site" class="translate-middle position-absolute top-50 start-50 p-3">
+        <form method="post" id="edit_construction_site_form">{% csrf_token %}
+            
+            <div>
+                <label class="w-100">Адрес:
+                    <input type="text" class="form-control" name="address" value="{{ constr_site.address }}" required/>
+                    <input type="hidden" name="id" value="{{ constr_site.id }}"/>
+                </label>
+            </div>
+            
+            <div class="mt-2">
+                <label class="w-100">Прораб:
+                    <select class="form-select" name="foreman">
+                    <option></option>
+                        {% for foreman in foreman_list %}
+                            {% if constr_site.foreman.id == foreman.id %}
+                                <option selected value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
+                            {% else %}
+                                <option value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            
+            <div class="mt-4 navbar">
+                <a href="{% url 'construction_site' %}" class="btn btn-sm btn-primary position-absolute"
+                   style="float: left">Отмена</a>
+                <button class="btn btn-sm btn-success position-absolute end-0" type="submit"
+                        form="edit_construction_site_form">Сохранить
+                </button>
+            </div>
+
+            
+        </form>
+    </div>
+{% endblock %}
