@@ -23,6 +23,7 @@ from dashboard.views import login_view, logout_view, register_view
 
 from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
+from dashboard.views import construction_site_view, edit_construction_sites
 from dashboard.views import technic_view, edit_technic_view, delete_technic
 from dashboard.views import users_view, edit_user_view, delete_user
 
