@@ -81,6 +81,7 @@
 }
 #users{
     margin-top: 20px;
+    width: min-content;
     /*box-shadow: 5px 5px 20px 5px;*/
     border: 1px solid black;
     /*border-radius: 10px;*/
@@ -95,9 +96,11 @@
 }
 #driver_sheet{
     margin-top: 20px;
+    width: min-content;
     box-shadow: 5px 5px 20px 5px;
     border: 1px solid black;
     border-radius: 10px;
+}
 #construction_site .construction_site_card{
     background-color: rgba(247,247,248,0.75)
 }
