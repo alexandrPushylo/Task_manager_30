@@ -41,6 +41,7 @@ class Technic(models.Model):
 class ConstructionSite(models.Model):
     address = models.CharField(max_length=512, verbose_name="Адрес", null=False)
     foreman = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Прораб")
+    deleted_date = models.DateField(null=True, blank=True, verbose_name="Дата удаления")
     status = models.BooleanField(default=True, verbose_name="Статус объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
@@ -85,7 +86,7 @@ class DriverSheet(models.Model):
 
 
 class TechnicSheet(models.Model):
-    technic = models.OneToOneField(Technic, on_delete=models.CASCADE, verbose_name='Транспортное средство')
+    technic = models.ForeignKey(Technic, on_delete=models.CASCADE, verbose_name='Транспортное средство')
     driver_sheet = models.ForeignKey(DriverSheet, on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name="Табель водителя")
     date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
