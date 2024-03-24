@@ -8,7 +8,7 @@
                 <thead>
                 <tr>
                     <th hidden="hidden">id</th>
-                    <th>Дата</th>
+{#                    <th>Дата</th>#}
                     <th>Водитель</th>
                     <th>Статус</th>
                 </tr>
@@ -17,8 +17,8 @@
                 {% for driver in driver_sheets %}
                     <tr class="driver_sheet_row">
                         <td hidden="hidden"><input type="hidden" name="id" value="{{ driver.id }}"/></td>
-                        <td>{{ driver.date.date }}</td>
-                        <td>{{ driver.driver }}</td>
+{#                        <td>{{ driver.date.date }}</td>#}
+                        <td>{{ driver.driver.last_name }} {{ driver.driver.first_name }}</td>
                         <td class="form-switch"><label>
                             <input type="checkbox" role="switch" class="form-check-input"
                                    onchange="toggleButtonStatus(this)"
