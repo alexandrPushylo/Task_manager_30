@@ -1,7 +1,350 @@
 {% extends 'base.html' %}
-{% block content %}
-    <h2>Admin dashboard</h2>
+{% block title_p %}
+    {% if conflict_technic_sheet %}
+        <div>
+            <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" role="button"
+               class="btn btn-danger">Имеются конфликты</a>
+        </div>
+    {% elif status_list_application_today.submitted %}
+        <div>
+            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>
+        </div>
+    {% elif status_list_application_today.approved %}
+        <div>
+            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>
+        </div>
+    {% elif status_list_application_today.send %}
+        <div>
+            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>
+        </div>
+    {% endif %}
 {% endblock %}
 
 
+{% block content %}
+    <div id="admin_dashboard" class="container-fluid">
+        {#        <div><h3><u>{{ title }}</u> {{ current_day.date }}</h3></div>#}
+        <div class="mt-1 position-relative translate-middle-x start-50 top-0">
+            <p class="mb-1" style="text-align: center">
+                <label>
+                    <input class="form-control text-center p-1 io_choice_day" type="date" name="current_day"
+                           value="{{ current_day.date.isoformat }}">
+                </label>
+            </p>
+            <nav aria-label="Page navigation example" class="d-flex justify-content-center">
+                <ul class="pagination">
+
+                    <li class="page-item"><a
+                            class="page-link fw-bold text-dark me-2 ps-4 pe-4"
+                            href="{% url 'dashboard' %}?current_day={{ prev_work_day.date.isoformat }}"><i
+                            class="fa-solid fa-angles-left"></i></a></li>
+                    {% for day in work_days %}
+                        <li class="page-item ms-1 me-1">
+                            <a class="page-link p-1 m-0 {% if day.status %}text-success{% else %}text-danger{% endif %} {% if today == day.date %}fw-bold text-dark{% endif %} {% if current_day.date == day.date %}border border-2 border-success{% endif %}"
+                               href="{% url 'dashboard' %}?current_day={{ day.date.isoformat }}"
+                               style="text-align: center; border-radius: 10%;"
+                            ><span class="">{{ day.date.day }}</span><br/>
+                                <span class="small">{{ day.weekday }}</span>
+                            </a></li>
+                    {% endfor %}
+                    <li class="page-item"><a
+                            class="page-link fw-bold text-dark ms-2 ps-4 pe-4"
+                            href="{% url 'dashboard' %}?current_day={{ next_work_day.date.isoformat }}"><i
+                            class="fa-solid fa-angles-right"></i></a></li>
+
+                </ul>
+            </nav>
+        </div>
+    
+        <div style="text-align: center">
+            {% include 'includes/weekday_current_day.html' %}
+            {% include 'includes/btn_modal_view_props.html' %}
+            {% include 'includes/btn_modal_option.html' %}
+        </div>
+    
+            
+
+
+        <div id="applications_container" class="mt-3 position-relative translate-middle-x start-50">
+            {% for construction_site in construction_sites %}
+                <div class="application_items bg-transparent">
+                    {#                {% if construction_site.application_today %}#}
+                    <div class="application_items_border border border-3
+                                {% if construction_site.application_today.status == 'saved' %} border-warning
+                                {% elif construction_site.application_today.status == 'submitted' %} border-primary
+                                {% elif construction_site.application_today.status == 'approved' %} border-success
+                                {% endif %} 
+                                ">
+
+                        <div class="card m-1" {% if not construction_site.application_today %}
+                             style="color: rgba(0,0,0,0.26);"
+                        {% endif %}>
+                            <div class="card-header p-0">
+                                {% if construction_site.application_today %}
+                                    {% if construction_site.application_today.status == 'saved' %}
+                                        <p class="p-0 application_status text-warning">Заявка сохранена</p>
+                                    {% elif construction_site.application_today.status == 'submitted' %}
+                                        <p class="p-0 application_status text-primary">Заявка подана</p>
+                                    {% elif construction_site.application_today.status == 'approved' %}
+                                        <p class="p-0 application_status text-success">Заявка одобрена</p>
+                                    {% elif construction_site.application_today.status == 'send' %}
+                                        <p class="p-0 application_status text-info fw-bold">Заявка отправлена</p>
+                                    {% else %}
+                                        <p class="p-0 application_status">Заявка отсутствует</p>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="p-0 application_status">Заявка отсутствует</p>
+                                {% endif %}
+                                <p class="card-title fw-bolder p-0 m-0 text-uppercase"
+                                   style="text-align: center">{{ construction_site.address }}</p>
+                                <p class="m-0 ms-2" style="text-align: center">
+                                    <span class="fw-bolder">{{ weekday }}</span>,
+                                    <span>{{ current_day.date }}</span>
+                                </p>
+                                {% if construction_site.foreman %}
+                                    <p class="card-title p-0 m-0 ms-2">
+                                        <span class="small m-0">Прораб:</span>
+                                        <span class="fw-bolder">{{ construction_site.foreman.last_name }}</span>
+                                        <span class="fw-bolder">{{ construction_site.foreman.first_name }}</span>
+                                    </p>{% endif %}
+                                <hr class="m-0"/>
+
+                                {% if construction_site.application_today.description %}
+                                    <div class="mt-1">
+                                        <label class="w-100"><p class="fw-bolder small m-0" style="text-align: center;">
+                                            Примечание к объекту:</p>
+                                            <textarea readonly
+                                                      class="form-control border border-0 app_tech_description">{{ construction_site.application_today.description }}
+                                    </textarea>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="card-text">
+                                {% if construction_site.application_today %}
+                                    {% if construction_site.application_today.application_technic %}
+                                        <div class="ms-1 mt-1">
+                                            {% for app_technic in construction_site.application_today.application_technic %}
+                                                <div
+                                                        {% if app_technic.is_cancelled or app_technic.isChecked %}
+                                                            {#                                                            class="text-decoration-line-through"#}
+                                                            style="color: rgba(97,95,95,0.51)"
+                                                        {% elif app_technic.technic_sheet_id in priority_id_list %}
+                                                            class="text-primary fw-bold"
+                                                        {% endif %}
+                                                >
+                                                    <span {% if app_technic.is_cancelled %}
+                                                        class="ms-1"
+                                                        style="color: rgba(97,95,95,0.51)"
+                                                    {% elif not app_technic.technic_sheet__status %}
+                                                        class="ms-1 text-decoration-line-through"
+                                                    {% elif app_technic.technic_sheet_id in conflict_technic_sheet and not app_technic.isChecked %}
+                                                        class="ms-1 text-danger fw-bold"
+                                                    {% endif %}
+
+                                                    >{{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% if app_technic.technic_sheet__driver_sheet__status %}
+                                                        <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                    {% else %}
+                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                    {% endif %}
+
+                                                    <span {% if app_technic.is_cancelled or app_technic.isChecked %}
+                                                        style="color: rgba(97,95,95,0.51)"
+                                                    {% elif app_technic.technic_sheet_id in priority_id_list %}
+                                                        class="text-primary"
+                                                    {% else %}
+                                                        class="text-dark"
+                                                    {% endif %}>[<span>{{ app_technic.priority }}</span>/
+                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
+                                                    </span>
+
+                                                    {% if app_technic.description %}
+                                                        <label class="m-0 p-0 row">
+                                                <textarea readonly
+                                                        {% if app_technic.is_cancelled or app_technic.isChecked %}
+                                                          style="color: rgba(97,95,95,0.51)"
+                                                        {% endif %}
+                                                          class="form-control app_tech_description">{{ app_technic.description }}</textarea>
+                                                        </label>
+                                                    {% endif %}
+                                                </div>
+
+
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if construction_site.application_today.application_material %}
+                                        <div class="m-0 p-1">
+                                            {#                                            {% for app_material in construction_site.application_today.application_material %}#}
+                                            {% if construction_site.application_today.application_material.isChecked %}
+                                                <span class="small fw-bold">Список материалов:</span>
+                                                <span style="font-size: small; color: green;">Подтверждено</span>
+                                                <textarea readonly aria-label=""
+                                                          class="form-control border border-1 border-success material_description">{{ construction_site.application_today.application_material.description }}</textarea>
+
+                                            {% else %}
+                                                <span class="small fw-bold">Список материалов:</span>
+                                                <span style="font-size: small; color: red;">Не подтверждено</span>
+                                                <textarea readonly aria-label=""
+                                                          class="form-control border border-1 border-danger material_description">{{ construction_site.application_today.application_material.description }}</textarea>
+                                            {% endif %}
+                                            <hr class="p-0 m-0">
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                            </div>
+                            <hr class="p-0 m-0">
+                            <div class="card-body p-0">
+
+                                <div class="my-2" style="text-align: center">
+                                    {% if construction_site.application_today %}
+                                        {% if construction_site.application_today.status == 'saved' %}
+                                            <p class="m-0 fw-bolder text-warning">Ожидание подачи заявки</p>
+                                        {% else %}
+                                            <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
+                                               class="btn btn-outline-danger" aria-current="page"><i
+                                                    class="fa-solid fa-trash"></i></a>
+                                            <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                               class="btn btn-outline-primary px-5"
+                                               aria-current="page"><i
+                                                    class="fa-regular fa-pen-to-square"></i></a>
+                                        {% endif %}
+
+                                        {% if construction_site.application_today.status == 'submitted' %}
+
+                                            <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
+                                               class="btn btn-outline-success px-5"
+                                               aria-current="page"><i class="fa-solid fa-check"></i></a>
+
+                                        {% elif construction_site.application_today.status == 'approved' %}
+
+                                            <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
+                                               class="btn btn-outline-info px-5"
+                                               aria-current="page"><i class="fa-solid fa-paper-plane"></i></a>
+
+                                        {% endif %}
+                                    {% else %}
+
+                                        <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                           class="btn btn-sm btn-outline-primary" style="width: 90%"
+                                           aria-current="page"><i
+                                                class="fa-solid fa-plus"></i></a>
+
+                                    {% endif %}
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {#                {% endif %}#}
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if user.is_show_panel %}
+            <div id="spec_panel" class="container position-fixed translate-middle-y end-0 top-50 col-auto">
+            <div class="overflow-auto" style="height: 100%;">
+                {% for w_ts in table_working_technic_sheet %}
+                    <div class="m-0 p-0"
+                         {% if w_ts.driver_sheet.status %}
+                             onclick="setSpecTask(this, {{ w_ts.id }})"
+                            {% endif %}
+                    >
+                        <div class="card m-1">
+                            <div class="card-header p-0 px-1">
+                                <div {% if w_ts.count_application > 0 %}class="text-success fw-bolder" {% endif %}>
+                                    {% if w_ts.driver_sheet.status %}
+                                        <p class="m-0 small fw-bolder">{{ w_ts.driver_sheet.driver.last_name }}</p>
+                                    {% elif not w_ts.driver_sheet.status %}
+                                        <p class="m-0 small text-danger">{{ w_ts.technic.attached_driver.last_name }}</p>
+                                    {% elif not w_ts.driver_sheet %}
+                                        <p class="m-0 small fw-bolder">{{ w_ts.technic.attached_driver.last_name }}</p>
+                                    {% endif %}
+                                </div>
+                                <div>
+
+                                    {% if not w_ts.status %}
+                                        <p class="m-0 small text-danger">{{ w_ts.technic.title }}</p>
+                                    {% elif w_ts.count_application > 0 %}
+                                        <p class="m-0 small fw-bolder text-success">{{ w_ts.technic.title }}</p>
+                                    {% else %}
+                                        <p class="m-0 small">{{ w_ts.technic.title }}</p>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                {% endfor %}</div></div>
+        {% endif %}
+
+    
+    
+    
+    
+    
+    </div>
+    {#    ------------------------------------------------------------------------------------------------------------#}
+
+    {% csrf_token %}
+    {% include 'includes/modal_view_props.html' %}
+    {% include 'includes/modal_copy_app.html' %}
+
+    {#    ------------------------------------------------------------------------------------------------------------#}
+{% endblock %}
+{##}
+{#{% block right_nav %}#}
+{#    {% if user.is_show_panel %}#}
+{#    {% for w_ts in table_working_technic_sheet %}#}
+{#        <div class="position-relative m-0 p-0" style="background-color: rgba(17,17,154,0)">#}
+{#        <div class="card m-1">#}
+{#            <div class="card-header p-0 px-1">#}
+{#                <div {% if w_ts.count_application > 0 %}class="text-success fw-bolder" {% endif %}>#}
+{#                    {% if w_ts.driver_sheet.status %}#}
+{#                        <p class="m-0 small fw-bolder">{{ w_ts.driver_sheet.driver.last_name }}</p>#}
+{#                    {% elif not w_ts.driver_sheet.status %}#}
+{#                        <p class="m-0 small text-danger">{{ w_ts.technic.attached_driver.last_name }}</p>#}
+{#                    {% elif not w_ts.driver_sheet %}#}
+{#                        <p class="m-0 small fw-bolder">{{ w_ts.technic.attached_driver.last_name }}</p>#}
+{#                    {% endif %}#}
+{#                </div>#}
+{#                <div>#}
+{##}
+{#                    {% if not w_ts.status %}#}
+{#                        <p class="m-0 small text-danger">{{ w_ts.technic.title }}</p>#}
+{#                    {% elif w_ts.count_application > 0 %}#}
+{#                        <p class="m-0 small fw-bolder text-success">{{ w_ts.technic.title }}</p>#}
+{#                    {% else %}#}
+{#                        <p class="m-0 small">{{ w_ts.technic.title }}</p>#}
+{#                    {% endif %}#}
+{#                </div>#}
+{##}
+{#            </div>#}
+{#        </div>#}
+{#        </div>#}
+{##}
+{#    {% endfor %}#}
+{#    {% endif %}#}
+{#{% endblock %}#}
+
+{% block footer %}
+    <span></span>
+    <span>    
+    <a class="btn btn-primary" href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
+    </span>
+    <span class="mx-1"><button id="btn_hide_panel" 
+                               onclick="toggleHidePanel(this)"
+                               {% if not user.is_show_panel %}
+                                    class="btn btn-outline-secondary"
+                               {% else %}
+                                    class="btn btn-secondary"
+                               {% endif %}
+    ><i class="fa-solid fa-eye-slash"></i></button></span>
+{% endblock %}
 

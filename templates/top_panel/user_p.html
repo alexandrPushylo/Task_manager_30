@@ -1,18 +1,130 @@
 <div class="dropdown">
-    <button class="btn btn-outline-light dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <b>{% if user.last_name %}{{ user.last_name }}{% else %}{{ user.username }}{% endif %}</b>
+    <button class="btn btn-outline-light dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+        <b><i class="fa-solid fa-list"></i></b>
+        {#        <b>{% if user.last_name %}{{ user.last_name }}{% else %}{{ user.username }}{% endif %}</b>#}
     </button>
-    <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
-             <li><a class="dropdown-item" href="{% url 'dashboard' %}">dashboard</a></li>
-             <li><a class="dropdown-item" href="{% url 'construction_site' %}">Объекты</a></li>
-             <li><a class="dropdown-item" href="{% url 'work_day' %}">work_day</a></li>
-             <li><a class="dropdown-item" href="{% url 'driver_sheet' %}">Driver sheet</a></li>
-             <li><a class="dropdown-item" href="{% url 'technic_sheet' %}">Technic sheet</a></li>
-             <li><a class="dropdown-item" href="{% url 'technics' %}">technics</a></li>
-             <li><a class="dropdown-item" href="{% url 'users' %}">Users</a></li>
-             <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
 
-    </ul>
+
+    {% if user.post == 'administrator' %}
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-2 small fw-bolder text-decoration-underline"
+            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}">Заявки</a>
+            </li>
+            <li><a class="dropdown-item" href="{% url 'construction_site' %}">Объекты</a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'work_day' %}">Табель Рабочие дни</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_sheet' %}?current_day={{ current_day.date.isoformat }}">Табель
+                Водители</a></li>
+            <li><a class="dropdown-item" href="{% url 'technic_sheet' %}?current_day={{ current_day.date.isoformat }}">Табель
+                Техника</a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'technics' %}">Техника</a></li>
+            <li><a class="dropdown-item" href="{% url 'users' %}">Персонал</a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
+
+            {% if user.is_staff %}
+                <li>
+                    <hr class="m-0">
+                </li>
+                <li><a class="dropdown-item" href="{% url 'test' %}">test</a></li>
+            {% endif %}
+        </ul>
+        
+    {% elif user.post == 'foreman' or user.post == 'master' %}
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-2 small fw-bolder text-decoration-underline"
+            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}">Заявки</a>
+            </li>
+            <li><a class="dropdown-item" href="{% url 'construction_site' %}">Объекты</a></li>
+            <li>
+                <hr class="m-0">
+            </li>            
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+        </ul>
+        
+    {% elif user.post == 'supply' %}
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-2 small fw-bolder text-decoration-underline"
+            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}">Заявки</a>
+            </li>
+            <li>
+                <hr class="m-0">
+            </li>            
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+        </ul>
+        
+    {% elif user.post == 'mechanic' %}
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-2 small fw-bolder text-decoration-underline"
+            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'driver_sheet' %}?current_day={{ current_day.date.isoformat }}">Табель
+                Водители</a></li>
+            <li><a class="dropdown-item" href="{% url 'technic_sheet' %}?current_day={{ current_day.date.isoformat }}">Табель
+                Техника</a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'technics' %}">Техника</a></li>
+            <li><a class="dropdown-item" href="{% url 'users' %}">Водители</a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+        </ul>
+        
+    {% elif user.post == 'driver' %}
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-2 small fw-bolder text-decoration-underline"
+            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}">Заявки</a>
+            </li>
+            <li>
+                <hr class="m-0">
+            </li>            
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+        </ul>
+    {% elif user.post == 'employee' %}
+    {% endif %}
 </div>
 
 {#        {% if post == 'admin' %}#}
@@ -37,7 +149,6 @@
 {#                <li><a class="dropdown-item fw-bolder" href="{% url 'tabel_driver' cw_day %}">Табель (Водители)</a></li>#}
 {#                <li><a class="dropdown-item fw-bolder" href="{% url 'technic_driver' cw_day %}">Табель (Техника)</a></li>#}
 {#            </ul>#}
-
 
 
 {#            <hr>#}

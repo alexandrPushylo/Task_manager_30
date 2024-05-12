@@ -6,26 +6,28 @@
             {% include 'top_panel/logo_p.html' %}
         </div>
         <div class="main_header_title">
+            {% block title_p %}
             {% include 'top_panel/title_p.html' %}
+            {% endblock %}    
         </div>
-        <div class="main_header_user">
+        <div class="main_header_user me-3">
             {% if user.is_authenticated %}{% include 'top_panel/user_p.html' %}
             {% else %}{% include 'top_panel/signin_signout.html' %}
             {% endif %}
         </div>
     </div>
 
-    <div id="main_content_box" class="navbar container-fluid">
-        <div id="main_left_nav" >Left</div>
+    <div id="main_content_box" class="container-fluid">
+{#        <div id="main_left_nav" ></div>#}
         <div id="main_content" class="overflow-auto">{% block content %}{% endblock %}</div>
-        <div id="main_right_nav" >Right</div>
+{#        <div id="main_right_nav" class="overflow-auto col-auto">{% block right_nav %}{% endblock %}</div>#}
     </div>
     
     <div id="main_footer" class="navbar position-sticky bottom-0">
     {% block footer %}
-        <div></div>
-        <div>Footer</div>
-        <div></div>
+{#        <div></div>#}
+{#        <div></div>#}
+{#        <div></div>#}
         {% endblock %}
     </div>
 

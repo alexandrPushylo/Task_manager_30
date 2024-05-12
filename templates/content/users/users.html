@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
 {% block content %}
     <div id="users" class="container">
         <div><h3><u>{{ title }}</u></h3></div>
@@ -16,7 +19,7 @@
             </thead>
             <tbody>
             {% for user in users_list %}
-                <tr>
+                <tr id="{{ user.id }}" onclick=" location.href = `/edit_user/?user_id=${this.id}`">
                     <td>{{ forloop.counter }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.last_name }}</td>
@@ -27,12 +30,11 @@
                     </td>
                     <td>{% if user.telephone %}{{ user.telephone }}{% endif %}</td>
                     <td>{% if user.last_login %}{{ user.last_login }}{% endif %}</td>
-                    <td class="m-0 ">
-                        <a href="{% url 'edit_user'  %}?user_id={{ user.pk }}" class="btn btn-sm btn-outline-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>
-                    <td class="m-0 ps-0">
-                        <a href="{% url 'delete_user' %}?user_id={{ user.id }}" class="btn btn-sm btn-outline-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>
-                    </td>
-
+{#                    <td class="m-0 ">#}
+{#                        <a href="{% url 'edit_user'  %}?user_id={{ user.pk }}" class="btn btn-sm btn-outline-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>#}
+{#                    <td class="m-0 ps-0">#}
+{#                        <a href="{% url 'delete_user' %}?user_id={{ user.id }}" class="btn btn-sm btn-outline-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>#}
+{#                    </td>#}
                 </tr>
             {% endfor %}
 

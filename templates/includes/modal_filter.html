@@ -1,0 +1,109 @@
+{% csrf_token %}
+<div class="modal fade" id="filter_props" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Настройки фильтрации</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <label class="col">Сортировать по:
+                        <select class="form-select col-auto" name="sort_by">
+                            {% for k, v in sort_by_list.items %}
+                                {% if k == user.sort_by %}
+                                    <option selected
+                                            value="{{ k }}">{{ v }}</option>
+                                {% else %}
+                                    <option value="{{ k }}">{{ v }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            <hr>
+                <div class="row">
+                    <label class="col">Прораб:
+                        <select class="form-select col-auto" name="filter_foreman">
+                            <option value="0">Все</option>
+                            {% for foreman in filter_foreman_list %}
+                                {% if foreman.id == user.filter_foreman %}
+                                    <option selected
+                                            value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
+                                {% else %}
+                                    <option value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div class="row">
+                    <label class="col">Строительный объект:
+                        <select class="form-select col-auto" name="filter_construction_site">
+                            <option value="0">Все</option>
+                            {% for construction_site in filter_construction_site_list %}
+                                {% if construction_site.id == user.filter_construction_site %}
+                                    <option selected
+                                            value="{{ construction_site.id }}">{{ construction_site.address }}
+                                        {% if construction_site.foreman %} ({{ construction_site.foreman.last_name }}
+                                            ){% endif %}</option>
+                                {% else %}
+                                    <option value="{{ construction_site.id }}">{{ construction_site.address }}
+                                        {% if construction_site.foreman %} ({{ construction_site.foreman.last_name }}
+                                            ){% endif %}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div class="row">
+                    <label class="col">Название техники:
+                        <select class="form-select col-auto" name="filter_technic">
+                            <option value="">Все</option>
+                            {% for technic_title in filter_technic_list %}
+                                {% if technic_title == user.filter_technic %}
+                                    <option selected
+                                            value="{{ technic_title }}">{{ technic_title }}</option>
+                                {% else %}
+                                    <option value="{{ technic_title }}">{{ technic_title }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+
+                {#                {% if user.post != 'employee' %}#}
+                {#                <div>#}
+                {#                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"#}
+                {#                           name="is_show_absent_app"#}
+                {#                           {% if user.is_show_absent_app %}checked{% endif %}/>#}
+                {#                    <span>Показывать отсутствующие заявки</span>#}
+                {#                </div>{% endif %}#}
+                {#            #}
+                {#                <div>#}
+                {#                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"#}
+                {#                           name="is_show_technic_app"#}
+                {#                           value="{{ user.is_show_technic_app }}"#}
+                {#                           {% if user.is_show_technic_app %}checked{% endif %}/>#}
+                {#                    <span>Показывать заявки на технику</span>#}
+                {#                </div>#}
+                {#            #}
+                {#                <div>#}
+                {#                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"#}
+                {#                           name="is_show_material_app"#}
+                {#                           value="{{ user.is_show_material_app }}"#}
+                {#                           {% if user.is_show_material_app %}checked{% endif %}/>#}
+                {#                    <span>Показывать заявки на материалы</span>#}
+                {#                </div>#}
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="setFilterProps(this)">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>

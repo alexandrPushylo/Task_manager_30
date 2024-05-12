@@ -1,0 +1,38 @@
+{% csrf_token %}
+<div class="modal fade" id="copy_app" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Копировать заявку</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <label class="col">Выберите дату:
+                        <input type="date" class="form-control col-auto" name="copy_modal_target_day">
+                        
+                    </label>
+                </div>
+            <hr>
+                <div class="row">
+                    <label class="col">Выберите заявку:
+                        <select class="form-select col-auto" name="copy_modal_application_id">
+                            <option value="">---</option>
+                            {% for app in applications_today_list %}
+                                <option value="{{ app.id }}">{{ app.construction_site.address }} {% if app.construction_site.foreman %}({{ app.construction_site.foreman.last_name }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="copyApplicationTo(this)">Копировать</button>
+            </div>
+        </div>
+    </div>
+</div>

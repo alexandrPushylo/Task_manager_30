@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="technic_application_list" class="container">
+        <div class="mt-1 position-relative translate-middle-x start-50 top-0">
+            <p class="mb-1" style="text-align: center">
+                <label>
+                    <input class="form-control text-center p-1 io_choice_day" type="date" name="current_day"
+                           value="{{ current_day.date.isoformat }}">
+                </label>
+            </p>
+            <nav aria-label="Page navigation example" class="d-flex justify-content-center">
+                <ul class="pagination">
+
+                    <li class="page-item"><a 
+                            class="page-link fw-bold text-dark me-2 ps-4 pe-4" 
+                            href="{% url 'dashboard' %}?current_day={{ prev_work_day.date.isoformat }}"><i
+                            class="fa-solid fa-angles-left"></i></a></li>
+                    {% for day in work_days %}
+                        <li class="page-item ms-1 me-1">
+                            <a class="page-link p-1 m-0 {% if day.status %}text-success{% else %}text-danger{% endif %} {% if today == day.date %}fw-bold text-dark{% endif %} {% if current_day.date == day.date %}border border-2 border-success{% endif %}"
+                               href="{% url 'dashboard' %}?current_day={{ day.date.isoformat }}"
+                               style="text-align: center; border-radius: 10%;"
+                            ><span class="">{{ day.date.day }}</span><br/>
+                                <span class="small">{{ day.weekday }}</span>
+                            </a></li>
+                    {% endfor %}
+                    <li class="page-item"><a 
+                            class="page-link fw-bold text-dark ms-2 ps-4 pe-4" 
+                            href="{% url 'dashboard' %}?current_day={{ next_work_day.date.isoformat }}"><i
+                            class="fa-solid fa-angles-right"></i></a></li>
+                </ul>
+            </nav>
+        </div>
+        {% include 'includes/weekday_current_day.html' %}
+        <div class="mt-2">
+            {% for application_technic in technic_application_list %}
+                <div class="card mb-3">
+                {% ifchanged %}
+                    <div class="card-header">
+                        <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet.driver.last_name }}</span>
+                        <span class="fw-bolder">({{ application_technic.technic_sheet.technic.title }})</span>
+                    </div>
+                {% endifchanged %}
+                    <div class="card-title">
+                    {% if application_technic.applications_technic %}
+                        {% for application in application_technic.applications_technic %}
+                            <div class="card-body input-group p-1">
+                                <div class="col-auto input-group-text p-2">
+                                    <span class="fw-bolder">{{ application.priority }}</span>
+                                </div>
+
+                                <div class="col ms-1">
+                                    <span class="fw-bolder small ms-2">{{ application.application_today.construction_site.address }}</span>
+                                    {% if application.application_today.construction_site.foreman %}
+                                    <span class="small">({{ application.application_today.construction_site.foreman.last_name }})</span>
+                                    {% endif %}
+                                    {% if application.application_today.description %}
+                                        <p class="m-0 mb-1 ms-2">
+                                            <span class="small form-text">Примечание к объекту:</span>
+                                            <span>{{ application.application_today.description }}</span>
+                                        </p>
+                                        <hr class="m-1">
+                                    {% endif %}
+
+                                    <textarea class="form-control p-1 text_area_description" readonly
+                                              aria-label="">{{ application.description }}</textarea>
+                                </div>
+                            </div>  <hr class="m-1">                      
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-1">
+                            <p class="ms-2">
+                                <span>На данный момент задание отсутствует</span>
+                            </p>
+                        </div>
+                    {% endif %}
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a class="btn btn-primary" href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
+    </div>
+    <div></div>
+{% endblock %}

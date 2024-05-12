@@ -1,47 +1,49 @@
 {% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
 {% block content %}
-    <div id="workday_sheet" class="container w-50 mx-auto">
+    <div id="workday_sheet" class="container">
         <div><h3><u>{{ title }}</u></h3></div>
-        <form method="post" id="workday_form">{% csrf_token %}
-            <table class="table">
+{#        <form method="post" id="workday_form">#}
+            {% csrf_token %}
+            <table class="table row align-items-center" style="width: 20rem">
                 <thead>
                 <tr>
                     <th hidden>id</th>
                     <th>Дата</th>
                     <th>День недель</th>
-                    {#                    <th>Рабочий</th>#}
-                    {#                    <th scope="col">Статус</th>#}
+                    <th>Статус</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for day in workday %}
-                    <tr class="workday_row">
-                        {#                    <tr class="workday_row" onclick="toggleWorkdayStatus([{{ day.id }},'{{ day.status }}'])">#}
+                    <tr class="workday_row {% if today == day.date %}fw-bolder{% endif %}">
                         <td hidden><input type="hidden" name="id" value="{{ day.id }}"/></td>
-
                         <td>{{ day.date }}</td>
                         <td>{{ day.weekday }}</td>
-                        <td class="form-switch"><label>
-                            <input type="checkbox" role="switch" class="form-check-input status_{{ day.id }}"
-                                   onchange="toggleButtonStatus(this)"
-                                   name="status_{{ day.id }}" {% if day.status %}checked{% endif %}/>
-                        </label></td>
-                        {#                        <td>{% if day.status %}Рабочий{% else %}Выходной{% endif %}</td>#}
+                        <td class="form-switch">
+                            <input type="checkbox" role="switch" class="form-check-input status_{{ day.id }} m-1 p-0"
+                                   aria-label=""
+                                   onchange="toggleButtonStatus(this, {{ day.id }})"
+                                   name="status_{{ day.id }}" {% if day.status %}checked{% endif %}
+                                   {% if today > day.date %}disabled {% endif %}
+                            />
+                        </td>
                     </tr>
                 {% endfor %}
-
                 </tbody>
             </table>
-        </form>
+{#        </form>#}
     </div>
 
 
 
 {% endblock %}
-{% block footer %}
-    <div></div>
-    <div style="display: none" class="button_save_div">
-        <button class="btn btn-sm btn-success" type="submit" form="workday_form">Подтвердить</button>
-    </div>
-    <div></div>
-{% endblock %}
+{#{% block footer %}#}
+{#    <div></div>#}
+{#    <div style="display: block" class="button_save_div">#}
+{#        <button class="btn btn-sm btn-success" type="submit" form="workday_form">Подтвердить</button>#}
+{#    </div>#}
+{#    <div></div>#}
+{#{% endblock %}#}

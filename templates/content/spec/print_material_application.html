@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Материалы на {{ current_day.date }}</title>    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300&display=swap" rel="stylesheet">
+</head>
+<body>
+<div style="width: 20cm; margin: 10px">
+    <div>
+        {% for application_material in application_materials_list %}
+            <div style="border: solid 1px black; margin-top: 10px">
+                <div style="text-align: center; font-size: 10pt">
+                    <span style="font-weight: bold">{{ application_material.application_today.construction_site.address }}</span>
+                    <span style="font-weight: bold">({{ application_material.application_today.construction_site.foreman.last_name }})</span>
+                    <span style="font-weight: bold; margin-left: 20px">{{ weekday }}</span>
+                    <span style="font-weight: bold">{{ current_day.date }}</span>
+                </div>
+                <div style="margin: 10px">
+                    <textarea readonly style="width: 100%; border: solid 0px black; font-size: 10pt"
+                              aria-label="">{{ application_material.description }}</textarea>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="{% static 'js/print.js' %}"></script>
+</body>
+</html>
+

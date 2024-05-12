@@ -10,6 +10,7 @@ from dashboard.models import Technic
 from dashboard.models import ConstructionSite
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet
 from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMaterial
+from dashboard.models import Parameter
 
 
 class CustomUserAdmin(UserAdmin):
@@ -17,6 +18,15 @@ class CustomUserAdmin(UserAdmin):
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("first_name", "last_name", "email", "telephone", "telegram_id_chat")}),
         (_("Post"), {"fields": ("post", "supervisor_user_id")}),
+        (_("Filter"), {"fields": ("is_show_panel",
+                                  "is_show_saved_app",
+                                  "is_show_absent_app",
+                                  "is_show_technic_app",
+                                  "is_show_material_app",
+                                  "filter_construction_site",
+                                  "filter_foreman",
+                                  "filter_technic",
+                                  "sort_by")}),
         (_("Permissions"), {"fields": (
             "isArchive",
             "is_active",
@@ -45,5 +55,5 @@ admin.site.register(ApplicationToday)
 admin.site.register(ApplicationTechnic)
 admin.site.register(ApplicationMaterial)
 
-# admin.site.register(Parameter)
+admin.site.register(Parameter)
 # admin.site.register(Telebot)

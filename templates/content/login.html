@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-    <div id="login_form" class="translate-middle position-absolute top-50 start-50">
+    <div id="login_form" class="translate-middle-x position-relative start-50 mt-5">
         <form method="post">{% csrf_token %}
-            <div>
+            <div class="row">
                 <label>Логин (Фамилия)
                     <input type="text" class="form-control" name="username" placeholder="напр: Петров">
                 </label>
             </div>
-            <div>
+            <div class="row">
                 <label>Пароль
                     <input type="password" class="form-control" name="password" placeholder="1234">
                 </label>
@@ -16,9 +16,11 @@
                 <p class="m-0 error_message">{{ error }}</p>
             {% endif %}
             <br>
-
-            <a href="#" class="small">Забыли пароль</a>
-            <button type="submit" class="btn btn-success btn-sm" style="float: right">Вход</button>
+            <div class="navbar">
+            <a href="{% url 'restore_password' %}" class="small">Забыли пароль</a>
+            <span style="text-align: right"><button type="submit" class="btn btn-success">Вход</button></span>    
+            
+                </div>
         </form>
     </div>
 {% endblock %}

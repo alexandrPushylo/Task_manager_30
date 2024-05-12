@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
 {% block content %}
     <div id="edit_user" class="container">
         <div><h3><u>{{ title }}</u></h3></div>
@@ -63,11 +66,16 @@
                 </label>
             </div>
             <div class="mt-4 navbar">
-                <a href="{% url 'users' %}" class="btn btn-sm btn-primary position-absolute"
-                   style="float: left">Отмена</a>
-                <button class="btn btn-sm btn-success position-absolute end-0" type="submit"
+                {% if user_list.id %}
+                <span><a href="{% url 'delete_user' %}?user_id={{ user_list.id }}" class="btn btn-sm btn-outline-danger ">Удалить</a></span>
+                {% endif %}
+                <span><a href="{% url 'users' %}" class="btn btn-sm btn-primary ">Отмена</a></span>
+                <span><button class="btn btn-sm btn-success" type="submit"
                         form="edit_user_form">Сохранить
-                </button>
+                </button></span>
+                
+                
+                
             </div>
 
 

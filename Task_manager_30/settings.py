@@ -25,6 +25,7 @@ SECRET_KEY = creds.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = creds.DEBUG
+TECH_SUPPORT_MODE = creds.TECH_SUPPORT_MODE
 
 ALLOWED_HOSTS = creds.ALLOWED_HOSTS
 

@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
+{% block content %}
+    <div id="edit_application" class="container">
+        <div><h3><u>{{ title }}</u></h3></div>
+        <div>
+            <form id="edit_application_form" method="post">{% csrf_token %}
+                <div class="card">
+                    {#                {% for application_today in applications_today %}#}
+                    <div class="card-header">
+                        <p class="m-0">
+                            <span class="small">Объект:</span>
+                            <span class="fw-bold">{{ construction_site.address }}</span>
+                        </p>
+                        <p class="m-0">
+                            <span class="small">Дата:</span>
+                            <span class="fw-bold">{{ current_day.date }}</span>
+                            <span class="fw-bold">{{ weekday }}</span>
+                        </p>
+                    </div>
+                    {#                {% for application_today in applications_today %}#}
+                    <div class="card-header">
+                        <input type="hidden" name="application_id" value="{{ application_today.id }}">
+                        <input type="hidden" name="construction_site_id" value="{{ construction_site.id }}">
+                        <input type="hidden" name="app_material_id"
+                               value="{{ application_today.application_material.id }}"/>
+                        <label class="row">
+                            <span class="small">Примечание к объекту:</span>
+                            <textarea
+                                    onblur="saveApplicationDescription(this)"
+                                    oninput="autoResize(this)"
+                                    class="form-control app_tech_description"
+                                    name="application_description">{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
+                        </label>
+                    </div>
+
+
+                    {% if application_today.application_technic %}
+                        <div class="card-body p-1">
+{#                            <div id="list_application_technic" class="">#}
+                                {% for app_technic in application_today.application_technic %}
+                                    
+                                    
+                                    <div id="{{ app_technic.id }}" class="mt-3">
+                                        <div class="row">
+                                            <label class="col-auto p-0 ps-3">
+                                                <select id="technic_title_{{ app_technic.id }}" 
+                                                        class="form-control p-1"
+                                                        {% if app_technic.is_cancelled %}disabled=""{% endif %}
+                                                        onchange="selectTechnicTitle(this)">
+                                                    {% for title_short, title in technic_titles_dict.items %}
+                                                        {% if app_technic.technic_sheet__technic__title == title %}
+                                                            <option selected
+                                                                    value="{{ title_short }}">{{ title }}</option>
+                                                        {% else %}
+                                                            <option value="{{ title_short }}">{{ title }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                            
+
+                                            <label class="col-auto p-0">
+                                                {% for technic_driver in technic_driver_list %}
+                                                    <select id="technic_sheet_{{ app_technic.id }}"
+                                                            onchange="changeTechnicSheetSelector(this)"
+                                                            {% if app_technic.is_cancelled %}disabled=""{% endif %}
+                                                            class="{{ technic_driver.title_short }}_{{ app_technic.id }} technic_driver_selects technic_driver_selects_{{ app_technic.id }} form-control p-1">
+                                                        <option value="">--Любой--</option>
+                                                        {% for technic_sheet in technic_driver.technic_sheets %}
+                                                            {% if app_technic.technic_sheet_id == technic_sheet.id %}
+                                                                <option selected
+                                                                        value="{{ technic_sheet.id }}">
+                                                                    {{ technic_sheet.driver_sheet.driver.last_name }}</option>
+                                                            {% else %}
+                                                                <option value="{{ technic_sheet.id }}">
+                                                                    {{ technic_sheet.driver_sheet.driver.last_name }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+
+                                                    </select>
+                                                {% endfor %}
+                                            </label>
+
+                                            <label class="col-auto p-0 ps-1">
+                                                <button id="apply_{{ app_technic.id }}" type="button"
+                                                        style="display: none"
+                                                        onclick="applyChangesAppTechnic(this)"
+                                                        class="ms-1 btn btn-success button_apply_app_tech">
+                                                    <i class="fa-solid fa-check"></i></button>
+                                                <button id="reload_{{ app_technic.id }}" type="button"
+                                                        style="display: none"
+                                                        onclick="reloadPage(this)"
+                                                        class="btn btn-primary button_reload_app_tech">
+                                                    <i class="fa-solid fa-rotate-left"></i></button>
+                                                {% if not app_technic.is_cancelled  %}
+                                                    <button id="reject_{{ app_technic.id }}" type="button"
+                                                            class="btn btn-outline-danger mb-1 button_reject_app_tech">
+                                                        Отменить
+                                                    </button>
+                                                {% else %}
+                                                    <button id="reject_{{ app_technic.id }}" type="button"
+                                                            class="btn btn-outline-success mb-1 button_reject_app_tech">
+                                                        Принять
+                                                    </button>
+                                                {% endif %}
+                                                
+                                            </label>
+                                        </div>
+
+                                        <div class="row ">
+                                            <label>
+                                            <textarea id="app_tech_description_{{ app_technic.id }}"
+                                                      style="width: 100%"
+                                                      class="form-control app_tech_description app_technic_description_{{ app_technic.id }}"
+                                                      {% if app_technic.is_cancelled %}disabled{% endif %}
+                                                      oninput="onInput_tech_description(this); autoResize(this);"
+                                            >{{ app_technic.description }}</textarea>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                {% endfor %}
+{#                            </div>#}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="m-2 ">
+                    <div class="card-header navbar p-1">
+                        <div></div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary p-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalApplicationTechnic">Добавить технику
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary  p-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalMaterials">Добавить материалы
+                            </button>
+                        </div>
+                        <div></div>
+                    </div>
+                </div>
+
+                {% if application_today.application_material.description %}
+                    <div class="card shadow-lg">
+                        <label>
+                            <span class="fw-bolder ms-2">Список материалов:</span>
+                            <textarea readonly
+                                      class="form-control autoresize material_description"
+                                      oninput="autoResize(this)"
+                            >{{ application_today.application_material.description }}</textarea>
+                        </label>
+                    </div>
+                {% endif %}
+            
+            </form>
+        </div>
+
+    </div>
+
+
+    <!------- Modal ----------------------------------------------------------------------->
+
+    <div class="modal fade" id="modalMaterials" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Добавить материалы</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body m-0">
+
+                    <label class="row">
+                        <textarea name="app_material_desc"
+                                  onclick="autoResize(this)"
+                                  oninput="autoResize(this)"
+                                  class="form-control"
+                                  style="height: auto"
+                        >{{ application_today.application_material.description }}</textarea>
+                    </label>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button onclick="saveApplicationMaterials(this)" type="button" class="btn btn-primary">Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalApplicationTechnic" data-bs-backdrop="static" data-bs-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Добавить технику</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body m-0">
+
+                    <div>
+                        <div class="input-group row">
+                            <label class="col-12"> Название техники
+                                <select class="form-control select_add_tech_title"
+                                        onchange="selectAddTechnicDriver(this)">
+                                    <option value="none">---</option>
+                                    {% for title_short, title in technic_titles_dict.items %}
+                                        <option value="{{ title_short }}">{{ title }}</option>
+
+                                    {% endfor %}
+                                </select>
+                            </label>
+
+                            <label class="mt-2 col-12">
+                                {% for technic_driver in technic_driver_list %}
+                                    <select class="form-control technic_driver_selects_add {{ technic_driver.title_short }}">
+                                        <option value="">--Любой--</option>
+                                        {% for technic_sheet in technic_driver.technic_sheets %}
+                                            <option value="{{ technic_sheet.id }}">{{ technic_sheet.driver_sheet.driver.last_name }}{% if technic_sheet.count_application > 0 %} [Занят] {% else %} [Свободен]{% endif %}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endfor %}
+                            </label>
+                        </div>
+                        <label class="row mt-2">
+                            <textarea class="form-control app_technic_description"
+                                      placeholder="Описания задания"
+                                      oninput="autoResize(this)"></textarea>
+                        </label>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button onclick="addTechnicSheetToApp(this)" type="button" class="btn btn-primary">Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!------- Modal ----------------------------------------------------------------------->
+
+
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a href="{% url 'check_application_status' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Ok</a>
+{#        <input type="submit" class="btn btn-sm btn-success" form="edit_application_form" value="OK">#}
+    </div>
+    <div></div>
+{% endblock %}
+
+
+
+

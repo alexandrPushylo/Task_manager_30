@@ -15,40 +15,71 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from dashboard.views import dashboard
-from dashboard.views import login_view, logout_view, register_view
+from Task_manager_30.settings import TECH_SUPPORT_MODE
+from dashboard.views import dashboard, edit_application_view
+from dashboard.views import clear_application_today
+from dashboard.views import conflicts_list_view, conflict_resolution_view
+from dashboard.views import login_view, logout_view, register_view, restore_password_view
+from dashboard.views import show_technic_application, show_material_application, material_application_supply_view
 
 from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
 from dashboard.views import construction_site_view, edit_construction_sites
 from dashboard.views import technic_view, edit_technic_view, delete_technic
-from dashboard.views import users_view, edit_user_view, delete_user
+from dashboard.views import users_view, edit_user_view, delete_user, profile_view
+
+from dashboard.views import change_status_application_today, prepare_workday_for_app, check_application_status
+from dashboard.views import maintenance_view
+from dashboard.views import def_test
 
 urlpatterns = [
-    path('', dashboard, name='dashboard'),
-    path('dashboard/', dashboard, name='dashboard'),
+                  path('', dashboard, name='dashboard'),
+                  path('dashboard/', dashboard, name='dashboard'),
+                  path('edit_application/', edit_application_view, name='edit_application'),
+                  path('clear_application/', clear_application_today, name='clear_application'),
 
-    path('work_day/', workday_sheet_view, name='work_day'),
-    path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
-    path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
+                  path('conflicts_list/', conflicts_list_view, name='conflicts_list'),
+                  path('conflict_resolution/', conflict_resolution_view, name='conflict_resolution'),
 
-    path('users/', users_view, name='users'),
-    path('edit_user/', edit_user_view, name='edit_user'),
-    path('delete_user/', delete_user, name='delete_user'),
+                  path('technic_application_list/', show_technic_application, name='technic_application_list'),
+                  path('material_application_list/', show_material_application, name='material_application_list'),
+                  path('material_application_supply/', material_application_supply_view,
+                       name='material_application_supply'),
 
-    path('technics/', technic_view, name='technics'),
-    path('edit_technic/', edit_technic_view, name='edit_technic'),
-    path('delete_technic/', delete_technic, name='delete_technic'),
+                  path('work_day/', workday_sheet_view, name='work_day'),
+                  path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
+                  path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
 
-    path('construction_site/', construction_site_view, name='construction_site'),
-    path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
+                  path('users/', users_view, name='users'),
+                  path('edit_user/', edit_user_view, name='edit_user'),
+                  path('delete_user/', delete_user, name='delete_user'),
+                  path('profile/', profile_view, name='profile'),
 
-    path('admin/', admin.site.urls),
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('register/', register_view, name='register'),
+                  path('technics/', technic_view, name='technics'),
+                  path('edit_technic/', edit_technic_view, name='edit_technic'),
+                  path('delete_technic/', delete_technic, name='delete_technic'),
 
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+                  path('construction_site/', construction_site_view, name='construction_site'),
+                  path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
+
+                  path('admin/', admin.site.urls),
+                  path('login/', login_view, name='login'),
+                  path('logout/', logout_view, name='logout'),
+                  path('register/', register_view, name='register'),
+                  path('restore_pwd/', restore_password_view, name='restore_password'),
+
+                  path('change_app_status/', change_status_application_today, name='change_app_status'),
+                  path('pr_wd_f_app/', prepare_workday_for_app, name='prepare_workday_for_app'),
+                  path('ck_app_stat/', check_application_status, name='check_application_status'),
+                  path('test/', def_test, name='test'),
+
+                  re_path(r'^.*', maintenance_view),
+                  # re_path(r'^.*', dashboard)
+
+              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if TECH_SUPPORT_MODE:
+    urlpatterns = [re_path(r'^.*', maintenance_view)] + urlpatterns

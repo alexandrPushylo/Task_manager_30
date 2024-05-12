@@ -1,0 +1,49 @@
+<div class="modal fade" id="view_props" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Настройки отображения</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body form-switch">
+            
+                {% if user.post != 'employee' %}
+                <div>
+                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                           name="is_show_saved_app" {% if user.is_show_saved_app %}checked{% endif %}/>
+                    <span>Показывать сохраненные заявки</span>
+                </div>{% endif %}
+            
+                {% if user.post != 'employee' %}
+                <div>
+                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                           name="is_show_absent_app"
+                           {% if user.is_show_absent_app %}checked{% endif %}/>
+                    <span>Показывать отсутствующие заявки</span>
+                </div>{% endif %}
+            
+                <div>
+                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                           name="is_show_technic_app"
+                           value="{{ user.is_show_technic_app }}"
+                           {% if user.is_show_technic_app %}checked{% endif %}/>
+                    <span>Показывать заявки на технику</span>
+                </div>
+            
+                <div>
+                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                           name="is_show_material_app"
+                           value="{{ user.is_show_material_app }}"
+                           {% if user.is_show_material_app %}checked{% endif %}/>
+                    <span>Показывать заявки на материалы</span>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="setViewProps(this)">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
