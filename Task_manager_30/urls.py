@@ -76,8 +76,8 @@ urlpatterns = [
                   path('ck_app_stat/', check_application_status, name='check_application_status'),
                   path('test/', def_test, name='test'),
 
-                  re_path(r'^.*', maintenance_view),
-                  # re_path(r'^.*', dashboard)
+                  # re_path(r'^.*', maintenance_view),
+                  re_path(r'^.*', dashboard)
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
