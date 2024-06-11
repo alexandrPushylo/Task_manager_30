@@ -25,16 +25,28 @@ def dashboard(request):
     if request.user.is_anonymous:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
-    current_day = request.GET.get('current_day')
-    if current_day is None or current_day == '':
-        current_day = WorkDaySheet.objects.get(date=U.TODAY)
+    _current_day = request.GET.get('current_day')
+    if _current_day is None or _current_day == '':
+        try:
+            current_day = WorkDaySheet.objects.get(date=U.TODAY)
+        except WorkDaySheet.DoesNotExist:
+            current_day = U.prepare_workday(U.TODAY)
     else:
-        current_day = WorkDaySheet.objects.get(date=current_day)
+        try:
+            current_day = WorkDaySheet.objects.get(date=_current_day)
+        except WorkDaySheet.DoesNotExist:
+            U.prepare_workday(_current_day)
+            current_day = U.get_create_workday(_current_day)
+
+    # print(
+    #     U.get_create_workday(_current_day)
+    # )
 
     context = {
         'title': request.user,
         'current_day': current_day,
-        'weekday': ASSETS.WEEKDAY[current_day.date.weekday()],
+        'weekday': U.get_weekday(current_day),
+        # 'weekday': ASSETS.WEEKDAY[current_day.date.weekday()],
         'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
     context = U.get_prepared_data(context, current_day.date)

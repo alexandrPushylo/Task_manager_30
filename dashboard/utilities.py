@@ -23,8 +23,8 @@ TODAY = date.today()
 NOW = datetime.now().time()
 
 
-def get_weekday(_date):
-    return ASSETS.WEEKDAY[_date.weekday()]
+# def get_weekday(_date):
+#     return ASSETS.WEEKDAY[_date.weekday()]
 
 
 def add_user(data: dict, user_id=None):
@@ -114,8 +114,37 @@ def prepare_workday(_date):
             else:
                 status = True
             WorkDaySheet.objects.update_or_create(date=_day, defaults={'status': status})
+
+        return WorkDaySheet.objects.get(date=_date)
     else:
         return False
+
+
+def get_create_workday(_date):
+    if WorkDaySheet.objects.filter(date=_date).exists():
+        return WorkDaySheet.objects.get(date=_date)
+    else:
+        weekday = datetime.strptime(_date, '%Y-%m-%d').weekday()
+        if weekday in (5, 6):
+            _status = False
+        else:
+            _status = True
+        return WorkDaySheet.objects.create(date=_date, status=_status)
+
+
+def get_weekday(_date) -> str | None:
+    if isinstance(_date, str):
+        weekday = datetime.strptime(_date, '%Y-%m-%d').weekday()
+    elif isinstance(_date, WorkDaySheet):
+        weekday = _date.date
+    elif isinstance(_date, date):
+        weekday = _date.weekday()
+    else:
+        return None
+    if weekday in range(0, 7):
+        return ASSETS.WEEKDAY[weekday]
+    else:
+        return None
 
 
 def prepare_driver_sheet(workday: WorkDaySheet):
@@ -369,7 +398,8 @@ def get_prepared_data(context: dict, current_day=TODAY) -> dict:
     context['today'] = TODAY
     context['prev_work_day'] = get_prev_work_day(current_day)
     context['next_work_day'] = get_next_work_day(current_day)
-    context['weekday'] = ASSETS.WEEKDAY[current_day.weekday()]
+    context['weekday'] = get_weekday(current_day)
+    # context['weekday'] = ASSETS.WEEKDAY[current_day.weekday()]
     return context
 
 
