@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title_p %}
+    {% if edit_mode != 'edit_mode_archive' %}
     {% if status_list_application_today.saved %}
         <div>
             <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved" role="button" class="btn btn-primary">Подать все заявки</a>
@@ -16,6 +17,7 @@
 {#        <div>#}
 {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
 {#        </div>#}
+    {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -173,6 +175,8 @@
                                 {% endif %}
 
                             </div>
+                            
+                            {% if edit_mode != 'edit_mode_archive' %}
                             <hr class="p-0 m-0">
                             <div class="card-text">
                                 <div class="btn-group d-flex justify-content-center m-1">
@@ -200,6 +204,7 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

@@ -1,22 +1,27 @@
 {% extends 'base.html' %}
 {% block title_p %}
-    {% if conflict_technic_sheet %}
-        <div>
-            <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" role="button"
-               class="btn btn-danger">Имеются конфликты</a>
-        </div>
-    {% elif status_list_application_today.submitted %}
-        <div>
-            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>
-        </div>
-    {% elif status_list_application_today.approved %}
-        <div>
-            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>
-        </div>
-    {% elif status_list_application_today.send %}
-        <div>
-            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>
-        </div>
+    {% if edit_mode != 'edit_mode_archive' %}
+        {% if conflict_technic_sheet %}
+            <div>
+                <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" role="button"
+                   class="btn btn-danger">Имеются конфликты</a>
+            </div>
+        {% elif status_list_application_today.submitted %}
+            <div>
+                <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted"
+                   role="button" class="btn btn-success">Одобрить все заявки</a>
+            </div>
+        {% elif status_list_application_today.approved %}
+            <div>
+                <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved"
+                   role="button" class="btn btn-warning">Отправить все заявки</a>
+            </div>
+        {% elif status_list_application_today.send %}
+            <div>
+                <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send"
+                   role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>
+            </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -55,14 +60,12 @@
                 </ul>
             </nav>
         </div>
-    
+
         <div style="text-align: center">
             {% include 'includes/weekday_current_day.html' %}
             {% include 'includes/btn_modal_view_props.html' %}
             {% include 'includes/btn_modal_option.html' %}
         </div>
-    
-            
 
 
         <div id="applications_container" class="mt-3 position-relative translate-middle-x start-50">
@@ -197,48 +200,49 @@
                                 {% endif %}
 
                             </div>
-                            <hr class="p-0 m-0">
-                            <div class="card-body p-0">
+                            {% if edit_mode != 'edit_mode_archive' %}
+                                <hr class="p-0 m-0">
+                                <div class="card-body p-0">
+                                    <div class="my-2" style="text-align: center">
+                                        {% if construction_site.application_today %}
+                                            {% if construction_site.application_today.status == 'saved' %}
+                                                <p class="m-0 fw-bolder text-warning">Ожидание подачи заявки</p>
+                                            {% else %}
+                                                <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
+                                                   class="btn btn-outline-danger" aria-current="page"><i
+                                                        class="fa-solid fa-trash"></i></a>
+                                                <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                                   class="btn btn-outline-primary px-5"
+                                                   aria-current="page"><i
+                                                        class="fa-regular fa-pen-to-square"></i></a>
+                                            {% endif %}
 
-                                <div class="my-2" style="text-align: center">
-                                    {% if construction_site.application_today %}
-                                        {% if construction_site.application_today.status == 'saved' %}
-                                            <p class="m-0 fw-bolder text-warning">Ожидание подачи заявки</p>
+                                            {% if construction_site.application_today.status == 'submitted' %}
+
+                                                <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
+                                                   class="btn btn-outline-success px-5"
+                                                   aria-current="page"><i class="fa-solid fa-check"></i></a>
+
+                                            {% elif construction_site.application_today.status == 'approved' %}
+
+                                                <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
+                                                   class="btn btn-outline-info px-5"
+                                                   aria-current="page"><i class="fa-solid fa-paper-plane"></i></a>
+
+                                            {% endif %}
                                         {% else %}
-                                            <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
-                                               class="btn btn-outline-danger" aria-current="page"><i
-                                                    class="fa-solid fa-trash"></i></a>
+
                                             <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                               class="btn btn-outline-primary px-5"
+                                               class="btn btn-sm btn-outline-primary" style="width: 90%"
                                                aria-current="page"><i
-                                                    class="fa-regular fa-pen-to-square"></i></a>
-                                        {% endif %}
-
-                                        {% if construction_site.application_today.status == 'submitted' %}
-
-                                            <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
-                                               class="btn btn-outline-success px-5"
-                                               aria-current="page"><i class="fa-solid fa-check"></i></a>
-
-                                        {% elif construction_site.application_today.status == 'approved' %}
-
-                                            <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
-                                               class="btn btn-outline-info px-5"
-                                               aria-current="page"><i class="fa-solid fa-paper-plane"></i></a>
+                                                    class="fa-solid fa-plus"></i></a>
 
                                         {% endif %}
-                                    {% else %}
-
-                                        <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                           class="btn btn-sm btn-outline-primary" style="width: 90%"
-                                           aria-current="page"><i
-                                                class="fa-solid fa-plus"></i></a>
-
-                                    {% endif %}
+                                    </div>
                                 </div>
+                            {% endif %}
 
 
-                            </div>
                         </div>
                     </div>
                     {#                {% endif %}#}
@@ -248,47 +252,46 @@
 
         {% if user.is_show_panel %}
             <div id="spec_panel" class="container position-fixed translate-middle-y end-0 top-50 col-auto">
-            <div class="overflow-auto" style="height: 100%;">
-                {% for w_ts in table_working_technic_sheet %}
-                    <div class="m-0 p-0"
-                         {% if w_ts.driver_sheet.status %}
-                             onclick="setSpecTask(this, {{ w_ts.id }})"
-                            {% endif %}
-                    >
-                        <div class="card m-1">
-                            <div class="card-header p-0 px-1">
-                                <div {% if w_ts.count_application > 0 %}class="text-success fw-bolder" {% endif %}>
+                <div class="overflow-auto" style="height: 100%;">
+                    {% for w_ts in table_working_technic_sheet %}
+                        <div class="m-0 p-0"
+                                {% if edit_mode != 'edit_mode_archive' %}
                                     {% if w_ts.driver_sheet.status %}
-                                        <p class="m-0 small fw-bolder">{{ w_ts.driver_sheet.driver.last_name }}</p>
-                                    {% elif not w_ts.driver_sheet.status %}
-                                        <p class="m-0 small text-danger">{{ w_ts.technic.attached_driver.last_name }}</p>
-                                    {% elif not w_ts.driver_sheet %}
-                                        <p class="m-0 small fw-bolder">{{ w_ts.technic.attached_driver.last_name }}</p>
+                             onclick="setSpecTask(this, {{ w_ts.id }})"
                                     {% endif %}
-                                </div>
-                                <div>
+                                {% endif %}
+                        >
+                            <div class="card m-1">
+                                <div class="card-header p-0 px-1">
+                                    <div {% if w_ts.count_application > 0 %}class="text-success fw-bolder" {% endif %}>
+                                        {% if w_ts.driver_sheet.status %}
+                                            <p class="m-0 small fw-bolder">{{ w_ts.driver_sheet.driver.last_name }}</p>
+                                        {% elif not w_ts.driver_sheet.status %}
+                                            <p class="m-0 small text-danger">{{ w_ts.technic.attached_driver.last_name }}</p>
+                                        {% elif not w_ts.driver_sheet %}
+                                            <p class="m-0 small fw-bolder">{{ w_ts.technic.attached_driver.last_name }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
 
-                                    {% if not w_ts.status %}
-                                        <p class="m-0 small text-danger">{{ w_ts.technic.title }}</p>
-                                    {% elif w_ts.count_application > 0 %}
-                                        <p class="m-0 small fw-bolder text-success">{{ w_ts.technic.title }}</p>
-                                    {% else %}
-                                        <p class="m-0 small">{{ w_ts.technic.title }}</p>
-                                    {% endif %}
-                                </div>
+                                        {% if not w_ts.status %}
+                                            <p class="m-0 small text-danger">{{ w_ts.technic.title }}</p>
+                                        {% elif w_ts.count_application > 0 %}
+                                            <p class="m-0 small fw-bolder text-success">{{ w_ts.technic.title }}</p>
+                                        {% else %}
+                                            <p class="m-0 small">{{ w_ts.technic.title }}</p>
+                                        {% endif %}
+                                    </div>
 
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                {% endfor %}</div></div>
+                    {% endfor %}</div>
+            </div>
         {% endif %}
 
-    
-    
-    
-    
-    
+
     </div>
     {#    ------------------------------------------------------------------------------------------------------------#}
 
@@ -338,13 +341,13 @@
     <span>    
     <a class="btn btn-primary" href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
     </span>
-    <span class="mx-1"><button id="btn_hide_panel" 
+    <span class="mx-1"><button id="btn_hide_panel"
                                onclick="toggleHidePanel(this)"
-                               {% if not user.is_show_panel %}
-                                    class="btn btn-outline-secondary"
-                               {% else %}
-                                    class="btn btn-secondary"
-                               {% endif %}
+            {% if not user.is_show_panel %}
+                               class="btn btn-outline-secondary"
+            {% else %}
+                               class="btn btn-secondary"
+            {% endif %}
     ><i class="fa-solid fa-eye-slash"></i></button></span>
 {% endblock %}
 

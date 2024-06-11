@@ -56,7 +56,7 @@ def dashboard(request):
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = U.get_status_list_application_today(current_day)
-    context['status_list_application_today'] = status_list_application_today
+    context['status_list_application_today'] = status_list_application_today    # TODO: fix for supply and ...
 
     if request.method == 'POST':
         U.set_prepare_filter(request)
