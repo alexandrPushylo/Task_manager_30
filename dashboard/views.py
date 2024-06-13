@@ -38,6 +38,15 @@ def dashboard(request):
             U.prepare_workday(_current_day)
             current_day = U.get_create_workday(_current_day)
 
+    if request.POST.get('operation') == 'change_read_only_mode':
+        print(request.POST.get('read_only'))
+        if request.POST.get('read_only') == '0':
+            current_day.is_only_read = False
+            current_day.save(update_fields=['is_only_read'])
+        if request.POST.get('read_only') == '1':
+            current_day.is_only_read = True
+            current_day.save(update_fields=['is_only_read'])
+
     # print(
     #     U.get_create_workday(_current_day)
     # )
@@ -46,7 +55,8 @@ def dashboard(request):
         'title': request.user,
         'current_day': current_day,
         'weekday': U.get_weekday(current_day),
-        # 'weekday': ASSETS.WEEKDAY[current_day.date.weekday()],
+        'ONLY_READ': current_day.is_only_read,
+        # 'ONLY_READ_time': '16.00',
         'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
     context = U.get_prepared_data(context, current_day.date)

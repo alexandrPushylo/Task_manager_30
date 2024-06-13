@@ -658,3 +658,21 @@ function setSpecTask(e, technicSheetId){
         window.location.reload()
     })
 }
+
+function changeReadOnlyMode(readOnly){
+    console.log('dfs')
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: window.location,
+        data: {
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            read_only: readOnly,
+            operation: 'change_read_only_mode'
+        }
+    }).done((d) => {
+        window.location.reload()
+    })
+}
+// $('#btn_read_only_mode_false').click(changeReadOnlyMode(0));
+// $('#btn_read_only_mode_true').click(changeReadOnlyMode(1));
