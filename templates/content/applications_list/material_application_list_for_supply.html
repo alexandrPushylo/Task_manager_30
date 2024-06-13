@@ -34,13 +34,14 @@
                 </ul>
             </nav>
         </div>
-    {% include 'includes/weekday_current_day.html' %}
+        {% include 'includes/weekday_current_day.html' %}
         <div class="mt-2">
             {% for application_material in application_materials_list %}
                 <div class="card mb-3">
                     <form id="material_application_supply_{{ application_material.id }}" method="post">{% csrf_token %}
                         <div class="card-header">
-                        <span>
+                            {% if edit_mode != 'edit_mode_archive' %}
+                                <span>
                             {% if not application_material.isChecked %}
                                 <button type="submit" form="material_application_supply_{{ application_material.id }}"
                                         class="btn btn-primary btn_sub_{{ application_material.id }}">Подтвердить заявку на:</button>
@@ -49,6 +50,7 @@
                                         class="btn btn-outline-success btn_sub_{{ application_material.id }}">Отменить заявку на:</button>
                             {% endif %}
                         </span>
+                            {% endif %}
                             <input type="hidden" aria-label="" name="application_material_id"
                                    value="{{ application_material.id }}">
                             <span class="fw-bolder">{{ application_material.application_today.construction_site.address }}</span>
@@ -65,9 +67,13 @@
 
                                     <textarea name="application_material_description"
                                               id="app_mat_desc_id_{{ application_material.id }}"
-                                            class="form-control p-1 text_area_description {% if not application_material.isChecked %}border border-danger{% else %} border border-success{% endif %}"
-                                            oninput="autoResize(this); onChangeApplicationMaterialDescription(this)"
-                                            aria-label="">{{ application_material.description }}</textarea>
+                                              class="form-control p-1 text_area_description {% if not application_material.isChecked %}border border-danger{% else %} border border-success{% endif %}"
+                                            {% if edit_mode != 'edit_mode_archive' %}
+                                              oninput="autoResize(this); onChangeApplicationMaterialDescription(this)"
+                                            {% else %}
+                                              disabled
+                                            {% endif %}
+                                              aria-label="">{{ application_material.description }}</textarea>
                                 </div>
                             </div>
                         </div>

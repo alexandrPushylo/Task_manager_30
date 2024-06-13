@@ -399,6 +399,7 @@ def get_prepared_data(context: dict, current_day=TODAY) -> dict:
     context['prev_work_day'] = get_prev_work_day(current_day)
     context['next_work_day'] = get_next_work_day(current_day)
     context['weekday'] = get_weekday(current_day)
+    context['edit_mode'] = get_edit_mode(current_day)
     # context['weekday'] = ASSETS.WEEKDAY[current_day.weekday()]
     return context
 
@@ -856,3 +857,14 @@ def set_spec_task(technic_sheet_id):
 
     except TechnicSheet.DoesNotExist:
         print('SET_SPEC_TASK ERROR')
+
+
+def get_edit_mode(_date: date):
+    if _date == TODAY:
+        return ASSETS.EDIT_MODE_CURRENT
+    elif _date < TODAY:
+        return ASSETS.EDIT_MODE_ARCHIVE
+    elif _date > TODAY:
+        return ASSETS.EDIT_MODE_FUTURE
+    else:
+        return None

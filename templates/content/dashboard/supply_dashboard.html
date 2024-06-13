@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title_p %}
-    {% if status_list_application_today.saved %}
+    {% if status_list_application_today.saved and edit_mode != 'edit_mode_archive' %}
         <div>
             <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved" role="button" class="btn btn-primary">Подать все заявки</a>
         </div>
@@ -54,9 +54,9 @@
         </div>
 
         <div style="text-align: center">
-            <a href="{% url 'material_application_supply' %}?current_day={{ day.date.isoformat }}"
+            <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"
                     class="btn btn-sm {% if count_app_mater_not_checked %} btn-warning {% else %}btn-outline-success{% endif %}">
-                    {% if count_app_mater_not_checked %}
+                    {% if count_app_mater_not_checked and edit_mode != 'edit_mode_archive' %}
                         <span>Есть {{ count_app_mater_not_checked }} не подтвержденных заявок</span>
                         {% else %}
                         <span>Заявки на материалы</span>
@@ -160,6 +160,8 @@
                                 {% endif %}
                             {% endif %}
                         </div>
+                        
+                        {% if edit_mode != 'edit_mode_archive' %}
                         <hr class="p-0 m-0">
                         <div class="card-text">
                             <div class="btn-group d-flex justify-content-center m-1">
@@ -184,11 +186,12 @@
                                 {% endif %}
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
             
-        {% if a_m_exists %}
+        {% if a_m_exists and edit_mode != 'edit_mode_archive' %}
             <div class="application_items">
                 {% for app_tech_supply in applications_technic_for_supply %}
                     {% if app_tech_supply.application_technic %}

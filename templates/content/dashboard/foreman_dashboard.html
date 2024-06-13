@@ -1,21 +1,24 @@
 {% extends 'base.html' %}
 {% block title_p %}
-    {% if status_list_application_today.saved %}
-        <div>
-            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved" role="button" class="btn btn-primary">Подать все заявки</a>
-        </div>
-{#    {% elif status_list_application_today.submitted %}#}
-{#        <div>#}
-{#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>#}
-{#        </div>#}
-{#    {% elif status_list_application_today.approved %}#}
-{#        <div>#}
-{#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>#}
-{#        </div>#}
-{#    {% elif status_list_application_today.send %}#}
-{#        <div>#}
-{#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
-{#        </div>#}
+    {% if edit_mode != 'edit_mode_archive' %}
+        {% if status_list_application_today.saved %}
+            <div>
+                <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
+                   role="button" class="btn btn-primary">Подать все заявки</a>
+            </div>
+            {#    {% elif status_list_application_today.submitted %}#}
+            {#        <div>#}
+            {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>#}
+            {#        </div>#}
+            {#    {% elif status_list_application_today.approved %}#}
+            {#        <div>#}
+            {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>#}
+            {#        </div>#}
+            {#    {% elif status_list_application_today.send %}#}
+            {#        <div>#}
+            {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
+            {#        </div>#}
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -53,8 +56,8 @@
                 </ul>
             </nav>
         </div>
-        
-    
+
+
         <div style="text-align: center">
             {% include 'includes/weekday_current_day.html' %}
             {% include 'includes/btn_modal_view_props.html' %}
@@ -123,9 +126,9 @@
                                             {% for app_technic in construction_site.application_today.application_technic %}
                                                 <div
                                                         {% if app_technic.is_cancelled %}
-{#                                                            class="text-decoration-line-through"#}
+                                                            {#                                                            class="text-decoration-line-through"#}
                                                             style="color: rgba(97,95,95,0.51)"
-                                                            {% elif app_technic.isChecked %}
+                                                        {% elif app_technic.isChecked %}
                                                             style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
                                                 >
@@ -173,33 +176,41 @@
                                 {% endif %}
 
                             </div>
-                            <hr class="p-0 m-0">
-                            <div class="card-text">
-                                <div class="btn-group d-flex justify-content-center m-1">
-                                    {% if construction_site.application_today %}
 
-                                        <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
-                                           class="btn btn-outline-danger" aria-current="page"><i
-                                                class="fa-solid fa-trash"></i></a>
-                                        <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                           class="btn btn-outline-primary" aria-current="page"><i
-                                                class="fa-regular fa-pen-to-square"></i></a>
+                            {% if edit_mode != 'edit_mode_archive' %}
+                                <hr class="p-0 m-0">
+                                <div class="card-text">
+                                    <div class="btn-group d-flex justify-content-center m-1">
+                                        {% if not ONLY_READ %}
+                                            {% if construction_site.application_today %}
+                                                <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
+                                                   class="btn btn-outline-danger" aria-current="page"><i
+                                                        class="fa-solid fa-trash"></i></a>
+                                                <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                                   class="btn btn-outline-primary" aria-current="page"><i
+                                                        class="fa-regular fa-pen-to-square"></i></a>
 
-                                        {% if construction_site.application_today.status == 'saved' %}
-                                            <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
-                                               class="btn btn-outline-primary ps-4 pe-4"
-                                               aria-current="page"><i class="fa-solid fa-check"></i></a>
+                                                {% if construction_site.application_today.status == 'saved' %}
+                                                    <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
+                                                       class="btn btn-outline-primary ps-4 pe-4"
+                                                       aria-current="page"><i class="fa-solid fa-check"></i></a>
+                                                {% endif %}
+                                            {% else %}
+                                                <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                                   class="btn btn-sm btn-outline-primary" aria-current="page">
+                                                    <i class="fa-solid fa-plus"></i></a>
+                                            {% endif %}
+                                        {% else %}
+                                            <span>Подача заявок ограничена
+                                            {% if ONLY_READ_time %}
+                                                <span>до {{ ONLY_READ_time }}</span>
+                                            {% endif %}
+                                            </span>
                                         {% endif %}
 
-
-
-                                    {% else %}
-                                        <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                           class="btn btn-sm btn-outline-primary" aria-current="page">
-                                            <i class="fa-solid fa-plus"></i></a>
-                                    {% endif %}
+                                    </div>
                                 </div>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

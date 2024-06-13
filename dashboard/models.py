@@ -73,6 +73,7 @@ class ConstructionSite(models.Model):
 class WorkDaySheet(models.Model):
     date = models.DateField(verbose_name="Дата", null=False, blank=False)
     status = models.BooleanField(default=True, verbose_name="Рабочий день")
+    is_only_read = models.BooleanField(default=False, verbose_name="Режим 'Только чтение'")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
     def __str__(self):

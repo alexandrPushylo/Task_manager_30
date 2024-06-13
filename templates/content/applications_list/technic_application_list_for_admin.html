@@ -55,7 +55,11 @@
                             <input type="hidden" name="app_technic_id" value="{{ application.id }}">
                                 <div class="col-auto input-group-text p-1 {% if application_technic.technic_sheet.id in priority_id_list %}border border-2 border-primary{% endif %}">
                                     <input class="fs-5 fw-bolder p-1"
+                                           {% if edit_mode != 'edit_mode_archive' %}
                                            onchange="$('#btn_submit_app_tech').show()"
+                                           {% else %}
+                                           disabled
+                                           {% endif %}
                                            name="app_technic_priority"
                                            style="width: 52px"
                                            aria-label=""

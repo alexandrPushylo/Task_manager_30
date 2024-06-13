@@ -69,3 +69,9 @@ COLORS = [
     '#9600fa',
     '#fa00ed',
 ]
+
+#   -------------------------------------------------------------
+EDIT_MODE_FUTURE = 'edit_mode_future'
+EDIT_MODE_CURRENT = 'edit_mode_current'
+EDIT_MODE_ARCHIVE = 'edit_mode_archive'
+#   -------------------------------------------------------------
