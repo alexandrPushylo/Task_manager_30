@@ -414,16 +414,19 @@ def check_application_status(request):
                 app_today = ApplicationToday.objects.get(id=app_today_id)
             except ApplicationToday.DoesNotExist:
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-            _at_desc = app_today.description is not None and app_today.description != ''
-            _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
-            _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
-            # _at_status = app_today.status != ASSETS.ABSENT
 
-            if any([_at_desc, _at_at, _at_am]):
-                app_today.status = _default_status
-                app_today.save()
-            else:
-                app_today.delete()
+            U.check_application_today(app_today=app_today, default_status=_default_status)
+
+            # _at_desc = app_today.description is not None and app_today.description != ''
+            # _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
+            # _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
+            # # _at_status = app_today.status != ASSETS.ABSENT
+            #
+            # if any([_at_desc, _at_at, _at_am]):
+            #     app_today.status = _default_status
+            #     app_today.save()
+            # else:
+            #     app_today.delete()
 
             return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
         return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')

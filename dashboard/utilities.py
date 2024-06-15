@@ -868,3 +868,16 @@ def get_edit_mode(_date: date):
         return ASSETS.EDIT_MODE_FUTURE
     else:
         return None
+
+
+def check_application_today(app_today: ApplicationToday, default_status=None):
+    """ if empty - delete or save """
+    _at_desc = app_today.description is not None and app_today.description != ''
+    _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
+    _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
+    if any((_at_desc, _at_at, _at_am)):
+        if default_status:
+            app_today.status = default_status
+        app_today.save()
+    else:
+        app_today.delete()
