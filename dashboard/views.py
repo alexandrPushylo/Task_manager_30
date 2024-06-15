@@ -861,7 +861,18 @@ def delete_technic(request):
             if technic_id:
                 try:
                     technic = Technic.objects.get(pk=technic_id)
-                    technic.delete()
+                    technic.isArchive = True
+                    technic.save(update_fields=['isArchive'])
+                    _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
+                    _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
+                    _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
+                    # _application_today = ApplicationToday.objects.filter(applicationtechnic__in=_application_technic)
+
+                    _application_technic.delete()
+                    _technic_sheet.delete()
+                    for _app_today in _application_today:
+                        U.check_application_today(_app_today)
+                    # technic.delete()
                 except Technic.DoesNotExist:
                     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.TECHNICS)
