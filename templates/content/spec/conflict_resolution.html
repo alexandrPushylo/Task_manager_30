@@ -128,9 +128,9 @@
 {% block footer %}
 <div></div>
 <div>
-    <a href="{% url 'dashboard' %}?current_day={{ current_date.date.isoformat }}" 
+    <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" 
        class="btn btn-sm btn-success">На главную страницу</a>
-    <a href="{% url 'conflicts_list' %}?current_day={{ current_date.date.isoformat }}" 
+    <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" 
        class="btn btn-sm btn-primary">Назад</a>    
 </div>
 <div></div>
