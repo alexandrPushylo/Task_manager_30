@@ -941,7 +941,15 @@ def delete_user(request):
             if user_id:
                 try:
                     _user = User.objects.get(pk=user_id)
-                    _user.delete()
+                    _user.isArchive = True
+                    _user.save(update_fields=['isArchive'])
+
+                    DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).delete()
+                    # DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).update(isArchive=True)
+                    # TechnicSheet.objects.filter(
+                    #     date__date__gte=U.TODAY, driver_sheet__isArchive=True).update(driver_sheet=None)
+
+                    # _user.delete()
                 except User.DoesNotExist:
                     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.USERS)
