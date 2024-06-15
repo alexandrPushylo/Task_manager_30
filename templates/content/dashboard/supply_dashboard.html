@@ -2,20 +2,21 @@
 {% block title_p %}
     {% if status_list_application_today.saved and edit_mode != 'edit_mode_archive' %}
         <div>
-            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved" role="button" class="btn btn-primary">Подать все заявки</a>
+            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
+               role="button" class="btn btn-primary">Подать все заявки</a>
         </div>
-{#    {% elif status_list_application_today.submitted %}#}
-{#        <div>#}
-{#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>#}
-{#        </div>#}
-{#    {% elif status_list_application_today.approved %}#}
-{#        <div>#}
-{#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>#}
-{#        </div>#}
-{#    {% elif status_list_application_today.send %}#}
-{#        <div>#}
-{#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
-{#        </div>#}
+        {#    {% elif status_list_application_today.submitted %}#}
+        {#        <div>#}
+        {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>#}
+        {#        </div>#}
+        {#    {% elif status_list_application_today.approved %}#}
+        {#        <div>#}
+        {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>#}
+        {#        </div>#}
+        {#    {% elif status_list_application_today.send %}#}
+        {#        <div>#}
+        {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
+        {#        </div>#}
     {% endif %}
 {% endblock %}
 {% block content %}
@@ -55,13 +56,13 @@
 
         <div style="text-align: center">
             <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"
-                    class="btn btn-sm {% if count_app_mater_not_checked %} btn-warning {% else %}btn-outline-success{% endif %}">
-                    {% if count_app_mater_not_checked and edit_mode != 'edit_mode_archive' %}
-                        <span>Есть {{ count_app_mater_not_checked }} не подтвержденных заявок</span>
-                        {% else %}
-                        <span>Заявки на материалы</span>
-                        {% endif %}
-                        </a>
+               class="btn btn-sm {% if count_app_mater_not_checked %} btn-warning {% else %}btn-outline-success{% endif %}">
+                {% if count_app_mater_not_checked and edit_mode != 'edit_mode_archive' %}
+                    <span>Есть {{ count_app_mater_not_checked }} не подтвержденных заявок</span>
+                {% else %}
+                    <span>Заявки на материалы</span>
+                {% endif %}
+            </a>
             {#                    <button type="button" class="btn btn-sm btn btn-outline-primary">Опции</button>#}
         </div>
 
@@ -118,7 +119,7 @@
                                     <div class="ms-1 mt-1">
                                         {% for app_technic in applications_technic %}
                                             <div    {% if app_technic.is_cancelled %}
-{#                                                class="text-decoration-line-through"#}
+                                                {#                                                class="text-decoration-line-through"#}
                                                 style="color: rgba(97,95,95,0.51)"
                                             {% endif %}
                                             >
@@ -160,111 +161,121 @@
                                 {% endif %}
                             {% endif %}
                         </div>
-                        
+
                         {% if edit_mode != 'edit_mode_archive' %}
-                        <hr class="p-0 m-0">
-                        <div class="card-text">
-                            <div class="btn-group d-flex justify-content-center m-1">
-                                {% if application_today and applications_technic or application_today and applications_material %}
+                            <hr class="p-0 m-0">
+                            <div class="card-text">
+                                <div class="btn-group d-flex justify-content-center m-1">
+                                    {% if not ONLY_READ %}
 
-                                    <a href="{% url 'clear_application' %}?app_today_id={{ application_today.id }}"
-                                       class="btn btn-outline-danger" aria-current="page"><i
-                                            class="fa-solid fa-trash"></i></a>
-                                    <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                       class="btn btn-outline-primary" aria-current="page"><i
-                                            class="fa-regular fa-pen-to-square"></i></a>
+                                        {% if application_today and applications_technic or application_today and applications_material %}
+                                            <a href="{% url 'clear_application' %}?app_today_id={{ application_today.id }}"
+                                               class="btn btn-outline-danger" aria-current="page"><i
+                                                    class="fa-solid fa-trash"></i></a>
+                                            <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                               class="btn btn-outline-primary" aria-current="page"><i
+                                                    class="fa-regular fa-pen-to-square"></i></a>
 
-                                    {% if application_today.status == 'saved' %}
-                                        <a href="{% url 'change_app_status' %}?application_today_id={{ application_today.id }}"
-                                           class="btn btn-outline-primary ps-4 pe-4"
-                                           aria-current="page"><i class="fa-solid fa-check"></i></a>
+                                            {% if application_today.status == 'saved' %}
+                                                <a href="{% url 'change_app_status' %}?application_today_id={{ application_today.id }}"
+                                                   class="btn btn-outline-primary ps-4 pe-4"
+                                                   aria-current="page"><i class="fa-solid fa-check"></i></a>
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                               class="btn btn-sm btn-outline-primary" aria-current="page">
+                                                <i class="fa-solid fa-plus"></i></a>
+                                        {% endif %}
+                                    {% else %}
+                                        <span>Подача заявок на технику ограничена
+                                            {% if ONLY_READ_time %}
+                                                <span>до {{ ONLY_READ_time }}</span>
+                                            {% endif %}
+                                            </span>
                                     {% endif %}
-                                {% else %}
-                                    <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                       class="btn btn-sm btn-outline-primary" aria-current="page">
-                                        <i class="fa-solid fa-plus"></i></a>
-                                {% endif %}
+                                </div>
                             </div>
-                        </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            
-        {% if a_m_exists and edit_mode != 'edit_mode_archive' %}
-            <div class="application_items">
-                {% for app_tech_supply in applications_technic_for_supply %}
-                    {% if app_tech_supply.application_technic %}
-                    <div class="card mb-2 border border-dark">
-                        <div class="card-title m-0">
-                            <div class="card-header p-1">
-                                <p class="m-0 ms-2">
-                                    <span class="fw-bolder">{{ app_tech_supply.technic.title }}</span>
-                                    {% if app_tech_supply.technic.attached_driver %}
-                                        <span>({{ app_tech_supply.technic.attached_driver.last_name }})</span>
-                                    {% endif %}
-                                </p>
 
-
-                            </div>
-                            {% for app_tech in app_tech_supply.application_technic %}
-                                <hr class="m-0 border border-2 border-dark"/>
-                                <div class="card-body p-0 mt-1">
-                                    <div class="{% if app_tech.is_cancelled %}bg-danger{% elif app_tech.isChecked %}bg-success{% endif %}">
-                                        <p class="m-0 small" style="text-align: center">
-                                            <span class="fw-bolder">{{ app_tech.application_today.construction_site.address }}</span>
-                                            {% if app_tech.application_today.construction_site.foreman %}
-                                                <span>({{ app_tech.application_today.construction_site.foreman.last_name }})</span>
+            {% if a_m_exists and edit_mode != 'edit_mode_archive' %}
+                <div class="application_items">
+                    {% for app_tech_supply in applications_technic_for_supply %}
+                        {% if app_tech_supply.application_technic %}
+                            <div class="card mb-2 border border-dark">
+                                <div class="card-title m-0">
+                                    <div class="card-header p-1">
+                                        <p class="m-0 ms-2">
+                                            <span class="fw-bolder">{{ app_tech_supply.technic.title }}</span>
+                                            {% if app_tech_supply.technic.attached_driver %}
+                                                <span>({{ app_tech_supply.technic.attached_driver.last_name }})</span>
                                             {% endif %}
                                         </p>
-                                    </div>
 
-                                    <div class="">
+
+                                    </div>
+                                    {% for app_tech in app_tech_supply.application_technic %}
+                                        <hr class="m-0 border border-2 border-dark"/>
+                                        <div class="card-body p-0 mt-1">
+                                            <div class="{% if app_tech.is_cancelled %}bg-danger{% elif app_tech.isChecked %}bg-success{% endif %}">
+                                                <p class="m-0 small" style="text-align: center">
+                                                    <span class="fw-bolder">{{ app_tech.application_today.construction_site.address }}</span>
+                                                    {% if app_tech.application_today.construction_site.foreman %}
+                                                        <span>({{ app_tech.application_today.construction_site.foreman.last_name }})</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+
+                                            <div class="">
                                         <textarea
                                                 class="form-control {% if app_tech.isChecked %} border border-2 border-success{% elif app_tech.is_cancelled %} border border-2 border-danger {% endif %}"
                                                 readonly {% if app_tech.is_cancelled or app_tech.isChecked %}
                                                 disabled{% endif %}
                                                 aria-label="">{{ app_tech.description }}</textarea>
-                                    </div>
+                                            </div>
 
-                                    <div class="m-1 btn-group position-relative translate-middle-x start-50">
-                                        <button id="accept_{{ app_tech.id }}"
-                                                onclick="changeIsChecked(this, {{ application_today.id }})"
-                                                type="button"
-                                                {% if app_tech.isChecked %}
-                                                class="btn btn-sm btn-primary"><i class="fa-solid fa-angles-right"></i>
-                                                    <span> Отменить</span>
-                                                {% else %}
-                                                    class="btn btn-sm btn-outline-success">
-                                                    <i class="fa-solid fa-angles-left"></i>
-                                                    <span> Принять</span>
+                                            <div class="m-1 btn-group position-relative translate-middle-x start-50">
+                                                <button id="accept_{{ app_tech.id }}"
+                                                        onclick="changeIsChecked(this, {{ application_today.id }})"
+                                                        type="button"
+                                                        {% if app_tech.isChecked %}
+                                                        class="btn btn-sm btn-primary">
+                                                            <i class="fa-solid fa-angles-right"></i>
+                                                            <span> Отменить</span>
+                                                        {% else %}
+                                                            class="btn btn-sm btn-outline-success">
+                                                            <i class="fa-solid fa-angles-left"></i>
+                                                            <span> Принять</span>
+                                                        {% endif %}
+
+                                                </button>
+                                                {% if not app_tech.isChecked %}
+                                                    <button id="reject_{{ app_tech.id }}"
+                                                            onclick="changeIsCancelled(this)"
+                                                            type="button"
+                                                            {% if not app_tech.is_cancelled %}
+                                                            class="btn btn-sm btn-outline-danger">
+                                                                <i class="fa-solid fa-xmark"></i>
+                                                                <span>Отвергнуть</span>
+                                                            {% else %}
+                                                                class="btn btn-sm btn-outline-primary">
+                                                                <span>Отменить</span>
+                                                            {% endif %}
+                                                    </button>
                                                 {% endif %}
+                                            </div>
+                                        </div>
 
-                                        </button>
-                                        {% if not app_tech.isChecked %}
-                                            <button id="reject_{{ app_tech.id }}"
-                                                    onclick="changeIsCancelled(this)"
-                                                    type="button"
-                                                    {% if not app_tech.is_cancelled %}
-                                                    class="btn btn-sm btn-outline-danger">
-                                                        <i class="fa-solid fa-xmark"></i>
-                                                        <span>Отвергнуть</span>
-                                                    {% else %}
-                                                        class="btn btn-sm btn-outline-primary"><span>Отменить</span>
-                                                    {% endif %}
-                                            </button>
-                                        {% endif %}
-                                    </div>
+                                    {% endfor %}
+
                                 </div>
-
-                            {% endfor %}
-
-                        </div>
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
 
         </div>
 
@@ -272,7 +283,7 @@
     {#    ------------------------------------------------------------------------------------------------------------#}
 
     {% csrf_token %}
-{#    {% include 'includes/modal_view_props.html' %}#}
+    {#    {% include 'includes/modal_view_props.html' %}#}
 
     {#    ------------------------------------------------------------------------------------------------------------#}
 
