@@ -63,6 +63,9 @@ def dashboard(request):
     context = U.get_prepare_filter(context)
 
     if not current_day.status:
+        if _current_day is None or _current_day == '':
+            return HttpResponseRedirect(
+                ENDPOINTS.DASHBOARD + f'?current_day={U.get_next_work_day(current_day.date).date}')
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = U.get_status_list_application_today(current_day)
