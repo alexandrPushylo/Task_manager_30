@@ -6,14 +6,14 @@
             {% for conflict_ts in conflict_technic_sheet %}
                 <div class="card mb-2">
                     <div class="card-header">
-                        <span>Не хватает:</span>
+                        <span>Количество необходимой техники:</span><br>
                         <span class="fw-bolder">{{ conflict_ts.total_count_apps }}</span>
                         <span>ед.</span>
                         <span class="fw-bolder">{{ conflict_ts.technic_title }}</span>  
                         <span class="ms-2"><a href="{% url 'conflict_resolution' %}?conflict_list_id={{ conflict_ts.id_list }}&current_day={{ current_day.date.isoformat }}" role="button" class="btn btn-outline-primary">Редактировать</a></span>
                     </div>
                     <div class="card-body p-1 ps-2">
-                        <p class="m-0 p-0"><span>Всего </span><span>{{ conflict_ts.total_technic_sheet_count }} ед.</span></p>
+                        <p class="m-0 p-0"><span>Всего имеется: </span><span>{{ conflict_ts.total_technic_sheet_count }} ед.</span></p>
                     </div>                
                 </div>
                 

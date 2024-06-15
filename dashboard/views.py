@@ -414,16 +414,19 @@ def check_application_status(request):
                 app_today = ApplicationToday.objects.get(id=app_today_id)
             except ApplicationToday.DoesNotExist:
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-            _at_desc = app_today.description is not None and app_today.description != ''
-            _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
-            _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
-            # _at_status = app_today.status != ASSETS.ABSENT
 
-            if any([_at_desc, _at_at, _at_am]):
-                app_today.status = _default_status
-                app_today.save()
-            else:
-                app_today.delete()
+            U.check_application_today(app_today=app_today, default_status=_default_status)
+
+            # _at_desc = app_today.description is not None and app_today.description != ''
+            # _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
+            # _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
+            # # _at_status = app_today.status != ASSETS.ABSENT
+            #
+            # if any([_at_desc, _at_at, _at_am]):
+            #     app_today.status = _default_status
+            #     app_today.save()
+            # else:
+            #     app_today.delete()
 
             return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
         return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
@@ -858,7 +861,18 @@ def delete_technic(request):
             if technic_id:
                 try:
                     technic = Technic.objects.get(pk=technic_id)
-                    technic.delete()
+                    technic.isArchive = True
+                    technic.save(update_fields=['isArchive'])
+                    _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
+                    _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
+                    _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
+                    # _application_today = ApplicationToday.objects.filter(applicationtechnic__in=_application_technic)
+
+                    _application_technic.delete()
+                    _technic_sheet.delete()
+                    for _app_today in _application_today:
+                        U.check_application_today(_app_today)
+                    # technic.delete()
                 except Technic.DoesNotExist:
                     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.TECHNICS)
@@ -927,7 +941,15 @@ def delete_user(request):
             if user_id:
                 try:
                     _user = User.objects.get(pk=user_id)
-                    _user.delete()
+                    _user.isArchive = True
+                    _user.save(update_fields=['isArchive'])
+
+                    DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).delete()
+                    # DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).update(isArchive=True)
+                    # TechnicSheet.objects.filter(
+                    #     date__date__gte=U.TODAY, driver_sheet__isArchive=True).update(driver_sheet=None)
+
+                    # _user.delete()
                 except User.DoesNotExist:
                     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.USERS)
