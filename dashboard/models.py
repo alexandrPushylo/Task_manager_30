@@ -182,15 +182,17 @@ class ApplicationMaterial(models.Model):
 
 #   Parameters----------------------------------------------------------------
 class Parameter(models.Model):
-    title = models.CharField(max_length=256, verbose_name='Название переменной')
+    title = models.CharField(max_length=256, verbose_name='Название переменной', null=True, blank=True)
+    name = models.CharField(max_length=256, verbose_name='Имя переменной')
     value = models.CharField(max_length=512, null=True, blank=True, verbose_name='Значение переменной')
     flag = models.BooleanField(default=False, verbose_name='Флаг переменной')
     description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Описание")
     time = models.TimeField(null=True, blank=True)
     date = models.DateField(null=True, blank=True)
+    permissions = models.CharField(max_length=32, verbose_name='Разрешения', blank=True, null=True)
 
     def __str__(
-            self): return f'{self.title} - {self.value} - [{self.flag}] -- ({self.time}:{self.date})'
+            self): return f'{self.title}  {self.name} - {self.value} - [{self.flag}] -- ({self.time}:{self.date})'
 
     class Meta:
         verbose_name = "Переменная"

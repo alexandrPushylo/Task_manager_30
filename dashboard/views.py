@@ -1049,7 +1049,7 @@ def change_status_application_today(request):
                 current_application_today.status = up_status
                 current_application_today.save()
                 if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND,
+                    var_send, _ = Parameter.objects.get_or_create(name=ASSETS.VAR_APPS_SEND,
                                                                   date=current_application_today.date.date)
                     var_send.time = U.NOW
                     var_send.flag = True
@@ -1068,7 +1068,7 @@ def change_status_application_today(request):
                 up_status = U.get_nxt_status(current_status)
                 application_today_list.update(status=up_status)
                 if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND, date=_c_day.date)
+                    var_send, _ = Parameter.objects.get_or_create(name=ASSETS.VAR_APPS_SEND, date=_c_day.date)
                     var_send.time = U.NOW
                     var_send.flag = True
                     var_send.save(update_fields=['time', 'flag'])

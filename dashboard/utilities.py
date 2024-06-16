@@ -680,7 +680,7 @@ def get_user_key(user_id) -> str | None:
 
 def send_application_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):
     _out = []
-    send_flag, created = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND, date=current_day.date)
+    send_flag, created = Parameter.objects.get_or_create(name=ASSETS.VAR_APPS_SEND, date=current_day.date)
     driver_list = TechnicSheet.objects.filter(date=current_day, status=True, driver_sheet__status=True, isArchive=False)
 
     m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
@@ -720,7 +720,7 @@ def send_application_for_driver(current_day: WorkDaySheet, messages=None, applic
 
 def send_application_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
     _out = []
-    send_flag, created = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND, date=current_day.date)
+    send_flag, created = Parameter.objects.get_or_create(name=ASSETS.VAR_APPS_SEND, date=current_day.date)
 
     m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
     # print(m_day)
@@ -761,7 +761,7 @@ def send_application_for_foreman(current_day: WorkDaySheet, messages=None, appli
 
 def send_application_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
     _out = []
-    send_flag, created = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND, date=current_day.date)
+    send_flag, created = Parameter.objects.get_or_create(name=ASSETS.VAR_APPS_SEND, date=current_day.date)
 
     m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
     # print(m_day)
