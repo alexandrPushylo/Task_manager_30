@@ -1,7 +1,6 @@
 DASHBOARD = '/dashboard/'
 TECHNICS = '/technics/'
 EDIT_TECHNIC = '/edit_technic/'
-# DELETE_TECHNIC = '/delete_technic/'
 LOGIN = '/login/'
 
 
