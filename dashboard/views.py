@@ -820,6 +820,7 @@ def edit_technic_view(request):
             context['title'] = 'Редактировать технику'
 
         if request.method == 'POST':
+            print(request.POST)
             _title = request.POST.get('title')
             _type = request.POST.get('type')
             _attached_driver = request.POST.get('attached_driver')
