@@ -32,6 +32,7 @@ from dashboard.views import technic_view, edit_technic_view, delete_technic
 from dashboard.views import users_view, edit_user_view, delete_user, profile_view
 
 from dashboard.views import change_status_application_today, prepare_workday_for_app, check_application_status
+from dashboard.views import settings_view
 from dashboard.views import maintenance_view
 from dashboard.views import def_test
 
@@ -70,6 +71,7 @@ urlpatterns = [
                   path('logout/', logout_view, name='logout'),
                   path('register/', register_view, name='register'),
                   path('restore_pwd/', restore_password_view, name='restore_password'),
+                  path('settings/', settings_view, name='settings'),
 
                   path('change_app_status/', change_status_application_today, name='change_app_status'),
                   path('pr_wd_f_app/', prepare_workday_for_app, name='prepare_workday_for_app'),

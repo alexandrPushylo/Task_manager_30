@@ -8,10 +8,18 @@
 
     {% if user.post == 'administrator' %}
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
-            <span class="ms-2 small fw-bolder text-decoration-underline"
-            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
-                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+            <span class="dropdown-item">
+            
+                <a class="btn btn-sm btn-secondary" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-1 small fw-bolder text-decoration-underline">{% if user.last_name %}{{ user.last_name }}
+                {{ user.first_name }}{% else %}{{ user.username }}{% endif %}</span>
+                </a>
+                
+            <a class="btn btn-sm btn-secondary" href="{% url 'settings' %}"><span><i
+                    class="fa-solid fa-gear"></i></span></a></span>
+            </li>
+
             <li>
                 <hr class="m-0">
             </li>

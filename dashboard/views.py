@@ -1455,3 +1455,18 @@ def maintenance_view(request):
     template = 'content/spec/maintenance.html'
     context = {}
     return render(request, template, context)
+
+
+def settings_view(request):
+    if request.user.is_authenticated:
+        template = 'content/spec/settings.html'
+        context = {
+            'title': 'Settings',
+        }
+
+        rez = U.prepare_variables()
+        print(rez)
+
+        return render(request, template, context)
+
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
