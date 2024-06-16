@@ -891,3 +891,24 @@ def check_application_today(app_today: ApplicationToday, default_status=None):
         app_today.save()
     else:
         app_today.delete()
+
+
+def prepare_variables():
+    """ Подготовка переменных"""
+    variables_list = VAR.VARIABLES_LIST
+    error = 0
+    for variable in variables_list:
+        try:
+            Parameter.objects.get_or_create(
+                title=variable.get('title'),
+                name=variable.get('name'),
+                value=variable.get('value'),
+                flag=variable.get('flag', False),
+                description=variable.get('description'),
+                time=variable.get('time'),
+                date=variable.get('date'),
+                permissions=variable.get('permissions')
+            )
+        except ValueError:
+            error += 1
+    return error
