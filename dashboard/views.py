@@ -16,6 +16,7 @@ from dashboard.assets import ERROR_MESSAGES, MESSAGES
 import dashboard.assets as ASSETS
 import Task_manager_30.endpoints as ENDPOINTS
 import dashboard.utilities as U
+import dashboard.variables as VAR
 # import dashboard.telegram_bot as T
 
 # Create your views here.
@@ -637,14 +638,18 @@ def restore_password_view(request):
             context['users_list'] = _user
         else:
             context['msg'] = 'Данный пользователь не найден'
+    try:
+        _default_passwd = Parameter.objects.get(name=VAR.VAR_DEFAULT_PASSWORD['name']).value
+    except Parameter.DoesNotExist:
+        _default_passwd = '1234'
 
     user_id = request.GET.get('user_id')
     if user_id is not None and user_id != '':
         try:
             restore_user = User.objects.get(pk=user_id)
-            restore_user.set_password(ASSETS.VAR_DEFAULT_PASSWORD)
+            restore_user.set_password(_default_passwd)
             restore_user.save()
-            context['msg_success'] = {'login': restore_user.username, 'password': ASSETS.VAR_DEFAULT_PASSWORD}
+            context['msg_success'] = {'login': restore_user.username, 'password': _default_passwd}
         except User.DoesNotExist:
             pass
     return render(request, template, context)
@@ -1049,8 +1054,11 @@ def change_status_application_today(request):
                 current_application_today.status = up_status
                 current_application_today.save()
                 if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND,
-                                                                  date=current_application_today.date.date)
+                    var_send, _ = Parameter.objects.get_or_create(
+                        name=VAR.VAR_APPLICATION_SEND['name'],
+                        title=VAR.VAR_APPLICATION_SEND['title'],
+                        date=current_application_today.date.date)
+
                     var_send.time = U.NOW
                     var_send.flag = True
                     var_send.save(update_fields=['time', 'flag'])
@@ -1068,7 +1076,10 @@ def change_status_application_today(request):
                 up_status = U.get_nxt_status(current_status)
                 application_today_list.update(status=up_status)
                 if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(title=ASSETS.VAR_APPS_SEND, date=_c_day.date)
+                    var_send, _ = Parameter.objects.get_or_create(
+                        name=VAR.VAR_APPLICATION_SEND['name'],
+                        title=VAR.VAR_APPLICATION_SEND['title'],
+                        date=_c_day.date)
                     var_send.time = U.NOW
                     var_send.flag = True
                     var_send.save(update_fields=['time', 'flag'])
@@ -1444,3 +1455,18 @@ def maintenance_view(request):
     template = 'content/spec/maintenance.html'
     context = {}
     return render(request, template, context)
+
+
+def settings_view(request):
+    if request.user.is_authenticated:
+        template = 'content/spec/settings.html'
+        context = {
+            'title': 'Settings',
+        }
+
+        rez = U.prepare_variables()
+        print(rez)
+
+        return render(request, template, context)
+
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)

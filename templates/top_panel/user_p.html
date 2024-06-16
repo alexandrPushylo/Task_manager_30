@@ -8,10 +8,18 @@
 
     {% if user.post == 'administrator' %}
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
-            <span class="ms-2 small fw-bolder text-decoration-underline"
-            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
-                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+            <span class="dropdown-item">
+            
+                <a class="btn btn-sm btn-secondary" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-1 small fw-bolder text-decoration-underline">{% if user.last_name %}{{ user.last_name }}
+                {{ user.first_name }}{% else %}{{ user.username }}{% endif %}</span>
+                </a>
+                
+            <a class="btn btn-sm btn-secondary" href="{% url 'settings' %}"><span><i
+                    class="fa-solid fa-gear"></i></span></a></span>
+            </li>
+
             <li>
                 <hr class="m-0">
             </li>
@@ -43,7 +51,7 @@
                 <li><a class="dropdown-item" href="{% url 'test' %}">test</a></li>
             {% endif %}
         </ul>
-        
+
     {% elif user.post == 'foreman' or user.post == 'master' %}
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
@@ -58,10 +66,10 @@
             <li><a class="dropdown-item" href="{% url 'construction_site' %}">Объекты</a></li>
             <li>
                 <hr class="m-0">
-            </li>            
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+            </li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
         </ul>
-        
+
     {% elif user.post == 'supply' %}
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
@@ -75,10 +83,10 @@
             </li>
             <li>
                 <hr class="m-0">
-            </li>            
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+            </li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
         </ul>
-        
+
     {% elif user.post == 'mechanic' %}
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
@@ -88,7 +96,7 @@
             <li>
                 <hr class="m-0">
             </li>
-            
+
             <li>
                 <hr class="m-0">
             </li>
@@ -104,9 +112,9 @@
             <li>
                 <hr class="m-0">
             </li>
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
         </ul>
-        
+
     {% elif user.post == 'driver' %}
         <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
@@ -120,8 +128,8 @@
             </li>
             <li>
                 <hr class="m-0">
-            </li>            
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>            
+            </li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
         </ul>
     {% elif user.post == 'employee' %}
     {% endif %}
