@@ -231,30 +231,6 @@ function addTechnicSheetToApp(e) {
     app_technic_description.val('')
 }
 
-// function addNewTechSheet(technic_title, technic_title_short, technic_sheet, technic_sheet_id, description){
-//     const template = `<div class="mt-2">
-//                                     <div class="input-group">
-// <!--                                        <label>-->
-//                                             <input id="io_tech_title" type="text" value="${technic_title}" class="form-control p-1" readonly/>
-// <!--                                        </label>-->
-// <!--                                        <label>-->
-//                                             <input id="io_tech_sheet" type="text" value="${technic_sheet}" class="form-control p-1" readonly/>
-// <!--                                        </label>-->
-//                                         <button type="button" onclick="deleteTechSheet(this)"
-//                                         class="btn btn-sm btn-danger btn_delete_tech_sheet"><i
-//                                                 class="fa-solid fa-trash"></i></button>
-//                                     </div>
-//                                     <input id="io_tech_title_h" type="hidden" value="${technic_title_short}" name="io_tech_title_h" readonly/>
-//                                     <input id="io_tech_sheet_h" type="hidden" value="${technic_sheet_id}" name="io_tech_sheet_h" readonly/>
-//                                     <label class="row">
-//                                         <textarea class="form-control" id="io_tech_desc" name="tech_desc">${description}</textarea>
-//                                     </label>
-//                                 </div>
-//                             </div>`
-//     const added_container = document.getElementById('added_container');
-//     added_container.insertAdjacentHTML('beforeend', template)
-// }
-
 function deleteTechSheet(e) {
     const per = e.parentElement.parentElement
     per.remove()
