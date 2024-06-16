@@ -7,13 +7,22 @@
         <div><h3><u>{{ title }}</u></h3></div>
         <form method="post" id="edit_technic_form">{% csrf_token %}
             <div class="m-2 me-2">
-                <label>Название техники
-                    <input class="form-control" name="title" type="text" value="{{ technic.title }}" required/>
+                <label>Название техники*
+                    <input class="form-control" name="title" type="text" placeholder="Например: МАЗ 10т." value="{{ technic.title }}" required/>
                 </label>
 
-                <label class="">Тип техники
-                    <input class="form-control" name="type" type="text" value="{{ technic.type }}" required/>
+                <label class="">Тип техники*
+                    {#                    <input class="form-control" name="type" type="text" value="{{ technic.type }}" required/>#}
+                    <select class="form-select" name="type" required>
+                        <option></option>
+                        {% for type in technic_type_list %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+
+                    </select>
                 </label>
+
+
             </div>
             <div class="m-2">
                 <label class="">Прикрепленный водитель
@@ -32,25 +41,29 @@
 
                 <label class="ms-2">Руководитель
                     <select name="supervisor" class="form-control">
-                    
+
                         {% for supervisor, title in supervisors.items %}
                             {% if technic.supervisor_technic == supervisor %}
                                 <option selected="selected"
                                         value="{{ supervisor }}">{{ title }}</option>
-                            {% elif not technic.supervisor_technic and supervisor == mechanic %}  
+                            {% elif not technic.supervisor_technic and supervisor == mechanic %}
                                 <option selected="selected"
                                         value="{{ supervisor }}">{{ title }}</option>
                             {% else %}
                                 <option value="{{ supervisor }}">{{ title }}</option>
                             {% endif %}
                         {% endfor %}
-                    
+
                     </select>
                 </label>
             </div>
             <div class="m-2">
-                <label>Идентификационная информация
-                    <input class="form-control" name="id_information" type="text" value="{{ technic.id_information }}"
+                <label>Идентификационная информация*
+                    <input class="form-control" 
+                           name="id_information" 
+                           type="text" 
+                           placeholder="Например: КА-7 1234"
+                           value="{{ technic.id_information }}"
                            required/>
                 </label>
             </div>
@@ -61,14 +74,16 @@
             </div>
             <div class="m-2 navbar">
                 {% if technic.id %}
-                    <span><a href="{% url 'delete_technic'  %}?tech_id={{ technic.id }}" class="btn btn-sm btn-outline-danger" style="float: left">Удалить</a></span>
+                    <span><a href="{% url 'delete_technic' %}?tech_id={{ technic.id }}"
+                             class="btn btn-sm btn-outline-danger" style="float: left">Удалить</a></span>
                 {% endif %}
-            <span><a href="{% url 'technics' %}" class="btn btn-sm btn-primary" style="float: left">Отмена</a></span>
-            <span><button class="btn btn-sm btn-success" style="" type="submit" form="edit_technic_form">Сохранить
+                <span><a href="{% url 'technics' %}" class="btn btn-sm btn-primary"
+                         style="float: left">Отмена</a></span>
+                <span><button class="btn btn-sm btn-success" style="" type="submit" form="edit_technic_form">Сохранить
                 </button>
             </span>
-                
-                
+
+
             </div>
 
 

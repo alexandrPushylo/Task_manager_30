@@ -813,6 +813,8 @@ def edit_technic_view(request):
         context['drivers'] = User.objects.filter(post=ASSETS.DRIVER)
         context['supervisors'] = dict(
             [(key, value) for key, value in ASSETS.USER_POSTS_dict.items() if key in (ASSETS.MECHANIC, ASSETS.SUPPLY)])
+        technic_type_list = set(Technic.objects.filter().values_list('type', flat=True))
+        context['technic_type_list'] = sorted(technic_type_list)
 
         if technic_id is not None:
             technic = Technic.objects.get(pk=technic_id)
@@ -820,6 +822,7 @@ def edit_technic_view(request):
             context['title'] = 'Редактировать технику'
 
         if request.method == 'POST':
+            print(request.POST)
             _title = request.POST.get('title')
             _type = request.POST.get('type')
             _attached_driver = request.POST.get('attached_driver')
