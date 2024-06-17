@@ -912,3 +912,26 @@ def prepare_variables():
         except ValueError:
             error += 1
     return error
+
+
+def change_reception_apps_mode_auto():
+    """ Автоматическое переключение режима приема заявок"""
+    try:
+        work_day = WorkDaySheet.objects.get(date=TODAY)
+    except WorkDaySheet.DoesNotExist:
+        return -1
+    try:
+        var_time_recept_apps = Parameter.objects.get(name=VAR.VAR_TIME_RECEPTION_OF_APPS['name'])
+    except Parameter.DoesNotExist:
+        return -1
+
+    if var_time_recept_apps.date != work_day.date or var_time_recept_apps.flag:
+        var_time_recept_apps.date = work_day.date
+        var_time_recept_apps.flag = True
+        var_time_recept_apps.save()
+        if var_time_recept_apps.time < datetime.now().time():
+            work_day.is_only_read = True
+            work_day.save()
+        else:
+            work_day.is_only_read = False
+            work_day.save()
