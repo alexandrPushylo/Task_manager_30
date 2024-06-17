@@ -1422,14 +1422,7 @@ def profile_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-
-
-
-
-
-
-
-def def_test(request):
+def def_test(request):  # TODO: def TEST
     _current_day = request.GET.get('current_day')
     if _current_day:
         current_day = WorkDaySheet.objects.get(date=_current_day)
