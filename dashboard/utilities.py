@@ -935,3 +935,20 @@ def change_reception_apps_mode_auto():
         else:
             work_day.is_only_read = False
             work_day.save()
+
+
+def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps):
+    """ Ручное переключение режима приема заявок"""
+    if is_recept_apps:
+        workday.is_only_read = True
+        workday.save(update_fields=['is_only_read'])
+    else:
+        workday.is_only_read = False
+        workday.save(update_fields=['is_only_read'])
+
+    try:
+        _var_recept_apps = Parameter.objects.get(name=VAR.VAR_TIME_RECEPTION_OF_APPS['name'])
+        _var_recept_apps.flag = False
+        _var_recept_apps.save(update_fields=['flag'])
+    except Parameter.DoesNotExist:
+        pass
