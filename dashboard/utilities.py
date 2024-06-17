@@ -661,6 +661,9 @@ def get_prepare_filter(context):
     context['filter_construction_site_list'] = construction_site_list
     context['filter_technic_list'] = technic_list
     context['sort_by_list'] = sort_by_list
+
+    change_reception_apps_mode_auto()
+
     return context
 
 

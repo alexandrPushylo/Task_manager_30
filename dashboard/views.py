@@ -39,14 +39,17 @@ def dashboard(request):
             U.prepare_workday(_current_day)
             current_day = U.get_create_workday(_current_day)
 
+
     if request.POST.get('operation') == 'change_read_only_mode':
         print(request.POST.get('read_only'))
         if request.POST.get('read_only') == '0':
-            current_day.is_only_read = False
-            current_day.save(update_fields=['is_only_read'])
+            U.change_reception_apps_mode_manual(current_day, False)
+            # current_day.is_only_read = False
+            # current_day.save(update_fields=['is_only_read'])
         if request.POST.get('read_only') == '1':
-            current_day.is_only_read = True
-            current_day.save(update_fields=['is_only_read'])
+            U.change_reception_apps_mode_manual(current_day, True)
+            # current_day.is_only_read = True
+            # current_day.save(update_fields=['is_only_read'])
 
     # print(
     #     U.get_create_workday(_current_day)
