@@ -661,6 +661,9 @@ def get_prepare_filter(context):
     context['filter_construction_site_list'] = construction_site_list
     context['filter_technic_list'] = technic_list
     context['sort_by_list'] = sort_by_list
+
+    change_reception_apps_mode_auto()
+
     return context
 
 
@@ -912,3 +915,43 @@ def prepare_variables():
         except ValueError:
             error += 1
     return error
+
+
+def change_reception_apps_mode_auto():
+    """ Автоматическое переключение режима приема заявок"""
+    try:
+        work_day = WorkDaySheet.objects.get(date=TODAY)
+    except WorkDaySheet.DoesNotExist:
+        return -1
+    try:
+        var_time_recept_apps = Parameter.objects.get(name=VAR.VAR_TIME_RECEPTION_OF_APPS['name'])
+    except Parameter.DoesNotExist:
+        return -1
+
+    if var_time_recept_apps.date != work_day.date or var_time_recept_apps.flag:
+        var_time_recept_apps.date = work_day.date
+        var_time_recept_apps.flag = True
+        var_time_recept_apps.save()
+        if var_time_recept_apps.time < datetime.now().time():
+            work_day.is_only_read = True
+            work_day.save()
+        else:
+            work_day.is_only_read = False
+            work_day.save()
+
+
+def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps):
+    """ Ручное переключение режима приема заявок"""
+    if is_recept_apps:
+        workday.is_only_read = True
+        workday.save(update_fields=['is_only_read'])
+    else:
+        workday.is_only_read = False
+        workday.save(update_fields=['is_only_read'])
+
+    try:
+        _var_recept_apps = Parameter.objects.get(name=VAR.VAR_TIME_RECEPTION_OF_APPS['name'])
+        _var_recept_apps.flag = False
+        _var_recept_apps.save(update_fields=['flag'])
+    except Parameter.DoesNotExist:
+        pass
