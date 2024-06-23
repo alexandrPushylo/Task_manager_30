@@ -19,6 +19,11 @@ import dashboard.utilities as U
 import dashboard.variables as VAR
 # import dashboard.telegram_bot as T
 
+#   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+import dashboard.func.user as USERS_FUNC
+#   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+
+
 # Create your views here.
 
 
@@ -675,7 +680,7 @@ def register_view(request):
         return render(request, template, context)
     if request.method == 'POST':
         data = request.POST
-        new_user = U.add_user(data)
+        new_user = USERS_FUNC.add_or_edit_user(data, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
@@ -933,12 +938,12 @@ def edit_user_view(request):
 
             if request.method == 'POST':
                 data = request.POST
-                _user = U.add_user(data, user_id=user_id)
+                _user = USERS_FUNC.add_or_edit_user(data, user_id)
                 return HttpResponseRedirect(ENDPOINTS.USERS)
         else:
             if request.method == 'POST':
                 data = request.POST
-                _user = U.add_user(data)
+                _user = USERS_FUNC.add_or_edit_user(data, user_id=None)
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
         return render(request, template, context)
@@ -950,19 +955,9 @@ def delete_user_view(request):
         if request.user.post == ASSETS.ADMINISTRATOR:
             user_id = request.GET.get('user_id')
             if user_id:
-                try:
-                    _user = User.objects.get(pk=user_id)
-                    _user.isArchive = True
-                    _user.save(update_fields=['isArchive'])
-
+                _user = USERS_FUNC.delete_user(user_id)
+                if _user:
                     DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).delete()
-                    # DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).update(isArchive=True)
-                    # TechnicSheet.objects.filter(
-                    #     date__date__gte=U.TODAY, driver_sheet__isArchive=True).update(driver_sheet=None)
-
-                    # _user.delete()
-                except User.DoesNotExist:
-                    return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 
