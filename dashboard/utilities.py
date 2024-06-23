@@ -24,48 +24,6 @@ TODAY = date.today()
 NOW = datetime.now().time()
 
 
-# def get_weekday(_date):
-#     return ASSETS.WEEKDAY[_date.weekday()]
-
-
-def add_user(data: dict, user_id=None):
-    username = data.get('username')
-    password = data.get('password')
-    first_name = data.get('first_name')
-    last_name = data.get('last_name')
-    post = data.get('post') if data.get('post') is not None else ASSETS.EMPLOYEE
-    supervisor_id = int(data.get('supervisor_id')) if data.get('supervisor_id') is not None else None
-    telephone = data.get('telephone')
-
-    if user_id:
-        if all([username, password, first_name, last_name]):
-            _user = User.objects.get(pk=user_id)
-            _user.username = username
-            _user.first_name = first_name
-            _user.last_name = last_name
-            _user.telephone = telephone
-            _user.password = _user.set_password(password) if _user.password != password else _user.password
-            _user.post = post
-            _user.supervisor_user_id = supervisor_id
-            _user.save()
-            return _user
-    else:
-        if all([username, password, first_name, last_name]):
-            new_user = User.objects.create_user(
-                username=username,
-                password=password,
-                first_name=first_name,
-                last_name=last_name,
-                telephone=telephone,
-                post=post,
-                supervisor_user_id=supervisor_id,
-                is_staff=False,
-                is_superuser=False
-            )
-            return new_user
-    return None
-
-
 def is_administrator(user: User) -> bool:
     return True if user.post == ASSETS.ADMINISTRATOR else False
 
