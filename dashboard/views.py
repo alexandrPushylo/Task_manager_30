@@ -672,7 +672,10 @@ def logout_view(request):
 def register_view(request):
     template = 'content/register.html'
     context = {
-        'user_posts': ASSETS.USER_POSTS_dict,
+        'user_posts': {
+            ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE],
+            ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER],
+        },
         'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
     }
 
