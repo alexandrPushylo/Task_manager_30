@@ -29,7 +29,7 @@ from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet
 
 from dashboard.views import construction_site_view, edit_construction_sites
 from dashboard.views import technic_view, edit_technic_view, delete_technic
-from dashboard.views import users_view, edit_user_view, delete_user, profile_view
+from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
 
 from dashboard.views import change_status_application_today, prepare_workday_for_app, check_application_status
 from dashboard.views import settings_view
@@ -56,7 +56,7 @@ urlpatterns = [
 
                   path('users/', users_view, name='users'),
                   path('edit_user/', edit_user_view, name='edit_user'),
-                  path('delete_user/', delete_user, name='delete_user'),
+                  path('delete_user/', delete_user_view, name='delete_user'),
                   path('profile/', profile_view, name='profile'),
 
                   path('technics/', technic_view, name='technics'),

@@ -945,7 +945,7 @@ def edit_user_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def delete_user(request):
+def delete_user_view(request):
     if request.user.is_authenticated:
         if request.user.post == ASSETS.ADMINISTRATOR:
             user_id = request.GET.get('user_id')
