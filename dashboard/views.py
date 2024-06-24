@@ -21,6 +21,7 @@ import dashboard.variables as VAR
 
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 import dashboard.func.user as USERS_FUNC
+import dashboard.func.technic as TECHNIC_FUNC
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
 
@@ -838,37 +839,9 @@ def edit_technic_view(request):
             context['title'] = 'Редактировать технику'
 
         if request.method == 'POST':
-            print(request.POST)
-            _title = request.POST.get('title')
-            _type = request.POST.get('type')
-            _attached_driver = request.POST.get('attached_driver')
-            _supervisor = request.POST.get('supervisor')
-            _id_information = request.POST.get('id_information')
-            _description = request.POST.get('description')
-
-            if all([_title, _type, _id_information]):
-                if technic_id is None:
-                    Technic.objects.create(
-                        title=_title,
-                        type=_type,
-                        id_information=_id_information,
-                        attached_driver=User.objects.get(pk=_attached_driver) if _attached_driver else None,
-                        supervisor_technic=_supervisor,
-                        description=_description
-                    )
-                else:
-                    try:
-                        technic = Technic.objects.get(pk=technic_id)
-                        technic.title = _title
-                        technic.type = _type
-                        technic.id_information = _id_information
-                        technic.attached_driver = User.objects.get(pk=_attached_driver) if _attached_driver else None
-                        technic.supervisor_technic = _supervisor
-                        technic.description = _description
-                        technic.save()
-                    except Technic.DoesNotExist:
-                        return HttpResponseRedirect(ENDPOINTS.ERROR)
-                return HttpResponseRedirect(ENDPOINTS.TECHNICS)
+            data = request.POST
+            TECHNIC_FUNC.add_or_edit_technic(data, technic_id)
+            return HttpResponseRedirect(ENDPOINTS.TECHNICS)
         return render(request, template, context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -878,10 +851,8 @@ def delete_technic(request):
         if U.is_administrator(request.user) or U.is_mechanic(request.user):
             technic_id = request.GET.get('tech_id')
             if technic_id:
-                try:
-                    technic = Technic.objects.get(pk=technic_id)
-                    technic.isArchive = True
-                    technic.save(update_fields=['isArchive'])
+                technic = TECHNIC_FUNC.delete_technic(technic_id)
+                if technic:
                     _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
                     _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
                     _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
