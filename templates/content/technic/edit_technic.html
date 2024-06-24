@@ -8,7 +8,8 @@
         <form method="post" id="edit_technic_form">{% csrf_token %}
             <div class="m-2 me-2">
                 <label>Название техники*
-                    <input class="form-control" name="title" type="text" placeholder="Например: МАЗ 10т." value="{{ technic.title }}" required/>
+                    <input class="form-control" name="title" type="text" placeholder="Например: МАЗ 10т."
+                           value="{{ technic.title }}" required/>
                 </label>
 
                 <label class="">Тип техники*
@@ -16,6 +17,9 @@
                     <select class="form-select" name="type" required>
                         <option></option>
                         {% for type in technic_type_list %}
+                            {% if technic.type == type %}
+                                <option selected="selected" value="{{ type }}">{{ type }}</option>
+                            {% endif %}
                             <option value="{{ type }}">{{ type }}</option>
                         {% endfor %}
 
@@ -59,9 +63,9 @@
             </div>
             <div class="m-2">
                 <label>Идентификационная информация*
-                    <input class="form-control" 
-                           name="id_information" 
-                           type="text" 
+                    <input class="form-control"
+                           name="id_information"
+                           type="text"
                            placeholder="Например: КА-7 1234"
                            value="{{ technic.id_information }}"
                            required/>

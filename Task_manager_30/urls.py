@@ -28,7 +28,7 @@ from dashboard.views import show_technic_application, show_material_application,
 from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
 from dashboard.views import construction_site_view, edit_construction_sites
-from dashboard.views import technic_view, edit_technic_view, delete_technic
+from dashboard.views import technic_view, edit_technic_view, delete_technic_view
 from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
 
 from dashboard.views import change_status_application_today, prepare_workday_for_app, check_application_status
@@ -61,7 +61,7 @@ urlpatterns = [
 
                   path('technics/', technic_view, name='technics'),
                   path('edit_technic/', edit_technic_view, name='edit_technic'),
-                  path('delete_technic/', delete_technic, name='delete_technic'),
+                  path('delete_technic/', delete_technic_view, name='delete_technic'),
 
                   path('construction_site/', construction_site_view, name='construction_site'),
                   path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),

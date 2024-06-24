@@ -815,11 +815,11 @@ def technic_sheet_view(request):
 #   Technic-------------------------------------------------------------------------------------------------------------
 def technic_view(request):
     if request.user.is_authenticated:
-        template = 'content/technic/technics.html'
         context = {'title': 'Техника'}
-        technics = Technic.objects.filter(isArchive=False).order_by('title')
+        technics = (Technic.objects.filter(isArchive=False).order_by('title')
+                    .select_related('attached_driver'))
         context['technics'] = technics
-        return render(request, template, context)
+        return render(request, 'content/technic/technics.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
@@ -835,10 +835,14 @@ def edit_technic_view(request):
         technic_type_list = set(Technic.objects.filter().values_list('type', flat=True))
         context['technic_type_list'] = sorted(technic_type_list)
 
-        if technic_id is not None:
-            technic = Technic.objects.get(pk=technic_id)
-            context['technic'] = technic
-            context['title'] = 'Редактировать технику'
+        if technic_id:
+            try:
+                technic = Technic.objects.get(pk=technic_id)
+                context['technic'] = technic
+                context['title'] = 'Редактировать технику'
+            except Technic.DoesNotExist:
+                log.error(f'Техники с id={technic_id} не существует')
+                return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
         if request.method == 'POST':
             data = request.POST
@@ -848,7 +852,7 @@ def edit_technic_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def delete_technic(request):
+def delete_technic_view(request):
     if request.user.is_authenticated:
         if U.is_administrator(request.user) or U.is_mechanic(request.user):
             technic_id = request.GET.get('tech_id')
@@ -864,9 +868,22 @@ def delete_technic(request):
                     _technic_sheet.delete()
                     for _app_today in _application_today:
                         U.check_application_today(_app_today)
-                    # technic.delete()
-                except Technic.DoesNotExist:
-                    return HttpResponseRedirect(ENDPOINTS.ERROR)
+                # try:
+                #     technic = Technic.objects.get(pk=technic_id)
+                #     technic.isArchive = True
+                #     technic.save(update_fields=['isArchive'])
+                #     _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
+                #     _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
+                #     _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
+                #     # _application_today = ApplicationToday.objects.filter(applicationtechnic__in=_application_technic)
+                #
+                #     _application_technic.delete()
+                #     _technic_sheet.delete()
+                #     for _app_today in _application_today:
+                #         U.check_application_today(_app_today)
+                #     # technic.delete()
+                # except Technic.DoesNotExist:
+                #     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
 

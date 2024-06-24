@@ -10,11 +10,8 @@
             <tr style="text-align: center">
                 <th>№</th>
                 <th>Название техники</th>
-{#                <th>Тип техники</th>#}
-{#                <th>Иден. информация</th>#}
                 <th>Описание</th>
                 <th>Прикрепленный водитель</th>
-{#                <th>Руководитель</th>#}
             </tr>
             </thead>
             <tbody>
@@ -22,19 +19,11 @@
                 <tr id="{{ technic.id }}" onclick=" location.href = `/edit_technic/?tech_id=${this.id}`">
                     <td>{{ forloop.counter }}</td>
                     <td><p class="m-0 fw-bolder">{{ technic.title }}</p><p class="m-0 fw-bolder small">[ {{ technic.id_information }} ]</p></td>
-{#                    <td>{{ technic.type }}</td>#}
-{#                    <td>{{ technic.id_information }}</td>#}
                     <td><p class="m-0 small">{{ technic.type }}</p><hr class="m-0"><p class="m-0 small">{{ technic.description }}</p></td>
                     <td>{% if technic.attached_driver %}
                         <span>{{ technic.attached_driver.last_name }}</span>
                         <span>{{ technic.attached_driver.first_name.0 }}.</span>
                     {% endif %}</td>
-{#                    <td>{% if technic.supervisor_technic %}{{ technic.supervisor_technic }}{% endif %}</td>#}
-{#                    <td class="m-0 ">#}
-{#                        <a href="{% url 'edit_technic'  %}?tech_id={{ technic.id }}" class="btn btn-sm btn-primary m-0" type="button"><i class="fa-regular fa-pen-to-square"></i></a></td>#}
-{#                    <td class="m-0 ps-0">#}
-{#                        <a href="{% url 'delete_technic'  %}?tech_id={{ technic.id }}" class="btn btn-sm btn-danger m-0" type="button"><i class="fa-solid fa-trash"></i></a>#}
-{#                    </td>#}
 
                 </tr>
             {% endfor %}
