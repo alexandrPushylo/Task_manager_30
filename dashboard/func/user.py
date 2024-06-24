@@ -20,7 +20,7 @@ def edit_user(user_id, data: dict) -> User | None:
         log.info('Пользователь %s %s был изменен', user.last_name, user.first_name)
         return user
     except User.DoesNotExist:
-        log.exception(User.DoesNotExist)
+        log.error(f'Пользователя с id={user_id} не существует')
         return None
 
 
@@ -36,7 +36,7 @@ def create_new_user(data: dict) -> User | None:
         is_staff=False,
         is_superuser=False
     )
-    log.info('Пользователь %s %s был создан', user.last_name, user.first_name)
+    log.info('Пользователь %s %s был добавлен', user.last_name, user.first_name)
     return user
 
 
@@ -88,5 +88,5 @@ def delete_user(user_id):
         log.info(f'Пользователь {user.last_name} {user.first_name} был помещен в архив')
         return user
     except User.DoesNotExist:
-        log.exception(User.DoesNotExist)
+        log.error(f'Пользователя с id={user_id} не существует')
         return None

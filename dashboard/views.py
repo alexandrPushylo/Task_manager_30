@@ -903,7 +903,6 @@ def delete_technic(request):
 #   User----------------------------------------------------------------------------------------------------------------
 def users_view(request):
     if request.user.is_authenticated:
-        template = 'content/users/users.html'
         context = {
             'title': 'Все пользователи',
             'users_list': [],
@@ -919,14 +918,13 @@ def users_view(request):
         else:
             users_list = []
         context['users_list'] = users_list
-        return render(request, template, context)
+        return render(request, 'content/users/users.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def edit_user_view(request):
     if request.user.is_authenticated:
-        template = 'content/users/edit_user.html'
         context = {'title': 'Добавить пользователя',
                    'posts': ASSETS.USER_POSTS_dict,
                    'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
@@ -934,22 +932,21 @@ def edit_user_view(request):
         if U.is_mechanic(request.user):
             context['posts'] = {ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER]}
         user_id = request.GET.get('user_id')
-        if user_id is not None:
-            _user = User.objects.get(pk=user_id)
-            context['user_list'] = _user
-            context['title'] = 'Изменить пользователя'
-
-            if request.method == 'POST':
-                data = request.POST
-                _user = USERS_FUNC.add_or_edit_user(data, user_id)
-                return HttpResponseRedirect(ENDPOINTS.USERS)
-        else:
-            if request.method == 'POST':
-                data = request.POST
-                _user = USERS_FUNC.add_or_edit_user(data, user_id=None)
+        if user_id:
+            try:
+                _user = User.objects.get(pk=user_id)
+                context['user_list'] = _user
+                context['title'] = 'Изменить пользователя'
+            except User.DoesNotExist:
+                log.error(f'Пользователя с id={user_id} не существует')
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
-        return render(request, template, context)
+        if request.method == 'POST':
+            data = request.POST
+            _user = USERS_FUNC.add_or_edit_user(data, user_id)
+            return HttpResponseRedirect(ENDPOINTS.USERS)
+
+        return render(request, 'content/users/edit_user.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
