@@ -24,6 +24,8 @@ import dashboard.func.user as USERS_FUNC
 import dashboard.func.technic as TECHNIC_FUNC
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
+from logger import getLogger
+log = getLogger(__name__)
 
 # Create your views here.
 
