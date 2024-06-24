@@ -27,6 +27,7 @@ DEBUG = creds.DEBUG
 TECH_SUPPORT_MODE = creds.TECH_SUPPORT_MODE
 
 ALLOWED_HOSTS = creds.ALLOWED_HOSTS
+INTERNAL_IPS = ['127.0.0.1', '10.0.0.3', 'localhost']
 
 # Application definition
 
@@ -37,8 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'dashboard.apps.DashboardConfig',
-    # 'fontawesomefree',
+
 ]
 
 MIDDLEWARE = [
@@ -49,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'Task_manager_30.urls'
