@@ -957,21 +957,21 @@ def delete_user_view(request):
 
 def construction_site_view(request):
     if request.user.is_authenticated:
-        template = 'content/construction_site/construction_sites.html'
-        context = {
-            'title': 'Строительные объекты'
-        }
+        context = {'title': 'Строительные объекты'}
+
         if U.is_administrator(request.user):
             context['construction_sites'] = ConstructionSite.objects.filter(
-                isArchive=False)
+                isArchive=False).select_related('foreman')
+
         if U.is_foreman(request.user):
             context['construction_sites'] = ConstructionSite.objects.filter(
                 foreman=request.user, isArchive=False).exclude(
-                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE))
+                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE)).select_related('foreman')
+
         if U.is_master(request.user):
             context['construction_sites'] = ConstructionSite.objects.filter(
                 foreman_id=request.user.supervisor_user_id, isArchive=False).exclude(
-                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE))
+                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE)).select_related('foreman')
 
         hide_constr_site_id = request.GET.get('hide')
         if hide_constr_site_id:
@@ -983,16 +983,15 @@ def construction_site_view(request):
             CONSTR_SITE_FUNC.delete_construction_site(constr_site_id=delete_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
-        return render(request, template, context)
+        return render(request, 'content/construction_site/construction_sites.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def edit_construction_sites(request):
     if request.user.is_authenticated:
-        template = 'content/construction_site/edit_construction_site.html'
         context = {
             'title': 'Изменить объект',
-            'foreman_list': User.objects.filter(isArchive=False, post=ASSETS.FOREMAN)
+            'foreman_list': User.objects.filter(isArchive=False, post=ASSETS.FOREMAN).order_by('last_name'),
         }
 
         if request.method == 'POST':
@@ -1003,9 +1002,14 @@ def edit_construction_sites(request):
 
         constr_site_id = request.GET.get('id')
         if constr_site_id:
-            context['constr_site'] = ConstructionSite.objects.get(id=constr_site_id)
+            try:
+                constr_site = ConstructionSite.objects.get(id=constr_site_id)
+                context['constr_site'] = constr_site
+            except ConstructionSite.DoesNotExist:
+                log.error(f'Объекта с id {constr_site_id} не существует')
+                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
-        return render(request, template, context)
+        return render(request, 'content/construction_site/edit_construction_site.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 

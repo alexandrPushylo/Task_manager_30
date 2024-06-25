@@ -60,7 +60,6 @@ def check_technic_data(data: dict) -> dict | None:
 
     if all((title, tech_type, id_information)):
         log.info(f'Данные: (title, tech_type, id_information) в порядке')
-        # return data
         out['title'] = title
         out['type'] = tech_type
         out['id_information'] = id_information
