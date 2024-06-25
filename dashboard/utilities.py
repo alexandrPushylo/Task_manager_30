@@ -64,19 +64,19 @@ def convert_str_to_date(str_date: str) -> date:
         print('Error date')
 
 
-def prepare_workday(_date):
-    if WorkDaySheet.objects.filter(date__gte=_date).count() < 14:
-        for n in range(14):
-            _day = TODAY + timedelta(days=n)
-            if _day.weekday() in (5, 6):
-                status = False
-            else:
-                status = True
-            WorkDaySheet.objects.update_or_create(date=_day, defaults={'status': status})
-
-        return WorkDaySheet.objects.get(date=_date)
-    else:
-        return False
+# def OLD_prepare_workday(_date):     # TODO: moved to FUNC
+#     if WorkDaySheet.objects.filter(date__gte=_date).count() < 14:
+#         for n in range(14):
+#             _day = TODAY + timedelta(days=n)
+#             if _day.weekday() in (5, 6):
+#                 status = False
+#             else:
+#                 status = True
+#             WorkDaySheet.objects.update_or_create(date=_day, defaults={'status': status})
+#
+#         return WorkDaySheet.objects.get(date=_date)
+#     else:
+#         return False
 
 
 def get_create_workday(_date):

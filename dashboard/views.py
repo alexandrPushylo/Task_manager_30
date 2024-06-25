@@ -23,6 +23,7 @@ import dashboard.variables as VAR
 import dashboard.func.user as USERS_FUNC
 import dashboard.func.technic as TECHNIC_FUNC
 import dashboard.func.construction_site as CONSTR_SITE_FUNC
+import dashboard.func.work_day_sheet as WORK_DAY_SHEET_FUNC
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
 from logger import getLogger
@@ -37,16 +38,9 @@ def dashboard(request):
 
     _current_day = request.GET.get('current_day')
     if _current_day is None or _current_day == '':
-        try:
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        except WorkDaySheet.DoesNotExist:
-            current_day = U.prepare_workday(U.TODAY)
+        current_day = WORK_DAY_SHEET_FUNC.get_workday(U.TODAY)
     else:
-        try:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
-        except WorkDaySheet.DoesNotExist:
-            U.prepare_workday(_current_day)
-            current_day = U.get_create_workday(_current_day)
+        current_day = WORK_DAY_SHEET_FUNC.get_workday(_current_day)
 
 
     if request.POST.get('operation') == 'change_read_only_mode':
@@ -703,34 +697,28 @@ def register_view(request):
 #   Sheets--------------------------------------------------------------------------------------------------------------
 def workday_sheet_view(request):
     if request.user.is_authenticated:
-        template = 'content/sheet/workday_sheet.html'
-        context = {
-            'title': 'Рабочие дни'
-        }
+        context = {'title': 'Рабочие дни'}
         context = U.get_prepared_data(context)
+
         if request.method == 'POST':
             day_id = request.POST.get('item_id')
-            if day_id is not None and day_id != '':
-                try:
-                    _day = WorkDaySheet.objects.get(id=day_id)
-                    _day.status = False if _day.status else True
-                    _day.save(update_fields=['status'])
-                except WorkDaySheet.DoesNotExist:
-                    pass
+            if day_id:
+                WORK_DAY_SHEET_FUNC.change_status(work_day_id=day_id)
 
         current_day = request.GET.get('current_day')
         if current_day is None or current_day == '':
             current_day = U.TODAY
-        U.prepare_workday(current_day)
+        WORK_DAY_SHEET_FUNC.prepare_workday(current_day)
 
-        workday = WorkDaySheet.objects.filter(Q(date__gte=current_day - U.timedelta(days=3)) &
-                                              Q(date__lte=current_day + U.timedelta(days=14))).values()
+        workday = (WorkDaySheet.objects
+                   .filter(Q(date__gte=current_day - U.timedelta(days=3)) &
+                           Q(date__lte=current_day + U.timedelta(days=7))).values())
 
         for day in workday:
             day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
 
         context['workday'] = workday
-        return render(request, template, context)
+        return render(request, 'content/sheet/workday_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
