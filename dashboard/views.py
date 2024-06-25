@@ -19,6 +19,16 @@ import dashboard.utilities as U
 import dashboard.variables as VAR
 # import dashboard.telegram_bot as T
 
+#   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+import dashboard.func.user as USERS_FUNC
+import dashboard.func.technic as TECHNIC_FUNC
+import dashboard.func.construction_site as CONSTR_SITE_FUNC
+import dashboard.func.work_day_sheet as WORK_DAY_SHEET_FUNC
+#   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+
+from logger import getLogger
+log = getLogger(__name__)
+
 # Create your views here.
 
 
@@ -28,16 +38,9 @@ def dashboard(request):
 
     _current_day = request.GET.get('current_day')
     if _current_day is None or _current_day == '':
-        try:
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        except WorkDaySheet.DoesNotExist:
-            current_day = U.prepare_workday(U.TODAY)
+        current_day = WORK_DAY_SHEET_FUNC.get_workday(U.TODAY)
     else:
-        try:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
-        except WorkDaySheet.DoesNotExist:
-            U.prepare_workday(_current_day)
-            current_day = U.get_create_workday(_current_day)
+        current_day = WORK_DAY_SHEET_FUNC.get_workday(_current_day)
 
 
     if request.POST.get('operation') == 'change_read_only_mode':
@@ -667,7 +670,10 @@ def logout_view(request):
 def register_view(request):
     template = 'content/register.html'
     context = {
-        'user_posts': ASSETS.USER_POSTS_dict,
+        'user_posts': {
+            ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE],
+            ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER],
+        },
         'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
     }
 
@@ -675,7 +681,7 @@ def register_view(request):
         return render(request, template, context)
     if request.method == 'POST':
         data = request.POST
-        new_user = U.add_user(data)
+        new_user = USERS_FUNC.add_or_edit_user(data, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
@@ -691,34 +697,28 @@ def register_view(request):
 #   Sheets--------------------------------------------------------------------------------------------------------------
 def workday_sheet_view(request):
     if request.user.is_authenticated:
-        template = 'content/sheet/workday_sheet.html'
-        context = {
-            'title': 'Рабочие дни'
-        }
+        context = {'title': 'Рабочие дни'}
         context = U.get_prepared_data(context)
+
         if request.method == 'POST':
             day_id = request.POST.get('item_id')
-            if day_id is not None and day_id != '':
-                try:
-                    _day = WorkDaySheet.objects.get(id=day_id)
-                    _day.status = False if _day.status else True
-                    _day.save(update_fields=['status'])
-                except WorkDaySheet.DoesNotExist:
-                    pass
+            if day_id:
+                WORK_DAY_SHEET_FUNC.change_status(work_day_id=day_id)
 
         current_day = request.GET.get('current_day')
         if current_day is None or current_day == '':
             current_day = U.TODAY
-        U.prepare_workday(current_day)
+        WORK_DAY_SHEET_FUNC.prepare_workday(current_day)
 
-        workday = WorkDaySheet.objects.filter(Q(date__gte=current_day - U.timedelta(days=3)) &
-                                              Q(date__lte=current_day + U.timedelta(days=14))).values()
+        workday = (WorkDaySheet.objects
+                   .filter(Q(date__gte=current_day - U.timedelta(days=3)) &
+                           Q(date__lte=current_day + U.timedelta(days=7))).values())
 
         for day in workday:
             day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
 
         context['workday'] = workday
-        return render(request, template, context)
+        return render(request, 'content/sheet/workday_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
@@ -804,11 +804,11 @@ def technic_sheet_view(request):
 #   Technic-------------------------------------------------------------------------------------------------------------
 def technic_view(request):
     if request.user.is_authenticated:
-        template = 'content/technic/technics.html'
         context = {'title': 'Техника'}
-        technics = Technic.objects.filter(isArchive=False).order_by('title')
+        technics = (Technic.objects.filter(isArchive=False).order_by('title')
+                    .select_related('attached_driver'))
         context['technics'] = technics
-        return render(request, template, context)
+        return render(request, 'content/technic/technics.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
@@ -824,56 +824,30 @@ def edit_technic_view(request):
         technic_type_list = set(Technic.objects.filter().values_list('type', flat=True))
         context['technic_type_list'] = sorted(technic_type_list)
 
-        if technic_id is not None:
-            technic = Technic.objects.get(pk=technic_id)
-            context['technic'] = technic
-            context['title'] = 'Редактировать технику'
+        if technic_id:
+            try:
+                technic = Technic.objects.get(pk=technic_id)
+                context['technic'] = technic
+                context['title'] = 'Редактировать технику'
+            except Technic.DoesNotExist:
+                log.error(f'Техники с id={technic_id} не существует')
+                return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
         if request.method == 'POST':
-            print(request.POST)
-            _title = request.POST.get('title')
-            _type = request.POST.get('type')
-            _attached_driver = request.POST.get('attached_driver')
-            _supervisor = request.POST.get('supervisor')
-            _id_information = request.POST.get('id_information')
-            _description = request.POST.get('description')
-
-            if all([_title, _type, _id_information]):
-                if technic_id is None:
-                    Technic.objects.create(
-                        title=_title,
-                        type=_type,
-                        id_information=_id_information,
-                        attached_driver=User.objects.get(pk=_attached_driver) if _attached_driver else None,
-                        supervisor_technic=_supervisor,
-                        description=_description
-                    )
-                else:
-                    try:
-                        technic = Technic.objects.get(pk=technic_id)
-                        technic.title = _title
-                        technic.type = _type
-                        technic.id_information = _id_information
-                        technic.attached_driver = User.objects.get(pk=_attached_driver) if _attached_driver else None
-                        technic.supervisor_technic = _supervisor
-                        technic.description = _description
-                        technic.save()
-                    except Technic.DoesNotExist:
-                        return HttpResponseRedirect(ENDPOINTS.ERROR)
-                return HttpResponseRedirect(ENDPOINTS.TECHNICS)
+            data = request.POST
+            TECHNIC_FUNC.add_or_edit_technic(data, technic_id)
+            return HttpResponseRedirect(ENDPOINTS.TECHNICS)
         return render(request, template, context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def delete_technic(request):
+def delete_technic_view(request):
     if request.user.is_authenticated:
         if U.is_administrator(request.user) or U.is_mechanic(request.user):
             technic_id = request.GET.get('tech_id')
             if technic_id:
-                try:
-                    technic = Technic.objects.get(pk=technic_id)
-                    technic.isArchive = True
-                    technic.save(update_fields=['isArchive'])
+                technic = TECHNIC_FUNC.delete_technic(technic_id)
+                if technic:
                     _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
                     _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
                     _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
@@ -883,9 +857,22 @@ def delete_technic(request):
                     _technic_sheet.delete()
                     for _app_today in _application_today:
                         U.check_application_today(_app_today)
-                    # technic.delete()
-                except Technic.DoesNotExist:
-                    return HttpResponseRedirect(ENDPOINTS.ERROR)
+                # try:
+                #     technic = Technic.objects.get(pk=technic_id)
+                #     technic.isArchive = True
+                #     technic.save(update_fields=['isArchive'])
+                #     _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
+                #     _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
+                #     _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
+                #     # _application_today = ApplicationToday.objects.filter(applicationtechnic__in=_application_technic)
+                #
+                #     _application_technic.delete()
+                #     _technic_sheet.delete()
+                #     for _app_today in _application_today:
+                #         U.check_application_today(_app_today)
+                #     # technic.delete()
+                # except Technic.DoesNotExist:
+                #     return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
 
@@ -895,7 +882,6 @@ def delete_technic(request):
 #   User----------------------------------------------------------------------------------------------------------------
 def users_view(request):
     if request.user.is_authenticated:
-        template = 'content/users/users.html'
         context = {
             'title': 'Все пользователи',
             'users_list': [],
@@ -911,14 +897,13 @@ def users_view(request):
         else:
             users_list = []
         context['users_list'] = users_list
-        return render(request, template, context)
+        return render(request, 'content/users/users.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def edit_user_view(request):
     if request.user.is_authenticated:
-        template = 'content/users/edit_user.html'
         context = {'title': 'Добавить пользователя',
                    'posts': ASSETS.USER_POSTS_dict,
                    'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
@@ -926,43 +911,32 @@ def edit_user_view(request):
         if U.is_mechanic(request.user):
             context['posts'] = {ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER]}
         user_id = request.GET.get('user_id')
-        if user_id is not None:
-            _user = User.objects.get(pk=user_id)
-            context['user_list'] = _user
-            context['title'] = 'Изменить пользователя'
-
-            if request.method == 'POST':
-                data = request.POST
-                _user = U.add_user(data, user_id=user_id)
-                return HttpResponseRedirect(ENDPOINTS.USERS)
-        else:
-            if request.method == 'POST':
-                data = request.POST
-                _user = U.add_user(data)
+        if user_id:
+            try:
+                _user = User.objects.get(pk=user_id)
+                context['user_list'] = _user
+                context['title'] = 'Изменить пользователя'
+            except User.DoesNotExist:
+                log.error(f'Пользователя с id={user_id} не существует')
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
-        return render(request, template, context)
+        if request.method == 'POST':
+            data = request.POST
+            _user = USERS_FUNC.add_or_edit_user(data, user_id)
+            return HttpResponseRedirect(ENDPOINTS.USERS)
+
+        return render(request, 'content/users/edit_user.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def delete_user(request):
+def delete_user_view(request):
     if request.user.is_authenticated:
         if request.user.post == ASSETS.ADMINISTRATOR:
             user_id = request.GET.get('user_id')
             if user_id:
-                try:
-                    _user = User.objects.get(pk=user_id)
-                    _user.isArchive = True
-                    _user.save(update_fields=['isArchive'])
-
+                _user = USERS_FUNC.delete_user(user_id)
+                if _user:
                     DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).delete()
-                    # DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).update(isArchive=True)
-                    # TechnicSheet.objects.filter(
-                    #     date__date__gte=U.TODAY, driver_sheet__isArchive=True).update(driver_sheet=None)
-
-                    # _user.delete()
-                except User.DoesNotExist:
-                    return HttpResponseRedirect(ENDPOINTS.ERROR)
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 
@@ -971,70 +945,59 @@ def delete_user(request):
 
 def construction_site_view(request):
     if request.user.is_authenticated:
-        template = 'content/construction_site/construction_sites.html'
-        context = {
-            'title': 'Строительные объекты'
-        }
+        context = {'title': 'Строительные объекты'}
+
         if U.is_administrator(request.user):
             context['construction_sites'] = ConstructionSite.objects.filter(
-                isArchive=False)
+                isArchive=False).select_related('foreman')
+
         if U.is_foreman(request.user):
             context['construction_sites'] = ConstructionSite.objects.filter(
                 foreman=request.user, isArchive=False).exclude(
-                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE))
+                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE)).select_related('foreman')
+
         if U.is_master(request.user):
             context['construction_sites'] = ConstructionSite.objects.filter(
                 foreman_id=request.user.supervisor_user_id, isArchive=False).exclude(
-                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE))
+                address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE)).select_related('foreman')
 
         hide_constr_site_id = request.GET.get('hide')
-        constr_id = request.GET.get('delete')
         if hide_constr_site_id:
-            constr_site = ConstructionSite.objects.get(id=hide_constr_site_id)
-            constr_site.status = False if constr_site.status else True
-            constr_site.save(update_fields=['status'])
-            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
-        elif constr_id:
-            constr_site = ConstructionSite.objects.get(id=constr_id)
-            constr_site.isArchive = False if constr_site.isArchive else True
-            constr_site.save(update_fields=['isArchive'])
+            CONSTR_SITE_FUNC.hide_construction_site(constr_site_id=hide_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
-        return render(request, template, context)
+        delete_constr_site_id = request.GET.get('delete')
+        if delete_constr_site_id:
+            CONSTR_SITE_FUNC.delete_construction_site(constr_site_id=delete_constr_site_id)
+            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+
+        return render(request, 'content/construction_site/construction_sites.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def edit_construction_sites(request):
     if request.user.is_authenticated:
-        template = 'content/construction_site/edit_construction_site.html'
         context = {
             'title': 'Изменить объект',
-            'foreman_list': User.objects.filter(isArchive=False, post=ASSETS.FOREMAN)
+            'foreman_list': User.objects.filter(isArchive=False, post=ASSETS.FOREMAN).order_by('last_name'),
         }
 
         if request.method == 'POST':
             _id = request.POST.get('id')
-            _address = request.POST.get('address')
-            _foreman = request.POST.get('foreman')
-            foreman = User.objects.get(id=_foreman) if _foreman is not None and _foreman != '' else None
-            if all([_id, _address]):
-                constr_site = ConstructionSite.objects.get(id=_id)
-                constr_site.address = _address
-                constr_site.foreman = foreman
-                constr_site.save()
-                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
-            elif _address is not None:
-                ConstructionSite.objects.create(
-                    address=_address,
-                    foreman=foreman
-                )
-                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+            data = request.POST
+            CONSTR_SITE_FUNC.create_or_edit_construction_site(data, _id)
+            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
         if constr_site_id:
-            context['constr_site'] = ConstructionSite.objects.get(id=constr_site_id)
+            try:
+                constr_site = ConstructionSite.objects.get(id=constr_site_id)
+                context['constr_site'] = constr_site
+            except ConstructionSite.DoesNotExist:
+                log.error(f'Объекта с id {constr_site_id} не существует')
+                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
-        return render(request, template, context)
+        return render(request, 'content/construction_site/edit_construction_site.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 

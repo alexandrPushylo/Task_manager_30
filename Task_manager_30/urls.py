@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from Task_manager_30.settings import TECH_SUPPORT_MODE
@@ -28,8 +28,8 @@ from dashboard.views import show_technic_application, show_material_application,
 from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
 from dashboard.views import construction_site_view, edit_construction_sites
-from dashboard.views import technic_view, edit_technic_view, delete_technic
-from dashboard.views import users_view, edit_user_view, delete_user, profile_view
+from dashboard.views import technic_view, edit_technic_view, delete_technic_view
+from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
 
 from dashboard.views import change_status_application_today, prepare_workday_for_app, check_application_status
 from dashboard.views import settings_view
@@ -56,12 +56,12 @@ urlpatterns = [
 
                   path('users/', users_view, name='users'),
                   path('edit_user/', edit_user_view, name='edit_user'),
-                  path('delete_user/', delete_user, name='delete_user'),
+                  path('delete_user/', delete_user_view, name='delete_user'),
                   path('profile/', profile_view, name='profile'),
 
                   path('technics/', technic_view, name='technics'),
                   path('edit_technic/', edit_technic_view, name='edit_technic'),
-                  path('delete_technic/', delete_technic, name='delete_technic'),
+                  path('delete_technic/', delete_technic_view, name='delete_technic'),
 
                   path('construction_site/', construction_site_view, name='construction_site'),
                   path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
@@ -85,3 +85,8 @@ urlpatterns = [
 
 if TECH_SUPPORT_MODE:
     urlpatterns = [re_path(r'^.*', maintenance_view)] + urlpatterns
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

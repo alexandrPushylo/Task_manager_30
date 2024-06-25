@@ -3,9 +3,9 @@ certifi==2023.7.22
 cffi==1.16.0
 charset-normalizer==3.3.0
 cryptography==41.0.4
-Django==4.1
+Django==5.0.6
+django-debug-toolbar==4.4.2
 django-webpush==0.3.5
-#fontawesomefree==6.5.1
 http_ece==1.1.0
 idna==3.4
 Pillow==10.1.0
