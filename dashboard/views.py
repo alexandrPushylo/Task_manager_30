@@ -22,6 +22,7 @@ import dashboard.variables as VAR
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 import dashboard.func.user as USERS_FUNC
 import dashboard.func.technic as TECHNIC_FUNC
+import dashboard.func.construction_site as CONSTR_SITE_FUNC
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
 from logger import getLogger
@@ -973,16 +974,13 @@ def construction_site_view(request):
                 address__in=(ASSETS.CS_SUPPLY_TITLE, ASSETS.CS_SPEC_TITLE))
 
         hide_constr_site_id = request.GET.get('hide')
-        constr_id = request.GET.get('delete')
         if hide_constr_site_id:
-            constr_site = ConstructionSite.objects.get(id=hide_constr_site_id)
-            constr_site.status = False if constr_site.status else True
-            constr_site.save(update_fields=['status'])
+            CONSTR_SITE_FUNC.hide_construction_site(constr_site_id=hide_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
-        elif constr_id:
-            constr_site = ConstructionSite.objects.get(id=constr_id)
-            constr_site.isArchive = False if constr_site.isArchive else True
-            constr_site.save(update_fields=['isArchive'])
+
+        delete_constr_site_id = request.GET.get('delete')
+        if delete_constr_site_id:
+            CONSTR_SITE_FUNC.delete_construction_site(constr_site_id=delete_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         return render(request, template, context)
@@ -999,21 +997,9 @@ def edit_construction_sites(request):
 
         if request.method == 'POST':
             _id = request.POST.get('id')
-            _address = request.POST.get('address')
-            _foreman = request.POST.get('foreman')
-            foreman = User.objects.get(id=_foreman) if _foreman is not None and _foreman != '' else None
-            if all([_id, _address]):
-                constr_site = ConstructionSite.objects.get(id=_id)
-                constr_site.address = _address
-                constr_site.foreman = foreman
-                constr_site.save()
-                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
-            elif _address is not None:
-                ConstructionSite.objects.create(
-                    address=_address,
-                    foreman=foreman
-                )
-                return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+            data = request.POST
+            CONSTR_SITE_FUNC.create_or_edit_construction_site(data, _id)
+            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
         if constr_site_id:
