@@ -348,7 +348,7 @@ def get_next_work_day(current_work_day) -> WorkDaySheet:
     return next_work_day
 
 
-def get_prepared_data(context: dict, current_day=TODAY) -> dict:
+def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
     _work_days = get_work_days().values()
     for work_day in _work_days:
         work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
