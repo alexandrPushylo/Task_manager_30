@@ -24,6 +24,7 @@ import dashboard.func.user as USERS_FUNC
 import dashboard.func.technic as TECHNIC_FUNC
 import dashboard.func.construction_site as CONSTR_SITE_FUNC
 import dashboard.func.work_day_sheet as WORK_DAY_SHEET_FUNC
+import dashboard.func.driver_sheet as DRIVER_SHEET_FUNC
 #   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
 from logger import getLogger
@@ -732,26 +733,25 @@ def driver_sheet_view(request):
         if request.method == "POST":
             driver_sheet_id = request.POST.get('item_id')
             if driver_sheet_id is not None and driver_sheet_id != '':
-                try:
-                    _ds = DriverSheet.objects.get(id=driver_sheet_id)
-                    _ds.status = False if _ds.status else True
-                    _ds.save(update_fields=['status'])
-                except DriverSheet.DoesNotExist:
-                    pass
-        if True:
-            current_day = request.GET.get('current_day')
-            if current_day is None or current_day == '':
-                current_day = WorkDaySheet.objects.get(date=U.TODAY)
-            else:
-                current_day = WorkDaySheet.objects.get(date=current_day)
-            context = U.get_prepared_data(context, current_day.date)
-            if current_day.status:
-                U.prepare_driver_sheet(current_day)
-            driver_sheet = DriverSheet.objects.filter(isArchive=False, date=current_day).order_by('driver__last_name')
-            context['driver_sheets'] = driver_sheet
-            context['current_day'] = current_day
+                DRIVER_SHEET_FUNC.change_status(driver_sheet_id=driver_sheet_id)
 
-        return render(request, template, context)
+        _current_day = request.GET.get('current_day')
+        if _current_day is None or _current_day == '':
+            current_day = WORK_DAY_SHEET_FUNC.get_workday(U.TODAY)
+        else:
+            current_day = WORK_DAY_SHEET_FUNC.get_workday(_current_day)
+
+        context = U.get_prepared_data(context, current_day.date)
+
+        if current_day.status:
+            DRIVER_SHEET_FUNC.create_driver_sheets(current_day)
+        driver_sheet = (DriverSheet.objects.filter(isArchive=False, date=current_day)
+                        .order_by('driver__last_name')
+                        .select_related('driver'))
+        context['driver_sheets'] = driver_sheet
+        context['current_day'] = current_day
+
+        return render(request, 'content/sheet/driver_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
