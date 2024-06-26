@@ -725,10 +725,7 @@ def workday_sheet_view(request):
 
 def driver_sheet_view(request):
     if request.user.is_authenticated:
-        template = 'content/sheet/driver_sheet.html'
-        context = {
-            'title': 'Табель: водители'
-        }
+        context = {'title': 'Табель: водители'}
 
         if request.method == "POST":
             driver_sheet_id = request.POST.get('item_id')
