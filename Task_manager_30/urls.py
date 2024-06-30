@@ -31,7 +31,7 @@ from dashboard.views import construction_site_view, edit_construction_sites
 from dashboard.views import technic_view, edit_technic_view, delete_technic_view
 from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
 
-from dashboard.views import change_status_application_today, prepare_workday_for_app, check_application_status
+from dashboard.views import change_status_application_today, change_weekend_to_workday, check_application_status
 from dashboard.views import settings_view
 from dashboard.views import maintenance_view
 from dashboard.views import def_test
@@ -50,7 +50,7 @@ urlpatterns = [
                   path('material_application_supply/', material_application_supply_view,
                        name='material_application_supply'),
 
-                  path('work_day/', workday_sheet_view, name='work_day'),
+                  path('work_days/', workday_sheet_view, name='work_days'),
                   path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
                   path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
 
@@ -74,7 +74,7 @@ urlpatterns = [
                   path('settings/', settings_view, name='settings'),
 
                   path('change_app_status/', change_status_application_today, name='change_app_status'),
-                  path('pr_wd_f_app/', prepare_workday_for_app, name='prepare_workday_for_app'),
+                  path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),
                   path('ck_app_stat/', check_application_status, name='check_application_status'),
                   path('test/', def_test, name='test'),
 
