@@ -2,6 +2,7 @@ from dashboard.models import Technic, User
 import dashboard.assets as ASSETS
 
 from logger import getLogger
+
 log = getLogger(__name__)
 
 
@@ -43,17 +44,14 @@ def check_technic_data(data: dict) -> dict | None:
     supervisor = data.get('supervisor')
 
     if supervisor not in (ASSETS.MECHANIC, ASSETS.SUPPLY):
-        # data['supervisor'] = ASSETS.MECHANIC
         out['supervisor'] = ASSETS.MECHANIC
 
     if attached_driver:
         try:
             driver = User.objects.get(pk=attached_driver)
-            # data['attached_driver'] = driver
             out['attached_driver'] = driver
         except User.DoesNotExist:
             log.error(f'Прикрепленного водителя с id={attached_driver} не существует')
-            # data['attached_driver'] = None
             out['attached_driver'] = None
     else:
         out['attached_driver'] = None
@@ -77,12 +75,12 @@ def add_or_edit_technic(data, technic_id=None):
         if prepare_data:
             edit_technic(technic_id, prepare_data)
         else:
-            log.error('Ошибка с данными "user_data" при изменении техники')
+            log.error('Ошибка с данными "technic_data" при изменении техники')
     else:
         if prepare_data:
             create_new_technic(prepare_data)
         else:
-            log.error('Ошибка с данными "user_data" при создании техники')
+            log.error('Ошибка с данными "technic_data" при создании техники')
 
 
 def delete_technic(technic_id):
@@ -95,3 +93,42 @@ def delete_technic(technic_id):
     except Technic.DoesNotExist:
         log.error(f'Техники с id={technic_id} не существует')
         return None
+
+
+def get_technics_queryset(select_related: tuple = (),
+                          order_by: tuple = (),
+                          **kwargs) -> Technic.objects:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+    technics = Technic.objects.filter(**kwargs)
+
+    if select_related:
+        technics = technics.select_related(*select_related)
+    if order_by:
+        technics = technics.order_by(*order_by)
+    return technics
+
+
+def get_technic(**kwargs) -> Technic | None:
+    try:
+        technic = Technic.objects.get(**kwargs)
+        return technic
+    except Technic.DoesNotExist:
+        log.error("get_technic(): Technic.DoesNotExist ")
+        return None
+    except ValueError:
+        log.error("get_technic(): ValueError")
+        return None
+
+
+def get_supply_technic_list() -> Technic.objects:
+    """
+    Получить список техники для supply
+    :return: Technic.objects.filter()
+    """
+    technic_list = get_technics_queryset(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
+    return technic_list

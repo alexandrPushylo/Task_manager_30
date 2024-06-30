@@ -1,3 +1,5 @@
+from django.http import HttpResponseRedirect
+
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite, ApplicationMaterial
 from django.db.models.query import QuerySet
 from django.db.models import Q
@@ -6,19 +8,30 @@ from dashboard.models import Technic
 # from dashboard.models import Administrator, Foreman, Master, Mechanic, Driver, Supply, Employee
 from dashboard.models import User
 from dashboard.models import Parameter
+from logger import getLogger
 
 #   ------------------------------------------------------------------------------------------------------------------
 
 
 from datetime import date, timedelta, datetime
 import random
-from functools import cmp_to_key
-
+import Task_manager_30.endpoints as ENDPOINTS
 import dashboard.assets as ASSETS
 import dashboard.telegram_bot as T
 import dashboard.variables as VAR
+import dashboard.services.user as USERS_SERVICE
+import dashboard.services.technic as TECHNIC_SERVICE
+import dashboard.services.construction_site as CONSTR_SITE_SERVICE
+import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
+import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
+import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
+import dashboard.services.dashboard as DASHBOARD_SERVICE
+import dashboard.services.application_today as APP_TODAY_SERVICE
+import dashboard.services.application_technic as APP_TECHNIC_SERVICE
+import dashboard.services.application_material as APP_MATERIAL_SERVICE
 
 #   ------------------------------------------------------------------------------------------------------------------
+log = getLogger(__name__)
 
 TODAY = date.today()
 NOW = datetime.now().time()
@@ -91,7 +104,12 @@ def get_create_workday(_date):
         return WorkDaySheet.objects.create(date=_date, status=_status)
 
 
-def get_weekday(_date) -> str | None:
+def get_weekday(_date: date) -> str | None:
+    """
+    Получить день недели на русском языке
+    :param _date:
+    :return:
+    """
     if isinstance(_date, str):
         weekday = datetime.strptime(_date, '%Y-%m-%d').weekday()
     elif isinstance(_date, WorkDaySheet):
@@ -106,30 +124,30 @@ def get_weekday(_date) -> str | None:
         return None
 
 
-def prepare_driver_sheet(workday: WorkDaySheet):
-    driver_list = User.objects.filter(isArchive=False, post=ASSETS.DRIVER)
-    count_driver = len(driver_list)
-
-    driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday)
-    count_driver_sheet = len(driver_sheet_list)
-
-    last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
-    last_driver_sheet = DriverSheet.objects.filter(isArchive=False, date=last_workday)
-    if count_driver > count_driver_sheet:
-
-        if last_driver_sheet.exists():
-            for driver in last_driver_sheet:
-                DriverSheet.objects.get_or_create(date=workday,
-                                                  driver=driver.driver,
-                                                  status=driver.status)
-        else:
-            for driver in driver_list:
-                DriverSheet.objects.get_or_create(date=workday, driver=driver)
-        print('+')
-    elif count_driver < count_driver_sheet:
-        print('-')
-    else:
-        print('=')
+# def prepare_driver_sheet(workday: WorkDaySheet):
+#     driver_list = User.objects.filter(isArchive=False, post=ASSETS.DRIVER)
+#     count_driver = len(driver_list)
+#
+#     driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday)
+#     count_driver_sheet = len(driver_sheet_list)
+#
+#     last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
+#     last_driver_sheet = DriverSheet.objects.filter(isArchive=False, date=last_workday)
+#     if count_driver > count_driver_sheet:
+#
+#         if last_driver_sheet.exists():
+#             for driver in last_driver_sheet:
+#                 DriverSheet.objects.get_or_create(date=workday,
+#                                                   driver=driver.driver,
+#                                                   status=driver.status)
+#         else:
+#             for driver in driver_list:
+#                 DriverSheet.objects.get_or_create(date=workday, driver=driver)
+#         print('+')
+#     elif count_driver < count_driver_sheet:
+#         print('-')
+#     else:
+#         print('=')
 
 
 def prepare_technic_sheet(workday: WorkDaySheet):
@@ -143,7 +161,7 @@ def prepare_technic_sheet(workday: WorkDaySheet):
     last_technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=last_workday)
     driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday, status=True)
 
-    autocomplete_technic_sheet(technic_sheet_list)
+    # autocomplete_technic_sheet(technic_sheet_list)
 
     if count_technic > count_technic_sheet:
         print('+')
@@ -263,16 +281,16 @@ def get_short_technic_name(short_technic_name: str, current_date: WorkDaySheet) 
         return None
 
 
-def calculate_technic_sheet_count_application(technic_sheet_list: QuerySet):
-    if isinstance(technic_sheet_list, QuerySet):
-        for technic_sheet_id in technic_sheet_list:
-            _t_sh = TechnicSheet.objects.get(id=technic_sheet_id)
-            _at_count = ApplicationTechnic.objects.filter(
-                technic_sheet_id=technic_sheet_id,
-                isChecked=False, is_cancelled=False).count()
-            if _at_count > 0:
-                _t_sh.count_application = _at_count - 1
-                _t_sh.save()
+# def calculate_technic_sheet_count_application(technic_sheet_list: QuerySet):
+#     if isinstance(technic_sheet_list, QuerySet):
+#         for technic_sheet_id in technic_sheet_list:
+#             _t_sh = TechnicSheet.objects.get(id=technic_sheet_id)
+#             _at_count = ApplicationTechnic.objects.filter(
+#                 technic_sheet_id=technic_sheet_id,
+#                 isChecked=False, is_cancelled=False).count()
+#             if _at_count > 0:
+#                 _t_sh.count_application = _at_count - 1
+#                 _t_sh.save()
 
 
 def decrement_all_technic_sheet(current_date: WorkDaySheet):
@@ -336,37 +354,38 @@ def get_work_days():
     return work_days
 
 
-def get_prev_work_day(current_work_day) -> WorkDaySheet:
-    prev_work_day = WorkDaySheet.objects.filter(date__lt=current_work_day,
-                                                status=True).first()
-    return prev_work_day
-
-
-def get_next_work_day(current_work_day) -> WorkDaySheet:
-    next_work_day = WorkDaySheet.objects.filter(date__gt=current_work_day,
-                                                status=True).last()
-    return next_work_day
+# def get_prev_work_day(current_work_day) -> WorkDaySheet:
+#     prev_work_day = WorkDaySheet.objects.filter(date__lt=current_work_day,
+#                                                 status=True).first()
+#     return prev_work_day
+#
+#
+# def get_next_work_day(current_work_day) -> WorkDaySheet:
+#     next_work_day = WorkDaySheet.objects.filter(date__gt=current_work_day,
+#                                                 status=True).last()
+#     return next_work_day
 
 
 def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
-    _work_days = get_work_days().values()
-    for work_day in _work_days:
-        work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
 
-    context['work_days'] = _work_days
+    workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
+    for workday in workdays:
+        workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
+    context['work_days'] = workdays
+
     context['today'] = TODAY
-    context['prev_work_day'] = get_prev_work_day(current_day)
-    context['next_work_day'] = get_next_work_day(current_day)
+    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_day)
+    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_day)
     context['weekday'] = get_weekday(current_day)
     context['edit_mode'] = get_edit_mode(current_day)
-    # context['weekday'] = ASSETS.WEEKDAY[current_day.weekday()]
+    change_reception_apps_mode_auto()
     return context
 
 
 def prepare_sheets(work_day: WorkDaySheet):
-    prepare_driver_sheet(work_day)
-    prepare_technic_sheet(work_day)
-    print('prepare_sheets OK')
+    DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
+    TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=work_day)
+    log.info(f"Prepare sheets done")
 
 
 def get_busiest_technic_sheet(work_day: WorkDaySheet):
@@ -433,25 +452,25 @@ def get_priority_id_list(work_day: WorkDaySheet) -> list:
     return _out
 
 
-def get_status_list_application_today(work_day: WorkDaySheet) -> dict:
-    _out = {ASSETS.ABSENT: [],
-            ASSETS.SAVED: [],
-            ASSETS.SUBMITTED: [],
-            ASSETS.APPROVED: [],
-            ASSETS.SEND: []}
-    application_today_list = ApplicationToday.objects.filter(date=work_day, isArchive=False)
-    for application in application_today_list:
-        if application.status == ASSETS.ABSENT:
-            _out[ASSETS.ABSENT].append(application.id)
-        elif application.status == ASSETS.SAVED:
-            _out[ASSETS.SAVED].append(application.id)
-        elif application.status == ASSETS.SUBMITTED:
-            _out[ASSETS.SUBMITTED].append(application.id)
-        elif application.status == ASSETS.APPROVED:
-            _out[ASSETS.APPROVED].append(application.id)
-        elif application.status == ASSETS.SEND:
-            _out[ASSETS.SEND].append(application.id)
-    return _out
+# def get_status_list_application_today(work_day: WorkDaySheet) -> dict:
+#     _out = {ASSETS.ABSENT: [],
+#             ASSETS.SAVED: [],
+#             ASSETS.SUBMITTED: [],
+#             ASSETS.APPROVED: [],
+#             ASSETS.SEND: []}
+#     application_today_list = ApplicationToday.objects.filter(date=work_day, isArchive=False)
+#     for application in application_today_list:
+#         if application.status == ASSETS.ABSENT:
+#             _out[ASSETS.ABSENT].append(application.id)
+#         elif application.status == ASSETS.SAVED:
+#             _out[ASSETS.SAVED].append(application.id)
+#         elif application.status == ASSETS.SUBMITTED:
+#             _out[ASSETS.SUBMITTED].append(application.id)
+#         elif application.status == ASSETS.APPROVED:
+#             _out[ASSETS.APPROVED].append(application.id)
+#         elif application.status == ASSETS.SEND:
+#             _out[ASSETS.SEND].append(application.id)
+#     return _out
 
 
 def set_color_for_list(l: list) -> dict:
@@ -501,51 +520,56 @@ def change_is_cancelled(app_tech_id):
         return 0
 
 
-def change_is_checked(app_tech_id, application_today_id):
-    if app_tech_id and application_today_id:
-        try:
-            _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
-            _app_today = ApplicationToday.objects.get(id=application_today_id)
-        except:
-            return -1
+def accept_app_tech_to_supply(app_tech_id, application_today_id):
+    """
+    Принять заявку ApplicationTechnic(id=app_tech_id) для supply
+    :param app_tech_id:
+    :param application_today_id:
+    :return:
+    """
+    application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_tech_id)
+    application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+    if all((application_technic, application_today)):
 
-        if _app_tech.is_cancelled:
-            _app_tech.is_cancelled = False
-            _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
-            _app_tech.technic_sheet.increment_count_application()
-            _app_tech.technic_sheet.save()
-            _app_tech.save()
+        if application_technic.is_cancelled:
+            application_technic.is_cancelled = False
+            application_technic.description = application_technic.description.replace(ASSETS.MESSAGES['reject'], "")
+            application_technic.technic_sheet.increment_count_application()
+            application_technic.technic_sheet.save()
+            application_technic.save()
 
-        str_constr_site = f"{_app_tech.application_today.construction_site.address} ({_app_tech.application_today.construction_site.foreman.last_name}):\n"
-        str_desc = str_constr_site + _app_tech.description + '\n'
+        str_constr_site = f"{application_technic.application_today.construction_site.address} ({application_technic.application_today.construction_site.foreman.last_name}):\n"
+        str_desc = str_constr_site + application_technic.description + '\n'
 
-        if not _app_tech.isChecked:
-            _new_app_tech, created = ApplicationTechnic.objects.get_or_create(technic_sheet=_app_tech.technic_sheet,
-                                                                              application_today=_app_today,
-                                                                              id_orig_app=_app_tech.id)
-            # _new_app_tech.id_orig_app = _app_tech.id
+        if not application_technic.isChecked:
+            _new_app_tech, created = ApplicationTechnic.objects.get_or_create(
+                technic_sheet=application_technic.technic_sheet,
+                application_today=application_today,
+                id_orig_app=application_technic.id)
             _new_app_tech.description = _new_app_tech.description + str_desc if _new_app_tech.description else str_desc
             _new_app_tech.save()
 
-            _app_tech.isChecked = True
-            _app_tech.save()
-        elif _app_tech.isChecked:
-            _app_tech.isChecked = False
-            _app_tech.save()
-            _old_at = ApplicationTechnic.objects.get(application_today=_app_today,
-                                                     isArchive=False,
-                                                     technic_sheet=_app_tech.technic_sheet,
-                                                     id_orig_app=_app_tech.id)
+            application_technic.isChecked = True
+            application_technic.save()
+        elif application_technic.isChecked:
+            application_technic.isChecked = False
+            application_technic.save()
+
+            _old_at = APP_TECHNIC_SERVICE.get_app_technic(
+                application_today=application_today,
+                isArchive=False,
+                technic_sheet=application_technic.technic_sheet,
+                id_orig_app=application_technic.id
+            )
             _old_at.description = _old_at.description.replace(str_desc, '')
             _old_at.save()
             if not _old_at.description:
                 _old_at.delete()
-        return 0
 
 
-def get_supply_technic_list() -> Technic:
-    _out = Technic.objects.filter(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
-    return _out
+# def get_supply_technic_list() -> Technic:
+#     _out = Technic.objects.filter(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
+#     return _out
 
 
 def get_table_working_technic_sheet(current_day: WorkDaySheet):
@@ -611,16 +635,17 @@ def set_prepare_filter(request):
 
 
 def get_prepare_filter(context):
-    foreman_list = User.objects.filter(isArchive=False, post=ASSETS.FOREMAN)
-    construction_site_list = ConstructionSite.objects.filter(isArchive=False, status=True)
-    technic_list = Technic.objects.filter(isArchive=False).values_list('title', flat=True).distinct()
+    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
+    construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+        status=True, select_related=('foreman',), order_by=('address',))
+    technic_list = TECHNIC_SERVICE.get_technics_queryset(isArchive=False).values_list('title', flat=True).distinct()
     sort_by_list = ASSETS.SORT_BY
     context['filter_foreman_list'] = foreman_list
     context['filter_construction_site_list'] = construction_site_list
     context['filter_technic_list'] = technic_list
     context['sort_by_list'] = sort_by_list
 
-    change_reception_apps_mode_auto()
+    # change_reception_apps_mode_auto()
 
     return context
 
@@ -775,39 +800,83 @@ def send_application_for_all(current_day: WorkDaySheet, messages=None, applicati
     send_application_for_admin(current_day, messages, application_today_id)
 
 
-def copy_application(id_application_today, _target_day, default_status=ASSETS.SAVED):
-    try:
-        target_day = WorkDaySheet.objects.get(date=_target_day)
-        current_application = ApplicationToday.objects.get(id=id_application_today)
+def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
+    """
+    Копирование заявки ApplicationToday(id=id_application_today) на _target_day
+    :param id_application_today:
+    :param _target_day:
+    :param default_status: saved | submitted
+    :return:
+    """
+    target_day = WORK_DAY_SERVICE.get_workday(_target_day)
+    current_application = APP_TODAY_SERVICE.get_apps_today(pk=id_application_today)
 
-        new_application, _ = ApplicationToday.objects.get_or_create(
-            date=target_day, status=default_status, description=current_application.description,
-            construction_site=current_application.construction_site)
+    new_application, _ = ApplicationToday.objects.get_or_create(
+        date=target_day, status=default_status, description=current_application.description,
+        construction_site=current_application.construction_site)
 
-        current_application_material = ApplicationMaterial.objects.filter(application_today=current_application)
-        if current_application_material.exists():
-            new_application_material, _ = ApplicationMaterial.objects.get_or_create(application_today=new_application)
-            new_application_material.description = current_application_material.first().description
-            new_application_material.save()
+    current_application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+        application_today=current_application)
+    if current_application_material.exists():
+        new_application_material, _ = ApplicationMaterial.objects.get_or_create(application_today=new_application)
+        new_application_material.description = current_application_material.first().description
+        new_application_material.save()
 
-        current_application_technic = ApplicationTechnic.objects.filter(application_today=current_application)
+    current_application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        select_related=('technic_sheet__technic',),
+        application_today=current_application)
 
-        for tech_app in current_application_technic:
-            if tech_app.technic_sheet:
-                target_tech_sheet = TechnicSheet.objects.filter(date=target_day,
-                                                                status=True,
-                                                                isArchive=False,
-                                                                technic=tech_app.technic_sheet.technic)
-                if target_tech_sheet.exists():
-                    new_app_tech, _ = ApplicationTechnic.objects.get_or_create(
-                        application_today=new_application,
-                        technic_sheet=target_tech_sheet.first())
-                    new_app_tech.description = tech_app.description
-                    new_app_tech.save()
-                    target_tech_sheet.first().increment_count_application()
+    for tech_app in current_application_technic:
+        if tech_app.technic_sheet:
+            target_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(
+                date=target_day,
+                status=True,
+                isArchive=False,
+                technic=tech_app.technic_sheet.technic)
 
-    except (WorkDaySheet.DoesNotExist, ApplicationToday.DoesNotExist):
-        print('COPY ERROR')
+            if target_technic_sheet:
+                new_app_tech, _ = ApplicationTechnic.objects.get_or_create(
+                    application_today=new_application,
+                    technic_sheet=target_technic_sheet)
+                new_app_tech.description = tech_app.description
+                new_app_tech.save()
+                target_technic_sheet.increment_count_application()
+
+
+
+# def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
+#     try:
+#         target_day = WorkDaySheet.objects.get(date=_target_day)
+#         current_application = ApplicationToday.objects.get(id=id_application_today)
+#
+#         new_application, _ = ApplicationToday.objects.get_or_create(
+#             date=target_day, status=default_status, description=current_application.description,
+#             construction_site=current_application.construction_site)
+#
+#         current_application_material = ApplicationMaterial.objects.filter(application_today=current_application)
+#         if current_application_material.exists():
+#             new_application_material, _ = ApplicationMaterial.objects.get_or_create(application_today=new_application)
+#             new_application_material.description = current_application_material.first().description
+#             new_application_material.save()
+#
+#         current_application_technic = ApplicationTechnic.objects.filter(application_today=current_application)
+#
+#         for tech_app in current_application_technic:
+#             if tech_app.technic_sheet:
+#                 target_tech_sheet = TechnicSheet.objects.filter(date=target_day,
+#                                                                 status=True,
+#                                                                 isArchive=False,
+#                                                                 technic=tech_app.technic_sheet.technic)
+#                 if target_tech_sheet.exists():
+#                     new_app_tech, _ = ApplicationTechnic.objects.get_or_create(
+#                         application_today=new_application,
+#                         technic_sheet=target_tech_sheet.first())
+#                     new_app_tech.description = tech_app.description
+#                     new_app_tech.save()
+#                     target_tech_sheet.first().increment_count_application()
+#
+#     except (WorkDaySheet.DoesNotExist, ApplicationToday.DoesNotExist):
+#         print('COPY ERROR')
 
 
 def set_spec_task(technic_sheet_id):
@@ -913,3 +982,4 @@ def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps):
         _var_recept_apps.save(update_fields=['flag'])
     except Parameter.DoesNotExist:
         pass
+

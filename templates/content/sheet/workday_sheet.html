@@ -5,9 +5,8 @@
 {% block content %}
     <div id="workday_sheet" class="container">
         <div><h3><u>{{ title }}</u></h3></div>
-{#        <form method="post" id="workday_form">#}
             {% csrf_token %}
-            <table class="table row align-items-center" style="width: 20rem">
+            <table class="table  align-items-center">
                 <thead>
                 <tr>
                     <th hidden>id</th>
@@ -17,33 +16,25 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for day in workday %}
-                    <tr class="workday_row {% if today == day.date %}fw-bolder{% endif %}">
-                        <td hidden><input type="hidden" name="id" value="{{ day.id }}"/></td>
-                        <td>{{ day.date }}</td>
-                        <td>{{ day.weekday }}</td>
+                {% for workday in workdays %}
+                    <tr class="workday_row {% if today == workday.date %}fw-bolder{% endif %}">
+                        <td hidden><input type="hidden" name="id" value="{{ workday.id }}"/></td>
+                        <td>{{ workday.date }}</td>
+                        <td>{{ workday.weekday }}</td>
                         <td class="form-switch">
-                            <input type="checkbox" role="switch" class="form-check-input status_{{ day.id }} m-1 p-0"
+                            <input type="checkbox" role="switch" class="form-check-input status_{{ workday.id }} m-1 p-0"
                                    aria-label=""
-                                   onchange="toggleButtonStatus(this, {{ day.id }})"
-                                   name="status_{{ day.id }}" {% if day.status %}checked{% endif %}
-                                   {% if today > day.date %}disabled {% endif %}
+                                   onchange="toggleButtonStatus(this, {{ workday.id }})"
+                                   name="status_{{ workday.id }}" {% if workday.status %}checked{% endif %}
+                                   {% if today > workday.date %}disabled {% endif %}
                             />
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
-{#        </form>#}
     </div>
 
 
 
 {% endblock %}
-{#{% block footer %}#}
-{#    <div></div>#}
-{#    <div style="display: block" class="button_save_div">#}
-{#        <button class="btn btn-sm btn-success" type="submit" form="workday_form">Подтвердить</button>#}
-{#    </div>#}
-{#    <div></div>#}
-{#{% endblock %}#}

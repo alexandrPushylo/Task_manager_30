@@ -72,9 +72,9 @@
                         {% for app_tech in application_technic.applications %}
                             {% if app_tech.description %}
                             <div class="card-body p-1">
-                            <span class="fw-bolder form-text">{{ app_tech.application_today.construction_site.address }}</span>
-                                {% if app_tech.application_today.construction_site.foreman %}
-                                    <span class="fw-bolder form-text">({{ app_tech.application_today.construction_site.foreman.last_name }})</span>
+                            <span class="fw-bolder form-text">{{ app_tech.application_today__construction_site__address }}</span>
+                                {% if app_tech.application_today__construction_site__foreman__last_name %}
+                                    <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
                                 {% endif %}
                             
                             <textarea class="form-control p-1 text_area_description"

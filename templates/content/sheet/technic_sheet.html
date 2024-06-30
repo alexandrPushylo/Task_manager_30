@@ -13,8 +13,8 @@
         <nav aria-label="Page navigation example" class="d-flex justify-content-center">
             <ul class="pagination">
 
-                <li class="page-item"><a 
-                        class="page-link fw-bold text-dark me-2 ps-4 pe-4" 
+                <li class="page-item"><a
+                        class="page-link fw-bold text-dark me-2 ps-4 pe-4"
                         href="{% url 'technic_sheet' %}?current_day={{ prev_work_day.date.isoformat }}"><i
                         class="fa-solid fa-angles-left"></i></a></li>
                 {% for day in work_days %}
@@ -26,8 +26,8 @@
                             <span class="small">{{ day.weekday }}</span>
                         </a></li>
                 {% endfor %}
-                <li class="page-item"><a 
-                        class="page-link fw-bold text-dark ms-2 ps-4 pe-4" 
+                <li class="page-item"><a
+                        class="page-link fw-bold text-dark ms-2 ps-4 pe-4"
                         href="{% url 'technic_sheet' %}?current_day={{ next_work_day.date.isoformat }}"><i
                         class="fa-solid fa-angles-right"></i></a></li>
 
@@ -40,15 +40,11 @@
             <p class=" m-0 ms-2">на {{ current_day.date }}</p>
         </div>
         <form id="technic_sheet_form" method="post">{% csrf_token %}
-            <table class="table  translate-middle-x position-relative start-50"
-{#                   style="width: auto;"#}
-            >
+            <table class="table  translate-middle-x position-relative start-50">
                 <thead>
                 <tr>
                     <th hidden="hidden">id</th>
-                    {#                    <th>Дата</th>#}
                     <th>Техника</th>
-{#                    <th>Иден. информация</th>#}
                     <th>Водитель</th>
                     <th>Статус</th>
                 </tr>
@@ -62,39 +58,35 @@
                             {% if technic_sheet.technic.attached_driver.last_name %}
                                 <p class="m-0 small">({{ technic_sheet.technic.attached_driver.last_name }})</p>
                             {% endif %}
-                        <p class="m-0 fw-bolder small">[ {{ technic_sheet.technic.id_information }} ]</p>
+                            <p class="m-0 fw-bolder small">[ {{ technic_sheet.technic.id_information }} ]</p>
                         </td>
-{#                        <td>{{ technic_sheet.technic.id_information }}</td>#}
                         <td class="m-0 p-0 pt-3">
-{#                            <label>#}
-                                <select class="form-control p-1" 
-{#                                        aria-label=""
-                                        name="driver_sheet_{{ technic_sheet.id }}" 
-                                        onchange="changeDriverForTechnic(this, {{ technic_sheet.id }})">
+                            <select class="form-control p-1"
+                                    aria-label=""
+                                    name="driver_sheet_{{ technic_sheet.id }}"
+                                    onchange="changeDriverForTechnic(this, {{ technic_sheet.id }})">
                                 <option></option>
-                                    {% for driver_sheet in driver_sheets %}
-                                        {% if technic_sheet.driver_sheet.id == driver_sheet.id %}
-                                    <option selected value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.</option>
-                                        {% else %}
-                                    <option value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.</option>
-                                        {% endif %}
-                                     {% endfor %}   
-                                    
-                                </select>
-{#                            </label>#}
+                                {% for driver_sheet in driver_sheets %}
+                                    {% if technic_sheet.driver_sheet.id == driver_sheet.id %}
+                                        <option selected
+                                                value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.
+                                        </option>
+                                    {% else %}
+                                        <option value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.</option>
+                                    {% endif %}
+                                {% endfor %}
+
+                            </select>
                         </td>
 
                         <td class="form-switch"
-                            style="text-align: right"
-                        >
+                            style="text-align: right">
                             <input type="checkbox" role="switch" class="form-check-input"
                                    aria-label=""
                                    onchange="toggleButtonStatus(this, {{ technic_sheet.id }})"
                                    name="status_{{ technic_sheet.id }}"
                                    {% if technic_sheet.status %}checked{% endif %}/>
-
                         </td>
-
                     </tr>
                 {% endfor %}
                 </tbody>
