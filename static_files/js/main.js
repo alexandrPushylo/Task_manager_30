@@ -55,7 +55,7 @@ const toggleButtonStatus = (e, itemId) => {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             item_id: itemId
         }
-    }).done((d) => {window.location.reload()})
+    })//.done((d) => {window.location.reload()})
 }
 
 function changeDriverForTechnic(e, techSheetId){

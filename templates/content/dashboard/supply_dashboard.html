@@ -56,9 +56,9 @@
 
         <div style="text-align: center">
             <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"
-               class="btn btn-sm {% if count_app_mater_not_checked %} btn-warning {% else %}btn-outline-success{% endif %}">
-                {% if count_app_mater_not_checked and edit_mode != 'edit_mode_archive' %}
-                    <span>Есть {{ count_app_mater_not_checked }} не подтвержденных заявок</span>
+               class="btn btn-sm {% if count_not_checked_app_mater %} btn-warning {% else %}btn-outline-success{% endif %}">
+                {% if count_not_checked_app_mater and edit_mode != 'edit_mode_archive' %}
+                    <span>Есть {{ count_not_checked_app_mater }} не подтвержденных заявок</span>
                 {% else %}
                     <span>Заявки на материалы</span>
                 {% endif %}
