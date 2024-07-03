@@ -1,24 +1,32 @@
 from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet, ApplicationTechnic
 import dashboard.assets as ASSETS
+from django.db.models import QuerySet
 
 from logger import getLogger
 
 log = getLogger(__name__)
 
 
-def get_app_technic(**kwargs) -> ApplicationTechnic | None:
+def create_app_technic(**kwargs) -> ApplicationTechnic:
+    try:
+        application_technic = ApplicationTechnic.objects.create(**kwargs)
+        return application_technic
+    except ValueError:
+        log.error("create_app_technic(): ValueError")
+
+
+def get_app_technic(**kwargs) -> ApplicationTechnic:
     try:
         application_technic = ApplicationTechnic.objects.get(**kwargs)
         return application_technic
     except ApplicationTechnic.DoesNotExist:
         log.error('get_app_technic(): ApplicationTechnic.DoesNotExist')
-        return None
 
 
 def get_apps_technic_queryset(select_related: tuple = (),
                               order_by: tuple = (),
                               exclude: tuple = (),
-                              **kwargs) -> ApplicationTechnic.objects:
+                              **kwargs) -> QuerySet[ApplicationTechnic]:
     """
     :param exclude:
     :param order_by:
@@ -39,11 +47,11 @@ def get_apps_technic_queryset(select_related: tuple = (),
     return apps_technic
 
 
-def toggle_reject_apps_technic(app_tech_id) -> None:
+def reject_or_accept_apps_technic(app_tech_id) -> str:
     """
     Отвергнуть заявку
     :param app_tech_id:
-    :return:
+    :return: reject | accept
     """
     apps_technic = get_app_technic(pk=app_tech_id)
     if apps_technic:
@@ -53,11 +61,13 @@ def toggle_reject_apps_technic(app_tech_id) -> None:
             apps_technic.description = apps_technic.description.replace(ASSETS.MESSAGES['reject'], "")
             apps_technic.technic_sheet.increment_count_application()
             apps_technic.save()
+            return 'accept'
         else:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = True
             apps_technic.description = ASSETS.MESSAGES['reject'] + apps_technic.description
             apps_technic.technic_sheet.decrement_count_application()
             apps_technic.save()
+            return 'reject'
 
 
