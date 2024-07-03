@@ -202,6 +202,28 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
         technic_sheet = get_technic_sheet_queryset(isArchive=False, pk__in=technic_sheet_id_list)
         technic_sheet.update(count_application=F('count_application') - 1)
 
+def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list:
+    """
+    Получить список незанятых (get_only_free=True)
+    или любых (get_only_free=False) данных technic_sheet для technic_title
+    :param technic_title: Название техники
+    :param workload_dict: dict загруженности technic_sheet
+    :param get_only_free: True получить незанятых; False получить менее занятых
+    :return: [{'id',
+        'technic__title',
+        'driver_sheet_id',
+        'count_application'},...]
+    """
+    if workload_dict:
+        if get_only_free:
+            data_technic_sheet_list = [_item for _item in workload_dict if
+                                       _item['technic__title'] == technic_title and _item['count_application'] == 0]
+        else:
+            data_technic_sheet_list = [_item for _item in workload_dict if
+                                       _item['technic__title'] == technic_title]
+        return data_technic_sheet_list
+
+
 def get_least_busy_technic_sheet(free_technic_sheet_list: list) -> dict:
     """
     Получить наименее занятого dict(technic_sheet)
