@@ -198,6 +198,7 @@ function selectAddTechnicDriver(e) {
 }
 
 function addTechnicSheetToApp(e) {
+    const operation = "add_technic_to_application";
     const select_add_tech_title = $('.select_add_tech_title > option:checked');
     const technic_driver_selects_add = $('.' + select_add_tech_title.val() + ' > option:checked');
     const app_technic_description = $('.app_technic_description');
@@ -208,14 +209,15 @@ function addTechnicSheetToApp(e) {
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            application_id: $('input[name="application_id"]').val(),
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             technic_title_shrt: select_add_tech_title.val(),
             technic_sheet_id: technic_driver_selects_add.val(),
-            app_tech_desc: app_technic_description.val()
+            app_tech_desc: app_technic_description.val(),
+            operation: operation
         }
     }).done((d) => {
-        window.location.reload(true)
+        window.location.reload()
     })
     // addNewTechSheet(
     //     select_add_tech_title.text(),
