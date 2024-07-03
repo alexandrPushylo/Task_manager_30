@@ -891,46 +891,83 @@ def conflict_resolution_view(request):
                 context['technic_driver_list'] = technic_driver_list
 
                 priority_id_list = U.get_priority_id_list(current_day)
+                priority_id_list = U.get_priority_id_list(technic_sheets)
                 context['priority_id_list'] = priority_id_list
-
-                conflict_technic_sheet = U.get_conflict_technic_sheet(
-                    U.get_busiest_technic_title(current_day),
-                    priority_id_list, get_id_list=False)
+                busiest_technic_title_list = U.get_busiest_technic_title(technic_sheets)
+                conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
+                    busiest_technic_title=busiest_technic_title_list,
+                    priority_id_list=priority_id_list
+                )
 
                 if conflict_technic_sheet:
-                    print(conflict_technic_sheet)
-
                     conflict_ts = list(filter(lambda item: item['technic_title'] == technic_title,
                                               conflict_technic_sheet))
                     if conflict_ts:
                         conflict_ts = conflict_ts[0]
-                        conflict_ts['total_count_apps'] = ApplicationTechnic.objects.filter(
-                            isChecked=False,
-                            technic_sheet_id__in=conflict_ts['id_list'],
-                            priority=1).values_list('priority', flat=True).count()
+                        conflict_ts['total_count_apps'] = conflict_applications_technic.count()
                         context['conflict_technic_sheet'] = conflict_ts
                     else:
                         return HttpResponseRedirect(f'{ENDPOINTS.CONFLICT_LIST}?current_day={current_day.date}')
                 else:
                     return HttpResponseRedirect(f'{ENDPOINTS.CONFLICT_LIST}?current_day={current_day.date}')
-            return render(request, template, context)
+
+                if request.method == 'POST':
+                    app_technic_id = request.POST.get('app_technic_id')
+                    app_technic_priority = request.POST.get('app_technic_priority')
+
+                    technic_title_short = request.POST.get('technic_title_short')
+                    technic_sheet_id = request.POST.get('technic_sheet_id')
+                    technic_description = request.POST.get('technic_description')
+
+                    if U.is_valid_get_request(app_technic_priority) and U.is_valid_get_request(app_technic_id):
+                        # app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
+                        app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
+                        app_technic.priority = app_technic_priority
+                        app_technic.save(update_fields=['priority'])
+
+                    if U.is_valid_get_request(technic_title_short) and U.is_valid_get_request(app_technic_id):
+                        app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
+
+                        if not U.is_valid_get_request(technic_sheet_id):
+                            n_technic_title = technic_titles_dict.get(technic_title_short)
+                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                                technic_title=n_technic_title, workday=current_day
+                            )
+
+                        else:
+                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
+
+                        _old_ts = app_technic.technic_sheet
+                        _old_ts.decrement_count_application()
+                        # _old_ts.save()
+
+                        some_technic_sheet.increment_count_application()
+                        # some_technic_sheet.save()
+
+                        app_technic.technic_sheet = some_technic_sheet
+
+                        if technic_description:
+                            app_technic.description = technic_description
+                        app_technic.save()
+
+                # end POST =============================================================
+            return render(request, 'content/spec/conflict_resolution.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def show_technic_application(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user):
+        if USERS_SERVICE.is_administrator(request.user):
             template = 'content/applications_list/technic_application_list_for_admin.html'
         else:
             template = 'content/applications_list/technic_application_list.html'
-        context = {
-            'title': 'Заявки на технику'
-        }
-        _current_day = request.GET.get('current_day')
-        if _current_day is None or _current_day == '':
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        else:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
+        context = {'title': 'Заявки на технику'}
+        # _current_day = request.GET.get('current_day')
+        # if _current_day is None or _current_day == '':
+        #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
+        # else:
+        #     current_day = WorkDaySheet.objects.get(date=_current_day)
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
         context = U.get_prepare_filter(context)
         context['current_day'] = current_day
