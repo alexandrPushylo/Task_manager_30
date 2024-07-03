@@ -204,7 +204,7 @@ def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
             technic_sheet.save()
 
 
-def get_workload_dict(current_date=TODAY):
+def get_workload_dict(current_date=TODAY):  # TODO delete
     _work_day = WorkDaySheet.objects.get(date=current_date)
     if _work_day.status:
         _technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, status=True, date=_work_day,
@@ -217,7 +217,7 @@ def get_workload_dict(current_date=TODAY):
         return None
 
 
-def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):
+def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):  # TODO delete
     _work_day = WorkDaySheet.objects.get(date=current_date)
     if _work_day.status:
         free_technic_sheet_list = []
@@ -232,7 +232,7 @@ def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):
         return None
 
 
-def get_random_technic_sheet(free_tech_sheet_list: list):
+def get_random_technic_sheet(free_tech_sheet_list: list):  # TODO delete
     if free_tech_sheet_list:
         free_tech_sheet_list.sort(key=lambda item: item['count_application'])
         return free_tech_sheet_list[0]  # TODO: random choice
@@ -303,14 +303,19 @@ def decrement_all_technic_sheet(current_date: WorkDaySheet):
 def change_status_application(application_today_id: int):
     try:
         current_application_today = ApplicationToday.objects.get(id=application_today_id)
-        _status = get_nxt_status(current_application_today.status)
+        _status = get_uplevel_status(current_application_today.status)
         current_application_today.status = _status
         current_application_today.save(update_fields=['status'])
     except ApplicationToday.DoesNotExist as e:
         print(f'{e}')
 
 
-def get_nxt_status(status: str):
+def get_uplevel_status(status: str) -> str:
+    """
+    Получить следующий уровень статуса
+    :param status:
+    :return:
+    """
     if status == ASSETS.ABSENT:
         return ASSETS.SAVED
     elif status == ASSETS.SAVED:
@@ -321,14 +326,12 @@ def get_nxt_status(status: str):
         return ASSETS.SEND
     elif status == ASSETS.SEND:
         return ASSETS.SEND
-    # else:
-    #     return ASSETS.ABSENT
 
 
 def change_to_up_status(application_today_list, status: str):
     for application_today in application_today_list:
         if application_today.status == status:
-            application_today.status = get_nxt_status(status)
+            application_today.status = get_uplevel_status(status)
             application_today.save(update_fields=['status'])
 
 
@@ -367,7 +370,6 @@ def get_work_days():
 
 
 def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
-
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
     for workday in workdays:
         workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
@@ -384,7 +386,7 @@ def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
 
 def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
-    TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=work_day)
+    TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
     log.info(f"Prepare sheets done")
 
 
@@ -843,7 +845,6 @@ def copy_application_to_target_day(id_application_today, _target_day, default_st
                 target_technic_sheet.increment_count_application()
 
 
-
 # def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
 #     try:
 #         target_day = WorkDaySheet.objects.get(date=_target_day)
@@ -915,6 +916,7 @@ def check_application_today(app_today: ApplicationToday, default_status=None):
     _at_desc = app_today.description is not None and app_today.description != ''
     _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
     _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
+    print((_at_desc, _at_at, _at_am))
     if any((_at_desc, _at_at, _at_am)):
         if default_status:
             app_today.status = default_status
@@ -944,7 +946,7 @@ def prepare_variables():
     return error
 
 
-def change_reception_apps_mode_auto():
+def change_reception_apps_mode_auto():  # TODO: move to service
     """ Автоматическое переключение режима приема заявок"""
     try:
         work_day = WorkDaySheet.objects.get(date=TODAY)

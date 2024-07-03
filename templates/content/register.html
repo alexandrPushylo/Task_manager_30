@@ -40,16 +40,6 @@
                     </select>
                 </label>
             </div>
-            <div class="mt-2" id="foreman_select_div" style="display: none">
-                <label>Прораб
-                    <select id="foreman_select" class="form-control" name="supervisor_id" disabled>
-                        {% for foreman in foreman_list %}                            
-                        <option value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-            </div>
-
 
             {% if error %}
                 <p class="m-0 error_message">{{ error }}</p>

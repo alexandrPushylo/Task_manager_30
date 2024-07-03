@@ -1,5 +1,7 @@
 from dashboard.models import User
 import dashboard.assets as ASSETS
+from django.db.models import QuerySet
+from django.contrib.auth import login, logout, authenticate
 
 from logger import getLogger
 
@@ -49,7 +51,7 @@ def get_foreman(user: User) -> User | None:
         return None
 
 
-def get_user(**kwargs) -> User | None:
+def get_user(**kwargs) -> User:
     try:
         user = User.objects.get(**kwargs)
         return user
@@ -63,7 +65,7 @@ def get_user(**kwargs) -> User | None:
 
 def get_user_queryset(select_related: tuple = (),
                       order_by: tuple = (),
-                      **kwargs) -> User.objects:
+                      **kwargs) -> QuerySet[User]:
 
     user = User.objects.filter(**kwargs)
     if select_related:
@@ -85,27 +87,10 @@ def edit_user(user_id, data: dict) -> User | None:
         user.post = data['post']
         user.supervisor_user_id = data['supervisor_user_id']
         user.save()
-        log.info('Пользователь %s %s был изменен')
+        log.info(f"Пользователь {data['last_name']} {data['first_name']} был изменен")
         return user
     else:
         return None
-
-    # try:
-    #     user = User.objects.get(pk=user_id)
-    #     user.username = data['username']
-    #     user.first_name = data['first_name']
-    #     user.last_name = data['last_name']
-    #     user.telephone = data['telephone']
-    #     if data['password'] != user.password:
-    #         user.set_password(data['password'])
-    #     user.post = data['post']
-    #     user.supervisor_user_id = data['supervisor_user_id']
-    #     user.save()
-    #     log.info('Пользователь %s %s был изменен')
-    #     return user
-    # except User.DoesNotExist:
-    #     log.error(f'Пользователя с id={user_id} не существует')
-    #     return None
 
 
 def create_new_user(data: dict) -> User | None:
@@ -120,7 +105,7 @@ def create_new_user(data: dict) -> User | None:
         is_staff=False,
         is_superuser=False
     )
-    log.info('Пользователь %s %s был добавлен', user.last_name, user.first_name)
+    log.info(f'Пользователь: ({user.last_name} {user.first_name}) был добавлен')
     return user
 
 
@@ -169,16 +154,8 @@ def delete_user(user_id):
     if user:
         user.isArchive = True
         user.save(update_fields=['isArchive'])
-        log.info(f'Пользователь {user.last_name} {user.first_name} был помещен в архив')
+        log.info(f'Пользователь: ({user.last_name} {user.first_name}) был помещен в архив')
         return user
-    else:
-        return None
-    # try:
-    #     user = User.objects.get(pk=user_id)
-    #     user.isArchive = True
-    #     user.save(update_fields=['isArchive'])
-    #     log.info(f'Пользователь {user.last_name} {user.first_name} был помещен в архив')
-    #     return user
-    # except User.DoesNotExist:
-    #     log.error(f'Пользователя с id={user_id} не существует')
-    #     return None
+
+
+

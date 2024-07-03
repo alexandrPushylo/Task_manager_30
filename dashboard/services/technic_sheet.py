@@ -50,7 +50,7 @@ def change_driver(technic_sheet_id, driver_sheet_id):
         log.error("change_driver() - ValueError ")
 
 
-def create_technic_sheets(workday: WorkDaySheet):
+def prepare_technic_sheets(workday: WorkDaySheet):
     """
     Подготовка technic_sheets (prepare_technic_sheets)
     Копирование или создание записей, удаление дубликатов.
