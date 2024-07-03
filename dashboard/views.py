@@ -27,6 +27,8 @@ import dashboard.services.dashboard as DASHBOARD_SERVICE
 import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
+import dashboard.services.add_edit_application as ADD_EDIT_APP_SERVICE
+import dashboard.services.parametr as PARAMETER_SERVICE
 #   SERVICE--------------------------------------------------
 
 from logger import getLogger
@@ -37,7 +39,7 @@ log = getLogger(__name__)
 # Create your views here.
 
 
-def dashboard(request):
+def dashboard_view(request):
     if request.user.is_anonymous:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -140,8 +142,8 @@ def clear_application_today(request):
                 if not application_today:
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
-                if (foreman != application_today.construction_site.foreman and not
-                        USERS_SERVICE.is_administrator(request.user)):
+                if (not USERS_SERVICE.is_administrator(request.user) and
+                        foreman != application_today.construction_site.foreman):
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
                 elif USERS_SERVICE.is_supply(request.user):
@@ -409,20 +411,17 @@ def logout_view(request):
 
 
 def register_view(request):
-    template = 'content/register.html'
     context = {
         'user_posts': {
             ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE],
             ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER],
-        },
-        'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
+        }
     }
 
     if request.method == 'GET':
-        return render(request, template, context)
+        return render(request, 'content/register.html', context)
     if request.method == 'POST':
-        data = request.POST
-        new_user = USERS_SERVICE.add_or_edit_user(data, user_id=None)
+        new_user = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
@@ -430,25 +429,24 @@ def register_view(request):
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         else:
             context['error'] = ASSETS.ERROR_MESSAGES['register']
-            return render(request, template, context)
+            return render(request, 'content/register.html', context)
 
     return HttpResponse(status=403)
 
 
 #   Sheets--------------------------------------------------------------------------------------------------------------
-
 def workday_sheet_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Рабочие дни'}
-        context = U.get_prepared_data(context)
+        context = U.get_prepared_data(context=context)
 
         if request.method == 'POST':
             day_id = request.POST.get('item_id')
-            if day_id:
+            if U.is_valid_get_request(day_id):
                 WORK_DAY_SERVICE.change_status(work_day_id=day_id)
 
-        current_day = WORK_DAY_SERVICE.get_current_day(request).date
-        workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_day, before_days=3, after_days=7).values()
+        current_date = WORK_DAY_SERVICE.get_current_day(request).date
+        workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_date, before_days=3, after_days=7).values()
 
         for day in workdays:
             day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
@@ -469,13 +467,13 @@ def driver_sheet_view(request):
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
 
-        if current_day.status:
+        if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(current_day)
 
         driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
-            workday=current_day,
             select_related=('driver',),
-            order_by=('driver__last_name',)
+            order_by=('driver__last_name',),
+            date=current_day,
         )
 
         context['driver_sheets'] = driver_sheet
@@ -497,30 +495,33 @@ def technic_sheet_view(request):
             technic_sheet_id = request.POST.get('technic_sheet_id')
             driver_sheet_id = request.POST.get('driver_sheet_id')
             if technic_sheet_id:
-                TECHNIC_SHEET_SERVICE.change_driver(technic_sheet_id=technic_sheet_id, driver_sheet_id=driver_sheet_id)
+                TECHNIC_SHEET_SERVICE.change_driver(
+                    technic_sheet_id=technic_sheet_id,
+                    driver_sheet_id=driver_sheet_id)
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context['current_day'] = current_day
         context = U.get_prepared_data(context, current_day.date)
 
-        if current_day.status:
+        if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=current_day)
-            TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=current_day)
+            TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=current_day)
 
         technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('driver_sheet__driver', 'technic__attached_driver'),
             order_by=('technic__title',),
             date=current_day,
         )
-        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(workday=current_day, select_related=('driver',))
+        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
+            select_related=('driver',),
+            date=current_day
+        )
 
         context['technic_sheets'] = technic_sheet
         context['driver_sheets'] = driver_sheet
 
         return render(request, 'content/sheet/technic_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
-
-
 #   --------------------------------------------------------------------------------------------------------------------
 
 
@@ -573,13 +574,21 @@ def delete_technic_view(request):
             if technic_id:
                 technic = TECHNIC_SERVICE.delete_technic(technic_id)
                 if technic:
-                    _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
-                    _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
-                    _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
-                    # _application_today = ApplicationToday.objects.filter(applicationtechnic__in=_application_technic)
+
+                    _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                        technic=technic, date__date__gte=U.TODAY
+                    )
+
+                    _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                        technic_sheet__in=_technic_sheet
+                    )
+                    _application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+                        date__date__gte=U.TODAY
+                    )
 
                     _application_technic.delete()
                     _technic_sheet.delete()
+
                     for _app_today in _application_today:
                         U.check_application_today(_app_today)
         return HttpResponseRedirect(ENDPOINTS.TECHNICS)
@@ -597,9 +606,11 @@ def users_view(request):
             'users_list': [],
             'user_post': ASSETS.USER_POSTS_dict
         }
-        if U.is_administrator(request.user):
+        if USERS_SERVICE.is_administrator(request.user):
             users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',))
-        elif U.is_mechanic(request.user):
+        elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
+            users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',)).exclude(post=ASSETS.ADMINISTRATOR)
+        elif USERS_SERVICE.is_mechanic(request.user):
             users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.DRIVER, order_by=('last_name',))
         else:
             users_list = []
@@ -615,10 +626,13 @@ def edit_user_view(request):
                    'posts': ASSETS.USER_POSTS_dict,
                    'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
                    }
-        if U.is_mechanic(request.user):
+        if USERS_SERVICE.is_mechanic(request.user):
             context['posts'] = {ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER]}
+        if USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
+            context['posts'] = {ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE]}
+
         user_id = request.GET.get('user_id')
-        if user_id:
+        if U.is_valid_get_request(user_id):
             user_ = USERS_SERVICE.get_user(pk=user_id)
             if user_:
                 context['user_list'] = user_
@@ -627,8 +641,7 @@ def edit_user_view(request):
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
         if request.method == 'POST':
-            data = request.POST
-            _user = USERS_SERVICE.add_or_edit_user(data, user_id)
+            _user = USERS_SERVICE.add_or_edit_user(request.POST, user_id)
             return HttpResponseRedirect(ENDPOINTS.USERS)
 
         return render(request, 'content/users/edit_user.html', context)
@@ -637,12 +650,12 @@ def edit_user_view(request):
 
 def delete_user_view(request):
     if request.user.is_authenticated:
-        if request.user.post == ASSETS.ADMINISTRATOR:
+        if USERS_SERVICE.is_administrator(request.user):
             user_id = request.GET.get('user_id')
-            if user_id:
+            if U.is_valid_get_request(user_id):
                 _user = USERS_SERVICE.delete_user(user_id)
                 if _user:
-                    DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).delete()
+                    DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=_user, date__date__gte=U.TODAY).delete()
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 
@@ -715,7 +728,7 @@ def edit_construction_sites(request):
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
-        if constr_site_id:
+        if U.is_valid_get_request(constr_site_id):
             constr_site = CONSTR_SITE_SERVICE.get_construction_sites(pk=constr_site_id)
             if constr_site:
                 context['constr_site'] = constr_site
@@ -793,13 +806,13 @@ def change_weekend_to_workday(request):
     """
     if request.user.is_authenticated:
         _workday = request.GET.get('current_day')
-        if _workday:
+        if U.is_valid_get_request(_workday):
             workday = WORK_DAY_SERVICE.get_workday(_date=_workday)
             if not workday.status:
                 workday.status = True
                 workday.save(update_fields=['status'])
                 DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=workday)
-                TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=workday)
+                TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=workday)
             return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={workday.date}')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -890,7 +903,6 @@ def conflict_resolution_view(request):
                     })
                 context['technic_driver_list'] = technic_driver_list
 
-                priority_id_list = U.get_priority_id_list(current_day)
                 priority_id_list = U.get_priority_id_list(technic_sheets)
                 context['priority_id_list'] = priority_id_list
                 busiest_technic_title_list = U.get_busiest_technic_title(technic_sheets)
@@ -1017,7 +1029,14 @@ def show_technic_application(request):
             })
 
         context['application_technics'] = application_technics
-        context['priority_id_list'] = U.get_priority_id_list(current_day)
+
+        temp_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                    isArchive=False,
+                    status=True,
+                    driver_sheet__isnull=False,
+                    date=current_day
+                )
+        context['priority_id_list'] = U.get_priority_id_list(temp_technic_sheet)
 
         return render(request, template, context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
