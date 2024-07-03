@@ -292,6 +292,7 @@ $('.button_reject_app_tech').click(function () {
 // }
 
 function applyChangesAppTechnic(e) {
+    const operation = "apply_changes_application_technic";
     const appTechId = e.id.replace('apply_', '')
     const technic_title = $('#technic_title_' + appTechId + ' > option:checked').val();
     const technic_sheet_id = $('.' + technic_title + '_' + appTechId + ' > option:checked').val();
@@ -303,16 +304,15 @@ function applyChangesAppTechnic(e) {
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            application_id: $('input[name="application_id"]').val(),
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            apply_application_technic_id: appTechId,
+            application_technic_id: appTechId,
             technic_title_shrt: technic_title,
             technic_sheet_id: technic_sheet_id,
-            app_tech_desc: app_tech_description
+            app_tech_desc: app_tech_description,
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    }).done((d) => {window.location.reload()})
 }
 
 function saveApplicationDescription(el) {
