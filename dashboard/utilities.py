@@ -475,13 +475,16 @@ def get_priority_id_list(work_day: WorkDaySheet) -> list:
 #     return _out
 
 
-def set_color_for_list(l: list) -> dict:
-    random.shuffle(ASSETS.COLORS)
-    _colors = ASSETS.COLORS
-    _out = {}
-    for _id, color in zip(l, _colors):
-        _out[int(_id)] = color
-    return _out
+def set_color_for_list(some_list: list) -> dict:
+    """
+    Привязка цвета для каждого элемента из списка some_list
+    :param some_list:
+    :return:
+    """
+    colors = ASSETS.COLORS[:]
+    random.shuffle(colors)
+    out = {int(id_): color for id_, color in zip(some_list, colors)}
+    return out
 
 
 def sorting_application_status(item1, item2):
