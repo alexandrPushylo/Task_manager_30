@@ -1,4 +1,5 @@
 from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet
+from django.db.models import QuerySet
 import dashboard.assets as ASSETS
 import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
@@ -22,6 +23,11 @@ def get_apps_today(**kwargs) -> ApplicationToday | None:
     except ApplicationToday.DoesNotExist:
         log.error("get_apps_today(): ApplicationToday.DoesNotExist")
         return None
+    except ValueError:
+        log.error("get_apps_today(): ValueError")
+        return None
+
+
 def create_app_today(**kwargs) -> ApplicationToday:
     """
     Создать объект ApplicationToday
@@ -37,7 +43,7 @@ def create_app_today(**kwargs) -> ApplicationToday:
 
 def get_apps_today_queryset(select_related: tuple = (),
                             order_by: tuple = (),
-                            **kwargs) -> ApplicationToday.objects:
+                            **kwargs) -> QuerySet[ApplicationToday]:
     """
     :param order_by:
     :param select_related:
@@ -51,7 +57,6 @@ def get_apps_today_queryset(select_related: tuple = (),
         apps_today = apps_today.select_related(*select_related)
     if order_by:
         apps_today = apps_today.order_by(*order_by)
-
     return apps_today
 
 
