@@ -245,29 +245,22 @@ function autoResize(elem) {
 }
 
 $('.button_reject_app_tech').click(function () {
+    const operation = "reject_application_technic";
     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
     const pathname = window.location;
     const applicationTechnicId = this.id.replace('reject_', '')
-
-    const app_technic_description = $('.app_technic_description_' + applicationTechnicId)
-    const technic_driver_selects = $('.technic_driver_selects_' + applicationTechnicId)
-    const technic_title = $('#technic_title_' + applicationTechnicId)
-
-
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: pathname,
         data: {
             csrfmiddlewaretoken: csrf,
-            applicationTechnicId: applicationTechnicId,
-            application_id: $('input[name="application_id"]').val(),
+            application_technic_id: applicationTechnicId,
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            operation: 'reject'
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload()
-    })
+    }).done((d) => {window.location.reload()})
 })
 // const toggleWorkdayStatus = (e) => {
 //     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
