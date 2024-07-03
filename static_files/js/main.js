@@ -343,20 +343,20 @@ function saveApplicationTechnic(el) {
 }
 
 function saveApplicationMaterials(el) {
+    const operation = "save_application_materials";
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            application_id: $('input[name="application_id"]').val(),
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             app_material_id: $('input[name="app_material_id"]').val(),
-            material_description: $('textarea[name="app_material_desc"]').val()
+            material_description: $('textarea[name="app_material_desc"]').val(),
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    }).done((d) => {window.location.reload()})
 }
 
 
