@@ -111,3 +111,12 @@ def validate_application_today(application_today: ApplicationToday, default_stat
         return False
 
 
+def set_status_for_application_today(application_today: ApplicationToday, status: str):
+    """
+    Установить статус для application_today
+    :param application_today:
+    :param status:
+    :return:
+    """
+    application_today.status = status
+    application_today.save(update_fields=['status'])
