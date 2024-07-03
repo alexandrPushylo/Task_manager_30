@@ -373,31 +373,33 @@ def login_view(request):
 
 
 def restore_password_view(request):
-    template = 'content/spec/restore_password.html'
     context = {}
     if request.method == 'POST':
         _last_name = request.POST.get('last_name')
         last_name = _last_name.strip().lower().capitalize()
-        _user = User.objects.filter(last_name=last_name)
+        _user = USERS_SERVICE.get_user_queryset(
+            isArchive=False,
+            last_name=last_name,
+        )
         if _user.exists():
             context['users_list'] = _user
         else:
             context['msg'] = 'Данный пользователь не найден'
-    try:
-        _default_passwd = Parameter.objects.get(name=VAR.VAR_DEFAULT_PASSWORD['name']).value
-    except Parameter.DoesNotExist:
-        _default_passwd = '1234'
-
     user_id = request.GET.get('user_id')
-    if user_id is not None and user_id != '':
-        try:
-            restore_user = User.objects.get(pk=user_id)
-            restore_user.set_password(_default_passwd)
-            restore_user.save()
-            context['msg_success'] = {'login': restore_user.username, 'password': _default_passwd}
-        except User.DoesNotExist:
-            pass
-    return render(request, template, context)
+    if U.is_valid_get_request(user_id):
+        restore_user = USERS_SERVICE.get_user(pk=user_id)
+        if restore_user:
+            default_passwd = PARAMETER_SERVICE.get_parameter(name=VAR.VAR_DEFAULT_PASSWORD['name'])
+            if default_passwd:
+                restore_user.set_password(default_passwd.value)
+                restore_user.save(update_fields=['password'])
+                context['msg_success'] = {'login': restore_user.username, 'password': default_passwd.value}
+            else:
+                log.error("Ошибка с параметром 'default_passwd'")
+                context['msg'] = 'Произошла какая-то ошибка'
+        else:
+            log.error("restore_password_view(): restore_user не найден")
+    return render(request, 'content/spec/restore_password.html', context)
 
 
 def logout_view(request):
