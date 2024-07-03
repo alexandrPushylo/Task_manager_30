@@ -202,6 +202,32 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
         technic_sheet = get_technic_sheet_queryset(isArchive=False, pk__in=technic_sheet_id_list)
         technic_sheet.update(count_application=F('count_application') - 1)
 
+def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
+    """
+    Получить dict загруженности technic_sheet за workday
+    :param workday: WorkDaySheet
+    :return: {'id',
+        'technic__title',
+        'driver_sheet_id',
+        'count_application'}
+    """
+    technic_sheet = (get_technic_sheet_queryset(
+        isArchive=False,
+        status=True,
+        date=workday,
+        driver_sheet__isnull=False,
+        driver_sheet__status=True
+    ).select_related(
+        'driver_sheet',
+        'technic'
+    ).values(
+        'id',
+        'technic__title',
+        'driver_sheet_id',
+        'count_application'
+    ))
+    return technic_sheet
+
 def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list:
     """
     Получить список незанятых (get_only_free=True)
