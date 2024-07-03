@@ -806,30 +806,37 @@ def change_weekend_to_workday(request):
 
 def conflicts_list_view(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user):
-            template = 'content/spec/conflicts_list.html'
-            context = {
-                'title': 'Conflict List'
-            }
-            _current_day = request.GET.get('current_day')
-            if _current_day is None or _current_day == '':
-                current_day = WorkDaySheet.objects.get(date=U.TODAY)
-            else:
-                current_day = WorkDaySheet.objects.get(date=_current_day)
+        if USERS_SERVICE.is_administrator(request.user):
+            context = {'title': 'Conflict List'}
+
+            current_day = WORK_DAY_SERVICE.get_current_day(request)
             context['current_day'] = current_day
-            priority_id_list = U.get_priority_id_list(current_day)
+
+            technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                date=current_day,
+                driver_sheet__isnull=False,
+                status=True,
+                isArchive=False
+            )
+            priority_id_list = U.get_priority_id_list(technic_sheet_list)
             context['priority_id_list'] = priority_id_list
-            conflict_technic_sheet = U.get_conflict_technic_sheet(
-                U.get_busiest_technic_title(current_day),
-                priority_id_list, get_id_list=False)
+
+            busiest_technic_title_list = U.get_busiest_technic_title(technic_sheet_list)
+            conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
+                busiest_technic_title=busiest_technic_title_list,
+                priority_id_list=priority_id_list
+            )
             if conflict_technic_sheet:
                 for conflict_ts in conflict_technic_sheet:
-                    conflict_ts['total_count_apps'] = ApplicationTechnic.objects.filter(
+                    conflict_ts['total_count_apps'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                        isArchive=False,
                         isChecked=False,
                         technic_sheet_id__in=conflict_ts['id_list'],
-                        priority=1).values_list('priority', flat=True).count()
+                        priority=1
+                    ).values_list('priority', flat=True).count()
+
                 context['conflict_technic_sheet'] = conflict_technic_sheet
-                return render(request, template, context)
+                return render(request, 'content/spec/conflicts_list.html', context)
             else:
                 return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day.date}')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -838,75 +845,40 @@ def conflicts_list_view(request):
 
 def conflict_resolution_view(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user):
-            template = 'content/spec/conflict_resolution.html'
-            context = {
-                'title': 'Conflict Resolution'
-            }
+        if USERS_SERVICE.is_administrator(request.user):
+            context = {'title': 'Conflict Resolution'}
 
             conflict_list_id = request.GET.get('conflict_list_id')
             conflict_list_id = conflict_list_id.strip('[]').split(', ')
 
-            _current_day = request.GET.get('current_day')
-            if _current_day is None or _current_day == '':
-                current_day = WorkDaySheet.objects.get(date=U.TODAY)
-            else:
-                current_day = WorkDaySheet.objects.get(date=_current_day)
+            current_day = WORK_DAY_SERVICE.get_current_day(request)
             context['current_day'] = current_day
 
-            if request.method == 'POST':
-                app_technic_id = request.POST.get('app_technic_id')
-                app_technic_priority = request.POST.get('app_technic_priority')
-
-                technic_title_short = request.POST.get('technic_title_short')
-                technic_sheet_id = request.POST.get('technic_sheet_id')
-                technic_description = request.POST.get('technic_description')
-
-                if all((app_technic_id, app_technic_priority)):
-                    app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
-                    app_technic.priority = app_technic_priority
-                    app_technic.save(update_fields=['priority'])
-
-                if all((technic_sheet_id, app_technic_id)):
-                    app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
-
-                    if technic_sheet_id is None or technic_sheet_id == '':
-                        n_technic_titles = U.get_short_technic_name(technic_title_short, current_day)
-                        some_technic_sheet = U.get_some_technic_sheet(n_technic_titles, current_day)
-                    else:
-                        some_technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
-
-                    _old_ts = app_technic.technic_sheet
-                    _old_ts.decrement_count_application()
-                    _old_ts.save()
-
-                    some_technic_sheet.increment_count_application()
-                    some_technic_sheet.save()
-
-                    app_technic.technic_sheet = some_technic_sheet
-
-                    if technic_description:
-                        app_technic.description = technic_description
-                    app_technic.save()
-
             if conflict_list_id is not None and len(conflict_list_id) > 0:
-                applications_technic = ApplicationTechnic.objects.filter(technic_sheet__in=conflict_list_id,
-                                                                         isChecked=False,
-                                                                         isArchive=False)
-                context['applications_technic'] = applications_technic
+                conflict_applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                    select_related=('technic_sheet', 'application_today__construction_site__foreman'),
+                    technic_sheet__in=conflict_list_id,
+                    isChecked=False,
+                    isArchive=False
+                )
+                context['applications_technic'] = conflict_applications_technic
 
                 color_list = U.set_color_for_list(conflict_list_id)
                 context['color_list'] = color_list
 
-                technic_title = applications_technic.values_list(
+                technic_title = conflict_applications_technic.values_list(
                     'technic_sheet__technic__title', flat=True).first()
                 context['technic_title'] = technic_title
 
-                technic_sheets = TechnicSheet.objects.filter(isArchive=False,
-                                                             status=True,
-                                                             driver_sheet__isnull=False,
-                                                             date=current_day)
-                technic_titles_dict = U.get_short_technic_name_dict(current_day)
+                technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                    select_related=('technic', 'driver_sheet__driver'),
+                    isArchive=False,
+                    status=True,
+                    driver_sheet__isnull=False,
+                    date=current_day
+                )
+
+                technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(technic_sheets)
                 context['technic_titles_dict'] = technic_titles_dict
 
                 technic_driver_list = []
