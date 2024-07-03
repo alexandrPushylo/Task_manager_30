@@ -432,26 +432,24 @@ def get_conflict_technic_sheet(busiest_technic_title: list, priority_id_list: li
     return _out
 
 
-def get_priority_id_list(work_day: WorkDaySheet) -> list:
-    #   получения списка technic sheet id с нераспределенным приоритетом
-    _out = []
-    technic_sheet_list = TechnicSheet.objects.filter(date=work_day,
-                                                     driver_sheet__isnull=False,
-                                                     status=True,
-                                                     isArchive=False)
-    application_technic_list = ApplicationTechnic.objects.filter(application_today__date=work_day,
-                                                                 technic_sheet__in=technic_sheet_list,
-                                                                 isArchive=False,
-                                                                 is_cancelled=False,
-                                                                 isChecked=False)
-    for technic_sheet in technic_sheet_list:
-        _id = technic_sheet.id
-        _count_application = application_technic_list.filter(technic_sheet=technic_sheet).count()
-        _count_set_priority_list = application_technic_list.filter(
-            technic_sheet=technic_sheet).values_list('priority', flat=True).distinct().count()
-        if _count_application != _count_set_priority_list:
-            _out.append(_id)
-    return _out
+def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
+    """
+    Получения сета technic_sheet_id с нераспределенным приоритетом
+    :param technic_sheet:
+    :return: set(.., ...)
+    """
+    technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
+    application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        technic_sheet__in=technic_sheet_list_id_list,
+        isArchive=False,
+        is_cancelled=False,
+        isChecked=False
+    ).values(
+        'technic_sheet__id',
+        'priority'
+    ))
+    out = {item['technic_sheet__id'] for item in application_technic_list if application_technic_list.count(item) > 1}
+    return out
 
 
 # def get_status_list_application_today(work_day: WorkDaySheet) -> dict:
