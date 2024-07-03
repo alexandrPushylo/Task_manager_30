@@ -1,26 +1,25 @@
 from dashboard.models import ConstructionSite
 from dashboard.services.user import get_user
+from django.db.models import QuerySet
 
 from logger import getLogger
 
 log = getLogger(__name__)
 
 
-def get_construction_sites(**kwargs) -> ConstructionSite | None:
+def get_construction_sites(**kwargs) -> ConstructionSite:
     try:
         construction_sites = ConstructionSite.objects.get(**kwargs)
         return construction_sites
     except ConstructionSite.DoesNotExist:
         log.error('get_construction_sites(): DoesNotExist')
-        return None
     except ValueError:
         log.error('get_construction_sites(): ValueError')
-        return None
 
 
 def get_construction_site_queryset(select_related: tuple = (),
                                    order_by: tuple = (),
-                                   **kwargs) -> ConstructionSite.objects:
+                                   **kwargs) -> QuerySet[ConstructionSite]:
     """
     :param select_related:
     :param order_by:
@@ -49,7 +48,7 @@ def hide_construction_site(constr_site_id):
         constr_site.save(update_fields=['status'])
 
 
-def delete_construction_site(constr_site_id):
+def delete_construction_site(constr_site_id) -> ConstructionSite:
     constr_site = get_construction_sites(pk=constr_site_id)
     if constr_site:
         if constr_site.isArchive:
@@ -59,6 +58,7 @@ def delete_construction_site(constr_site_id):
             constr_site.isArchive = True
             log.info(f'Объект {constr_site.address} был помешен в архив')
         constr_site.save(update_fields=['isArchive'])
+        return constr_site
 
 
 def check_data(data: dict):
