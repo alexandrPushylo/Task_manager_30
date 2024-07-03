@@ -655,24 +655,46 @@ def construction_site_view(request):
 
         if U.is_administrator(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',))
+                select_related=('foreman',),
+                isArchive = False
+            )
 
         if U.is_foreman(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',), foreman=request.user)
+                select_related=('foreman',),
+                isArchive=False,
+                foreman=request.user)
 
         if U.is_master(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',), foreman_id=request.user.supervisor_user_id)
+                select_related=('foreman',),
+                isArchive=False,
+                foreman_id=request.user.supervisor_user_id)
 
         hide_constr_site_id = request.GET.get('hide')
-        if hide_constr_site_id:
+        if U.is_valid_get_request(hide_constr_site_id):
             CONSTR_SITE_SERVICE.hide_construction_site(constr_site_id=hide_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         delete_constr_site_id = request.GET.get('delete')
-        if delete_constr_site_id:
-            CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+        if U.is_valid_get_request(delete_constr_site_id):
+            deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+                construction_site=deleted_construction_site,
+                date__date__gte=U.TODAY
+            )
+            application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                application_today__in=application_today
+            )
+            application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                application_today__in=application_today
+            )
+            technic_sheet_id_list = application_technic.values_list('technic_sheet', flat=True)
+            TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list)
+            application_material.delete()
+            application_technic.delete()
+            application_today.delete()
+
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         return render(request, 'content/construction_site/construction_sites.html', context)
