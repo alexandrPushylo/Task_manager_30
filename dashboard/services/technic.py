@@ -1,5 +1,14 @@
-from dashboard.models import Technic, User
+from dashboard.models import Technic, User, WorkDaySheet, TechnicSheet
 import dashboard.assets as ASSETS
+from django.db.models import QuerySet
+import dashboard.services.user as USERS_SERVICE
+import dashboard.services.construction_site as CONSTR_SITE_SERVICE
+import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
+import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
+import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
+import dashboard.services.dashboard as DASHBOARD_SERVICE
+import dashboard.services.application_technic as APP_TECHNIC_SERVICE
+import dashboard.services.application_material as APP_MATERIAL_SERVICE
 
 from logger import getLogger
 
@@ -86,7 +95,7 @@ def add_or_edit_technic(data, technic_id=None):
 def delete_technic(technic_id):
     try:
         technic = Technic.objects.get(pk=technic_id)
-        technic.is_deleted = True
+        technic.isArchive = True
         technic.save(update_fields=['isArchive'])
         log.info(f'Техника {technic.title} [{technic.id_information}] был помещена в архив')
         return technic
@@ -97,7 +106,7 @@ def delete_technic(technic_id):
 
 def get_technics_queryset(select_related: tuple = (),
                           order_by: tuple = (),
-                          **kwargs) -> Technic.objects:
+                          **kwargs) -> QuerySet[Technic]:
     """
     :param select_related:
     :param order_by:
@@ -113,16 +122,14 @@ def get_technics_queryset(select_related: tuple = (),
     return technics
 
 
-def get_technic(**kwargs) -> Technic | None:
+def get_technic(**kwargs) -> Technic:
     try:
         technic = Technic.objects.get(**kwargs)
         return technic
     except Technic.DoesNotExist:
         log.error("get_technic(): Technic.DoesNotExist ")
-        return None
     except ValueError:
         log.error("get_technic(): ValueError")
-        return None
 
 
 def get_supply_technic_list() -> Technic.objects:
@@ -139,3 +146,9 @@ def get_dict_short_technic_names(technic_sheets: TechnicSheet.objects) -> dict:
     technic_titles_dict = {str(title).replace(' ', '').replace('.', ''): title
                            for title in technic_titles_list}
     return technic_titles_dict
+
+
+
+
+
+
