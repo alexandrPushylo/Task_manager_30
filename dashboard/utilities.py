@@ -994,3 +994,14 @@ def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps):
     except Parameter.DoesNotExist:
         pass
 
+
+def is_valid_get_request(value: str) -> bool:
+    """
+    Проверка : value is not None and value != ''
+    :param value:
+    :return:
+    """
+    if value is not None and value != '':
+        return True
+    else:
+        return False
