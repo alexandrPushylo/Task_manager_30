@@ -91,4 +91,23 @@ def delete_application_today(application_today: ApplicationToday):
     application_today.delete()
 
 
+def validate_application_today(application_today: ApplicationToday, default_status: str = None) -> bool:
+    """
+    Проверка application_today: ApplicationToday
+    :param application_today: application_today: ApplicationToday
+    :param default_status: save or submitted
+    :return: True if application_today is valid and save, else False and delete
+    """
+    app_today_description = application_today.description is not None and application_today.description != ''
+    app_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today=application_today).exists()
+    app_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(application_today=application_today).exists()
+    if any((app_today_description, app_technic, app_material)):
+        if default_status:
+            application_today.status = default_status
+        application_today.save()
+        return True
+    else:
+        application_today.delete()
+        return False
+
 
