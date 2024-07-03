@@ -202,3 +202,16 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
         technic_sheet = get_technic_sheet_queryset(isArchive=False, pk__in=technic_sheet_id_list)
         technic_sheet.update(count_application=F('count_application') - 1)
 
+def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet:
+    workload_dict = get_workload_dict_of_technic_sheet(workday=workday)
+    free_technic_sheet_list = get_free_list_of_technic_sheet(technic_title=technic_title, workload_dict=workload_dict)
+    if free_technic_sheet_list:
+        random_free_technic_sheet_list: dict = random.choice(free_technic_sheet_list)
+        return get_technic_sheet(pk=random_free_technic_sheet_list['id'])
+    else:
+        any_technic_sheet_list = get_free_list_of_technic_sheet(
+            technic_title=technic_title, workload_dict=workload_dict, get_only_free=False)
+        least_busy_technic_sheet = get_least_busy_technic_sheet(any_technic_sheet_list)
+        return get_technic_sheet(pk=least_busy_technic_sheet['id'])
+
+
