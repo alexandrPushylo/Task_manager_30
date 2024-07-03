@@ -257,7 +257,10 @@
 {% block footer %}
     <div></div>
     <div>
-        <a href="{% url 'check_application_status' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Ok</a>
+{#        <a href="{% url 'check_application_status' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Ok</a>#}
+{#        <a href="{% url 'validate_application_today' %}?construction_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Принять</a>#}
+        <a href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Принять</a>
+{#        <button class="btn btn-sm btn-success" onclick="validateApplicationToday('{{ application_today.id }}', '{{ current_day.date.isoformat }}')">Принять</button>#}
 {#        <input type="submit" class="btn btn-sm btn-success" form="edit_application_form" value="OK">#}
     </div>
     <div></div>

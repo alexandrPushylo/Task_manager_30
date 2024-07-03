@@ -204,7 +204,7 @@ def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
             technic_sheet.save()
 
 
-def get_workload_dict(current_date=TODAY):
+def get_workload_dict(current_date=TODAY):  # TODO delete
     _work_day = WorkDaySheet.objects.get(date=current_date)
     if _work_day.status:
         _technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, status=True, date=_work_day,
@@ -217,7 +217,7 @@ def get_workload_dict(current_date=TODAY):
         return None
 
 
-def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):
+def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):  # TODO delete
     _work_day = WorkDaySheet.objects.get(date=current_date)
     if _work_day.status:
         free_technic_sheet_list = []
@@ -232,7 +232,7 @@ def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):
         return None
 
 
-def get_random_technic_sheet(free_tech_sheet_list: list):
+def get_random_technic_sheet(free_tech_sheet_list: list):  # TODO delete
     if free_tech_sheet_list:
         free_tech_sheet_list.sort(key=lambda item: item['count_application'])
         return free_tech_sheet_list[0]  # TODO: random choice
@@ -303,14 +303,19 @@ def decrement_all_technic_sheet(current_date: WorkDaySheet):
 def change_status_application(application_today_id: int):
     try:
         current_application_today = ApplicationToday.objects.get(id=application_today_id)
-        _status = get_nxt_status(current_application_today.status)
+        _status = get_uplevel_status(current_application_today.status)
         current_application_today.status = _status
         current_application_today.save(update_fields=['status'])
     except ApplicationToday.DoesNotExist as e:
         print(f'{e}')
 
 
-def get_nxt_status(status: str):
+def get_uplevel_status(status: str) -> str:
+    """
+    Получить следующий уровень статуса
+    :param status:
+    :return:
+    """
     if status == ASSETS.ABSENT:
         return ASSETS.SAVED
     elif status == ASSETS.SAVED:
@@ -321,14 +326,12 @@ def get_nxt_status(status: str):
         return ASSETS.SEND
     elif status == ASSETS.SEND:
         return ASSETS.SEND
-    # else:
-    #     return ASSETS.ABSENT
 
 
 def change_to_up_status(application_today_list, status: str):
     for application_today in application_today_list:
         if application_today.status == status:
-            application_today.status = get_nxt_status(status)
+            application_today.status = get_uplevel_status(status)
             application_today.save(update_fields=['status'])
 
 
@@ -367,7 +370,6 @@ def get_work_days():
 
 
 def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
-
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
     for workday in workdays:
         workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
@@ -384,72 +386,78 @@ def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
 
 def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
-    TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=work_day)
+    TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
     log.info(f"Prepare sheets done")
 
 
-def get_busiest_technic_sheet(work_day: WorkDaySheet):
-    technic_sheet = TechnicSheet.objects.filter(date=work_day,
-                                                driver_sheet__isnull=False,
-                                                status=True,
-                                                isArchive=False,
-                                                count_application__gt=1)
-    # print(f'{technic_sheet.values()}')
+# def get_busiest_technic_sheet(work_day: WorkDaySheet):
+#     technic_sheet = TechnicSheet.objects.filter(date=work_day,
+#                                                 driver_sheet__isnull=False,
+#                                                 status=True,
+#                                                 isArchive=False,
+#                                                 count_application__gt=1)
+#     # print(f'{technic_sheet.values()}')
+#
+#     return technic_sheet
 
-    return technic_sheet
 
-
-def get_busiest_technic_title(work_day: WorkDaySheet) -> list:
-    #   получения списка занятости technic sheet
-    _out = []
-    technic_sheet = TechnicSheet.objects.filter(date=work_day,
-                                                driver_sheet__isnull=False,
-                                                status=True,
-                                                isArchive=False)
+def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
+    """
+    Получения списка с информацией о загруженности technic_title
+    :param technic_sheet:
+    :return: [{}, {}]
+    """
+    out = []
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
+
     for technic_title in technic_title_list:
-        _out.append({
+        technic__title_list = technic_sheet.filter(technic__title=technic_title).values('id', 'count_application')
+        out.append({
             'technic_title': technic_title,
-            'free_technic_sheet_count': technic_sheet.filter(technic__title=technic_title,
-                                                             count_application=0).count(),
-            'total_technic_sheet_count': technic_sheet.filter(technic__title=technic_title).count(),
-            'id_list': list(technic_sheet.filter(technic__title=technic_title).values_list('id', flat=True))
+            'free_technic_sheet_count': technic__title_list.filter(count_application=0).count(),
+            'total_technic_sheet_count': technic__title_list.count(),
+            'id_list': list(technic__title_list.values_list('id', flat=True))
         })
-    return _out
+    return out
 
 
-def get_conflict_technic_sheet(busiest_technic_title: list, priority_id_list: list, get_id_list=False) -> list:
-    _out = []
+def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set, get_only_id_list=False) -> list:
+    """
+    Получить список конфликтов technic_sheet
+    :param busiest_technic_title: список с информацией о загруженности technic_title
+    :param priority_id_list: сет technic_sheet_id с нераспределенным приоритетом
+    :param get_only_id_list: True - получить только id; False - получить более подробную информацию
+    :return: [{}, {}, ...]
+    """
+    out = []
     for _technic_sheet in busiest_technic_title:
         if _technic_sheet['free_technic_sheet_count'] == 0 and set(_technic_sheet['id_list']).intersection(
                 priority_id_list):
-            if get_id_list:
-                _out.extend(_technic_sheet['id_list'])
+            if get_only_id_list:
+                out.extend(_technic_sheet['id_list'])
             else:
-                _out.append(_technic_sheet)
-    return _out
+                out.append(_technic_sheet)
+    return out
 
 
-def get_priority_id_list(work_day: WorkDaySheet) -> list:
-    #   получения списка technic sheet id с нераспределенным приоритетом
-    _out = []
-    technic_sheet_list = TechnicSheet.objects.filter(date=work_day,
-                                                     driver_sheet__isnull=False,
-                                                     status=True,
-                                                     isArchive=False)
-    application_technic_list = ApplicationTechnic.objects.filter(application_today__date=work_day,
-                                                                 technic_sheet__in=technic_sheet_list,
-                                                                 isArchive=False,
-                                                                 is_cancelled=False,
-                                                                 isChecked=False)
-    for technic_sheet in technic_sheet_list:
-        _id = technic_sheet.id
-        _count_application = application_technic_list.filter(technic_sheet=technic_sheet).count()
-        _count_set_priority_list = application_technic_list.filter(
-            technic_sheet=technic_sheet).values_list('priority', flat=True).distinct().count()
-        if _count_application != _count_set_priority_list:
-            _out.append(_id)
-    return _out
+def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
+    """
+    Получения сета technic_sheet_id с нераспределенным приоритетом
+    :param technic_sheet:
+    :return: set(.., ...)
+    """
+    technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
+    application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        technic_sheet__in=technic_sheet_list_id_list,
+        isArchive=False,
+        is_cancelled=False,
+        isChecked=False
+    ).values(
+        'technic_sheet__id',
+        'priority'
+    ))
+    out = {item['technic_sheet__id'] for item in application_technic_list if application_technic_list.count(item) > 1}
+    return out
 
 
 # def get_status_list_application_today(work_day: WorkDaySheet) -> dict:
@@ -473,13 +481,16 @@ def get_priority_id_list(work_day: WorkDaySheet) -> list:
 #     return _out
 
 
-def set_color_for_list(l: list) -> dict:
-    random.shuffle(ASSETS.COLORS)
-    _colors = ASSETS.COLORS
-    _out = {}
-    for _id, color in zip(l, _colors):
-        _out[int(_id)] = color
-    return _out
+def set_color_for_list(some_list: list) -> dict:
+    """
+    Привязка цвета для каждого элемента из списка some_list
+    :param some_list:
+    :return:
+    """
+    colors = ASSETS.COLORS[:]
+    random.shuffle(colors)
+    out = {int(id_): color for id_, color in zip(some_list, colors)}
+    return out
 
 
 def sorting_application_status(item1, item2):
@@ -497,27 +508,27 @@ def sorting_application_status(item1, item2):
         return -1
 
 
-def change_is_cancelled(app_tech_id):
-    if app_tech_id:
-        try:
-            _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
-        except ApplicationTechnic.DoesNotExist:
-            return -1
-        if _app_tech.is_cancelled:
-            _app_tech.isChecked = False
-            _app_tech.is_cancelled = False
-            _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
-            _app_tech.technic_sheet.increment_count_application()
-            # _app_tech.technic_sheet.save()
-            _app_tech.save()
-        else:
-            _app_tech.isChecked = False
-            _app_tech.is_cancelled = True
-            _app_tech.description = ASSETS.MESSAGES['reject'] + _app_tech.description
-            _app_tech.technic_sheet.decrement_count_application()
-            # _app_tech.technic_sheet.save()
-            _app_tech.save()
-        return 0
+# def change_is_cancelled(app_tech_id):
+#     if app_tech_id:
+#         try:
+#             _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
+#         except ApplicationTechnic.DoesNotExist:
+#             return -1
+#         if _app_tech.is_cancelled:
+#             _app_tech.isChecked = False
+#             _app_tech.is_cancelled = False
+#             _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
+#             _app_tech.technic_sheet.increment_count_application()
+#             # _app_tech.technic_sheet.save()
+#             _app_tech.save()
+#         else:
+#             _app_tech.isChecked = False
+#             _app_tech.is_cancelled = True
+#             _app_tech.description = ASSETS.MESSAGES['reject'] + _app_tech.description
+#             _app_tech.technic_sheet.decrement_count_application()
+#             # _app_tech.technic_sheet.save()
+#             _app_tech.save()
+#         return 0
 
 
 def accept_app_tech_to_supply(app_tech_id, application_today_id):
@@ -843,7 +854,6 @@ def copy_application_to_target_day(id_application_today, _target_day, default_st
                 target_technic_sheet.increment_count_application()
 
 
-
 # def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
 #     try:
 #         target_day = WorkDaySheet.objects.get(date=_target_day)
@@ -915,6 +925,7 @@ def check_application_today(app_today: ApplicationToday, default_status=None):
     _at_desc = app_today.description is not None and app_today.description != ''
     _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
     _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
+    print((_at_desc, _at_at, _at_am))
     if any((_at_desc, _at_at, _at_am)):
         if default_status:
             app_today.status = default_status
@@ -944,7 +955,7 @@ def prepare_variables():
     return error
 
 
-def change_reception_apps_mode_auto():
+def change_reception_apps_mode_auto():  # TODO: move to service
     """ Автоматическое переключение режима приема заявок"""
     try:
         work_day = WorkDaySheet.objects.get(date=TODAY)
@@ -983,3 +994,14 @@ def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps):
     except Parameter.DoesNotExist:
         pass
 
+
+def is_valid_get_request(value: str) -> bool:
+    """
+    Проверка : value is not None and value != ''
+    :param value:
+    :return:
+    """
+    if value is not None and value != '':
+        return True
+    else:
+        return False

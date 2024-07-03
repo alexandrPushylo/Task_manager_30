@@ -58,7 +58,7 @@ const toggleButtonStatus = (e, itemId) => {
     })//.done((d) => {window.location.reload()})
 }
 
-function changeDriverForTechnic(e, techSheetId){
+function changeDriverForTechnic(e, techSheetId) {
     const e_name = e.name;
     $.ajax({
         type: 'POST',
@@ -66,10 +66,12 @@ function changeDriverForTechnic(e, techSheetId){
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            driver_sheet_id: $('select[name='+e_name+']').val(),
+            driver_sheet_id: $('select[name=' + e_name + ']').val(),
             technic_sheet_id: techSheetId
         }
-    }).done((d) => {window.location.reload()})
+    }).done((d) => {
+        window.location.reload()
+    })
 }
 
 function onInput_tech_description(e) {
@@ -178,7 +180,7 @@ $('.technic_driver_selects > option[selected]').parent().show();
 
 
 function reloadPage(e) {
-    window.location.reload(true)
+    window.location.reload()
 }
 
 function selectAddTechnicDriver(e) {
@@ -194,10 +196,10 @@ function selectAddTechnicDriver(e) {
     } else {
         btn_added.show()
     }
-    // $('#btn_add_technic_sheet').show();
 }
 
 function addTechnicSheetToApp(e) {
+    const operation = "add_technic_to_application";
     const select_add_tech_title = $('.select_add_tech_title > option:checked');
     const technic_driver_selects_add = $('.' + select_add_tech_title.val() + ' > option:checked');
     const app_technic_description = $('.app_technic_description');
@@ -208,22 +210,16 @@ function addTechnicSheetToApp(e) {
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            application_id: $('input[name="application_id"]').val(),
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             technic_title_shrt: select_add_tech_title.val(),
             technic_sheet_id: technic_driver_selects_add.val(),
-            app_tech_desc: app_technic_description.val()
+            app_tech_desc: app_technic_description.val(),
+            operation: operation
         }
     }).done((d) => {
-        window.location.reload(true)
+        window.location.reload()
     })
-    // addNewTechSheet(
-    //     select_add_tech_title.text(),
-    //     select_add_tech_title.val(),
-    //     technic_driver_selects_add.text(),
-    //     technic_driver_selects_add.val(),
-    //     app_technic_description.val()
-    // )
 
     $('.technic_driver_selects_add').hide()
     $('#btn_add_technic_sheet').hide()
@@ -243,29 +239,22 @@ function autoResize(elem) {
 }
 
 $('.button_reject_app_tech').click(function () {
+    const operation = "reject_application_technic";
     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
     const pathname = window.location;
     const applicationTechnicId = this.id.replace('reject_', '')
-
-    const app_technic_description = $('.app_technic_description_' + applicationTechnicId)
-    const technic_driver_selects = $('.technic_driver_selects_' + applicationTechnicId)
-    const technic_title = $('#technic_title_' + applicationTechnicId)
-
-
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: pathname,
         data: {
             csrfmiddlewaretoken: csrf,
-            applicationTechnicId: applicationTechnicId,
-            application_id: $('input[name="application_id"]').val(),
+            application_technic_id: applicationTechnicId,
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            operation: 'reject'
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload()
-    })
+    }).done((d) => {window.location.reload()})
 })
 // const toggleWorkdayStatus = (e) => {
 //     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
@@ -297,6 +286,7 @@ $('.button_reject_app_tech').click(function () {
 // }
 
 function applyChangesAppTechnic(e) {
+    const operation = "apply_changes_application_technic";
     const appTechId = e.id.replace('apply_', '')
     const technic_title = $('#technic_title_' + appTechId + ' > option:checked').val();
     const technic_sheet_id = $('.' + technic_title + '_' + appTechId + ' > option:checked').val();
@@ -308,33 +298,32 @@ function applyChangesAppTechnic(e) {
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            application_id: $('input[name="application_id"]').val(),
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            apply_application_technic_id: appTechId,
+            application_technic_id: appTechId,
             technic_title_shrt: technic_title,
             technic_sheet_id: technic_sheet_id,
-            app_tech_desc: app_tech_description
+            app_tech_desc: app_tech_description,
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    }).done((d) => {window.location.reload()})
 }
 
 function saveApplicationDescription(el) {
+    const operation = "save_application_description";
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            changed_desc_app: true,
-            application_id: $('input[name="application_id"]').val(),
+            // changed_desc_app: true,
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            application_description: $('textarea[name="application_description"]').val()
+            application_today_description: $('textarea[name="application_description"]').val(),
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    })//.done((d) => {window.location.reload()})
 }
 
 function saveApplicationTechnic(el) {
@@ -348,20 +337,20 @@ function saveApplicationTechnic(el) {
 }
 
 function saveApplicationMaterials(el) {
+    const operation = "save_application_materials";
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            application_id: $('input[name="application_id"]').val(),
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             app_material_id: $('input[name="app_material_id"]').val(),
-            material_description: $('textarea[name="app_material_desc"]').val()
+            material_description: $('textarea[name="app_material_desc"]').val(),
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    }).done((d) => {window.location.reload()})
 }
 
 
@@ -439,7 +428,7 @@ function changePriorityForConflictResolution(e) {
             app_technic_priority: appTechnicPriority
         }
     }).done((d) => {
-        window.location.reload(true)
+        window.location.reload()
     })
 }
 
@@ -447,7 +436,7 @@ function applyChangesForConflictResolution(e) {
     const appTechnicId = e.id.replace('btn_apply_', '');
     const technic_title_short = $('#title_' + appTechnicId).val();
     const technic_sheet_id = $('.' + technic_title_short + '.at_' + appTechnicId).val();
-    const technic_description = $('#app_tech_description_'+appTechnicId).val();
+    const technic_description = $('#app_tech_description_' + appTechnicId).val();
     // console.log(technic_title_short)
     // console.log(technic_sheet_id)
     // console.log(technic_description)
@@ -491,7 +480,7 @@ $('#technic_sheet_list').masonry({
 // опции анимации - очередь и продолжительность анимации
 });
 
-function setViewProps(e){
+function setViewProps(e) {
     const is_show_saved_app = $('input[name="is_show_saved_app"]').is(':checked');
     const is_show_absent_app = $('input[name="is_show_absent_app"]').is(':checked');
     const is_show_technic_app = $('input[name="is_show_technic_app"]').is(':checked');
@@ -513,7 +502,7 @@ function setViewProps(e){
     })
 }
 
-function setFilterProps(e){
+function setFilterProps(e) {
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -530,7 +519,7 @@ function setFilterProps(e){
     })
 }
 
-function changeIsCancelled (e) {
+function changeIsCancelled(e) {
     const applicationTechnicId = e.id.replace('reject_', '');
     $.ajax({
         type: 'POST',
@@ -540,9 +529,13 @@ function changeIsCancelled (e) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             applicationTechnicId: applicationTechnicId,
             operation: 'reject'
-        }}).done((d) => {window.location.reload()})
+        }
+    }).done((d) => {
+        window.location.reload()
+    })
 }
-function changeIsChecked (e, appTodayId) {
+
+function changeIsChecked(e, appTodayId) {
     const applicationTechnicId = e.id.replace('accept_', '');
     $.ajax({
         type: 'POST',
@@ -551,16 +544,19 @@ function changeIsChecked (e, appTodayId) {
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             applicationTechnicId: applicationTechnicId,
-            application_today_id:appTodayId,
+            application_today_id: appTodayId,
             operation: 'accept'
-        }}).done((d) => {window.location.reload()})
+        }
+    }).done((d) => {
+        window.location.reload()
+    })
 }
 
-function onChangeApplicationMaterialDescription(e){
+function onChangeApplicationMaterialDescription(e) {
     const applicationMaterialId = e.id.replace('app_mat_desc_id_', '');
-    const btn_submit = $('.btn_sub_'+applicationMaterialId);
-    const text_area_desc = $('#app_mat_desc_id_'+applicationMaterialId);
-    const lable_desc = $('.lbl_desc_'+applicationMaterialId);
+    const btn_submit = $('.btn_sub_' + applicationMaterialId);
+    const text_area_desc = $('#app_mat_desc_id_' + applicationMaterialId);
+    const lable_desc = $('.lbl_desc_' + applicationMaterialId);
 
     lable_desc.removeClass('text-success', 'text-danger')
     lable_desc.addClass('text-danger')
@@ -573,12 +569,13 @@ function onChangeApplicationMaterialDescription(e){
     btn_submit.addClass('btn-warning')
     btn_submit.text('Сохранить')
 }
-function open_print_page(e){
+
+function open_print_page(e) {
     const location = window.location
-    window.open(location+e)
+    window.open(location + e)
 }
 
-function toggleHidePanel(e){
+function toggleHidePanel(e) {
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -586,10 +583,13 @@ function toggleHidePanel(e){
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             operation: 'hide'
-        }}).done((d) => {window.location.reload()})
+        }
+    }).done((d) => {
+        window.location.reload()
+    })
 }
 
-function connectTelegramBot(e, userKey){
+function connectTelegramBot(e, userKey) {
     console.log(userKey)
     $.ajax({
         type: 'POST',
@@ -598,12 +598,13 @@ function connectTelegramBot(e, userKey){
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             user_key: userKey
-        }}).done((d) => {
-            window.location.reload()
-        })
+        }
+    }).done((d) => {
+        window.location.reload()
+    })
 }
 
-function copyApplicationTo(e){
+function copyApplicationTo(e) {
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -620,7 +621,7 @@ function copyApplicationTo(e){
     })
 }
 
-function setSpecTask(e, technicSheetId){
+function setSpecTask(e, technicSheetId) {
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -635,7 +636,7 @@ function setSpecTask(e, technicSheetId){
     })
 }
 
-function changeReadOnlyMode(readOnly){
+function changeReadOnlyMode(readOnly) {
     console.log('dfs')
     $.ajax({
         type: 'POST',
@@ -650,5 +651,19 @@ function changeReadOnlyMode(readOnly){
         window.location.reload()
     })
 }
-// $('#btn_read_only_mode_false').click(changeReadOnlyMode(0));
-// $('#btn_read_only_mode_true').click(changeReadOnlyMode(1));
+
+// function validateApplicationToday(app_today_id, current_day) {
+//     // console.log(app_today_id)
+//     // console.log(current_day)
+//     $.ajax({
+//         type: 'POST',
+//         mode: 'same-origin',
+//         url: window.location,
+//         data: {
+//             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+//             app_today_id: app_today_id,
+//             current_day: current_day,
+//             operation: 'validate_application_today'
+//         }
+//     })
+// }

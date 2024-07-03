@@ -27,6 +27,8 @@ import dashboard.services.dashboard as DASHBOARD_SERVICE
 import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
+import dashboard.services.add_edit_application as ADD_EDIT_APP_SERVICE
+import dashboard.services.parametr as PARAMETER_SERVICE
 #   SERVICE--------------------------------------------------
 
 from logger import getLogger
@@ -37,7 +39,7 @@ log = getLogger(__name__)
 # Create your views here.
 
 
-def dashboard(request):
+def dashboard_view(request):
     if request.user.is_anonymous:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -140,8 +142,8 @@ def clear_application_today(request):
                 if not application_today:
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
-                if (foreman != application_today.construction_site.foreman and not
-                        USERS_SERVICE.is_administrator(request.user)):
+                if (not USERS_SERVICE.is_administrator(request.user) and
+                        foreman != application_today.construction_site.foreman):
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
                 elif USERS_SERVICE.is_supply(request.user):
@@ -160,34 +162,17 @@ def clear_application_today(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def check_application_status(request):
+def validate_application_today_view(request):
     if request.user.is_authenticated:
         app_today_id = request.GET.get('app_today_id')
         current_day = request.GET.get('current_day')
-        if U.is_administrator(request.user):
-            _default_status = ASSETS.SUBMITTED
-        else:
-            _default_status = ASSETS.SAVED
-        if app_today_id:
-            try:
-                app_today = ApplicationToday.objects.get(id=app_today_id)
-            except ApplicationToday.DoesNotExist:
-                return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+        default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
+        application_today = APP_TODAY_SERVICE.get_apps_today(pk=app_today_id)
 
-            U.check_application_today(app_today=app_today, default_status=_default_status)
-
-            # _at_desc = app_today.description is not None and app_today.description != ''
-            # _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
-            # _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
-            # # _at_status = app_today.status != ASSETS.ABSENT
-            #
-            # if any([_at_desc, _at_at, _at_am]):
-            #     app_today.status = _default_status
-            #     app_today.save()
-            # else:
-            #     app_today.delete()
-
-            return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
+        if application_today:
+            APP_TODAY_SERVICE.validate_application_today(
+                application_today=application_today,
+                default_status=default_status)
         return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
     else:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
@@ -195,156 +180,158 @@ def check_application_status(request):
 
 def edit_application_view(request):
     if request.user.is_authenticated:
-        template = 'content/dashboard/edit_application.html'
-        context = {
-            'title': 'Edit application'
-        }
+        context = {'title': 'Создать заявку'}
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context['current_day'] = current_day
+        context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
 
-        app_today_date = request.GET.get('current_day')
-        if app_today_date is not None or app_today_date != 'None':
-            current_date = WorkDaySheet.objects.get(date=app_today_date)
-        else:
-            current_date = WorkDaySheet.objects.get(date=U.TODAY)
-
-        context['current_day'] = current_date
-        context['weekday'] = ASSETS.WEEKDAY[current_date.date.weekday()]
-
-        if not current_date.status:
+        if not current_day.status:
             return render(request, 'content/spec/weekend.html', context)
 
-        context['technics'] = Technic.objects.filter(isArchive=False).distinct().values_list('title', flat=True)
+        context['technics'] = TECHNIC_SERVICE.get_technics_queryset(
+            isArchive=False
+        ).distinct().values_list('title', flat=True)
 
-        technic_sheets = TechnicSheet.objects.filter(isArchive=False,
-                                                     status=True,
-                                                     driver_sheet__isnull=False,
-                                                     driver_sheet__status=True,
-                                                     date=current_date)
+        technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            select_related=('technic', 'driver_sheet__driver'),
+            isArchive=False,
+            status=True,
+            driver_sheet__isnull=False,
+            driver_sheet__status=True,
+            date=current_day
+        )
 
         if not technic_sheets.exists():
-            print('No technic sheets')
-            U.prepare_sheets(current_date)
+            U.prepare_sheets(current_day)
 
-        technic_titles_dict = U.get_short_technic_name_dict(current_date)
+        technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(technic_sheets=technic_sheets)
         context['technic_titles_dict'] = technic_titles_dict
 
-        technic_driver_list = []
-        for title_short, title in technic_titles_dict.items():
-            technic_driver_list.append(
-                {
-                    'title_short': title_short,
-                    'title': title,
-                    'technic_sheets': technic_sheets.filter(technic__title=title)
-                }
-            )
-        context['technic_driver_list'] = technic_driver_list
+        context['technic_driver_list'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+            technic_titles=technic_titles_dict,
+            technic_sheets=technic_sheets
+        )
 
         if request.method == 'POST':
-            # print(request.POST)
-            application_id = request.POST.get('application_id')  # id application_today
-            construction_site_id = request.POST.get('construction_site_id')  # id construction_site
-            application_description = request.POST.get('application_description')  # application_today description
+            operation = request.POST.get('operation')  # операция
+            post_application_today_id = request.POST.get('app_today_id')
+            post_current_day = request.POST.get('current_day')
+            post_construction_site_id = request.POST.get('construction_site_id')  # id construction_site
+            post_technic_title_shrt = request.POST.get('technic_title_shrt')
+            post_technic_sheet_id = request.POST.get('technic_sheet_id')
+            post_application_technic_description = request.POST.get('app_tech_desc')
+            post_application_technic_id = request.POST.get('application_technic_id')
+            post_application_today_description = request.POST.get('application_today_description')
+            post_application_material_id = request.POST.get('app_material_id')
+            post_application_material_description = request.POST.get('material_description')
 
-            if application_id:
-                application_today = ApplicationToday.objects.get(id=application_id)
-            else:
-                application_today = ApplicationToday.objects.create(date=current_date,
-                                                                    construction_site_id=construction_site_id)
-
-            #   Application Today -------------------------------------------------------------------------
-            changed_desc_app = request.POST.get('changed_desc_app')
-            if (application_id and changed_desc_app) or (changed_desc_app == 'true' and application_description):
-                application_today.description = application_description
-                application_today.save(update_fields=['description'])
-
-            #   -------------------------------------------------------------------------------------------
-
-            #   ajax - reject ------------------------------------------------------------------------------
-            application_technic_id = request.POST.get('applicationTechnicId')
-            _operation = request.POST.get('operation')
-            if application_technic_id and _operation == 'reject':
-                U.change_is_cancelled(application_technic_id)
-            #   ----------------------------------------------------------------------------------------------
-
-            #   ajax - add AT --------------------------------------------------------------------------------
-            apply_application_technic_id = request.POST.get('apply_application_technic_id')
-            technic_title_shrt = request.POST.get('technic_title_shrt')
-            if technic_title_shrt and technic_title_shrt != 'none':
-                technic_sheet_id = request.POST.get('technic_sheet_id')
-                app_tech_desc = request.POST.get('app_tech_desc')
-                desc = app_tech_desc if app_tech_desc is not None else ''
-
-                if technic_sheet_id is None or technic_sheet_id == '':
-                    n_technic_titles = U.get_short_technic_name(technic_title_shrt, current_date)
-                    some_technic_sheet = U.get_some_technic_sheet(n_technic_titles, current_date)
-                else:
-                    some_technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
-                if apply_application_technic_id:
-                    # print('!'*40)
-                    _at = ApplicationTechnic.objects.get(id=apply_application_technic_id)
-                    # U.calculate_technic_sheet_count_application(_at.technic_sheet)
-                    # print('@' * 40)
-                    if _at.technic_sheet_id != some_technic_sheet.id:
-                        _at.technic_sheet.decrement_count_application()
-                        some_technic_sheet.increment_count_application()
-                    _at.technic_sheet = some_technic_sheet
-                    _at.description = desc
-                    _at.save(update_fields=['technic_sheet', 'description'])
-                else:
-                    ApplicationTechnic.objects.create(
-                        application_today=application_today,
+            if operation == 'add_technic_to_application':
+                log.info('add_technic_to_application')
+                if (U.is_valid_get_request(post_application_today_id) and
+                        U.is_valid_get_request(post_technic_title_shrt)):
+                    if not U.is_valid_get_request(post_technic_sheet_id):
+                        technic_title = technic_titles_dict.get(post_technic_title_shrt)
+                        some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                            technic_title=technic_title, workday=current_day
+                        )
+                    else:
+                        some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
+                    description = post_application_technic_description if post_application_technic_description else ''
+                    APP_TECHNIC_SERVICE.create_app_technic(
+                        application_today_id=post_application_today_id,
                         technic_sheet=some_technic_sheet,
-                        description=desc
+                        description=description
                     )
                     some_technic_sheet.increment_count_application()
-            #   ---------------------------------------------------------------------------------------------
 
-            # Application Material --------------------------------------------------------------------------
-            app_material_id = request.POST.get('app_material_id')
-            app_material_description = request.POST.get('material_description')
-            if app_material_id and app_material_description == '':
-                ApplicationMaterial.objects.get(id=app_material_id).delete()
-            elif not app_material_id and app_material_description:
-                ApplicationMaterial.objects.create(
-                    application_today=application_today,
-                    description=app_material_description
-                )
-            elif app_material_id and app_material_description:
-                app_material = ApplicationMaterial.objects.get(id=app_material_id)
-                app_material.description = app_material_description
-                app_material.save(update_fields=['description'])
-            #   ---------------------------------------------------------------------------------------------
+            elif operation == 'reject_application_technic':
+                log.info('reject_application_technic')
+                if (U.is_valid_get_request(post_application_today_id) and
+                        U.is_valid_get_request(post_application_technic_id)):
+                    APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+
+            elif operation == 'apply_changes_application_technic':
+                log.info('apply_changes_application_technic')
+                if (U.is_valid_get_request(post_application_technic_id) and
+                        U.is_valid_get_request(post_technic_title_shrt)):
+
+                    application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
+
+                    if not U.is_valid_get_request(post_technic_sheet_id):
+                        technic_title = technic_titles_dict.get(post_technic_title_shrt)
+                        some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                            technic_title=technic_title, workday=current_day
+                        )
+                    else:
+                        some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
+                    description = post_application_technic_description if post_application_technic_description else ''
+                    if application_technic.technic_sheet.id != some_technic_sheet.id:
+                        application_technic.technic_sheet.decrement_count_application()
+                        application_technic.technic_sheet = some_technic_sheet
+
+                    application_technic.description = description
+                    application_technic.save(update_fields=['technic_sheet', 'description'])
+                    some_technic_sheet.increment_count_application()
+
+            elif operation == 'save_application_description':
+                if U.is_valid_get_request(post_application_today_id):
+                    application_today = APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id)
+                    if U.is_valid_get_request(post_application_today_description):
+                        application_today.description = post_application_today_description
+                    else:
+                        application_today.description = None
+                    application_today.save(update_fields=['description'])
+
+            elif operation == 'save_application_materials':
+                log.info('save_application_materials')
+                if U.is_valid_get_request(post_application_material_id) and post_application_material_description == '':
+                    APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id).delete()
+                elif not U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
+                        post_application_material_description) and U.is_valid_get_request(post_application_today_id):
+                    APP_MATERIAL_SERVICE.create_app_material(
+                        application_today_id=post_application_today_id,
+                        description=post_application_material_description
+                    )
+                elif U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
+                        post_application_material_description):
+                    application_material = APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id)
+                    application_material.description = post_application_material_description
+                    application_material.save(update_fields=['description'])
 
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
         #   method GET --------------------------------------------------------------------------------------
         constr_site_id = request.GET.get('constr_site_id')
-        if constr_site_id:
-            try:
-                construction_site = ConstructionSite.objects.get(id=constr_site_id, isArchive=False)
+        if U.is_valid_get_request(constr_site_id):
+            construction_site = CONSTR_SITE_SERVICE.get_construction_sites(pk=constr_site_id)
+            if construction_site:
                 context['construction_site'] = construction_site
-            except ConstructionSite.DoesNotExist:
-                return HttpResponseRedirect(ENDPOINTS.ERROR)
+            else:
+                return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
-            application_today = ApplicationToday.objects.filter(
+            application_today = APP_TODAY_SERVICE.get_apps_today(
                 construction_site=construction_site,
-                date=current_date,
+                date=current_day,
                 isArchive=False
             )
+            if not application_today:
+                default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
+                application_today = APP_TODAY_SERVICE.create_app_today(
+                    construction_site=construction_site,
+                    date=current_day,
+                    status=default_status
+                )
 
-            if application_today.exists():
-                application_technic = ApplicationTechnic.objects.filter(isArchive=False,
-                                                                        application_today__in=application_today)
-                application_material = ApplicationMaterial.objects.filter(isArchive=False,
-                                                                          application_today__in=application_today)
-
-                context['application_today'] = application_today.values(
-                    'id',
-                    'date__date',
-                    'status',
-                    'description'
-                ).first()
-                context['application_today']['application_technic'] = application_technic.filter(
-                    application_today=context['application_today']['id']).values(
+            if application_today:
+                context['application_today'] = {
+                    'id': application_today.id,
+                    'date__date': application_today.date,
+                    'status': application_today.status,
+                    'description': application_today.description
+                }
+                context['application_today']['application_technic'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                    isArchive=False,
+                    application_today=application_today).values(
                     'id',
                     'technic_sheet_id',
                     'technic_sheet__technic__title',
@@ -353,15 +340,16 @@ def edit_application_view(request):
                     'is_cancelled',
                     'description'
                 )
-                context['application_today']['application_material'] = application_material.filter(
-                    application_today=context['application_today']['id']).values(
+                context['application_today']['application_material'] = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                    isArchive=False,
+                    application_today=application_today).values(
                     'id',
                     'description',
                     'isChecked',
                     'is_cancelled'
                 ).first()
 
-        return render(request, template, context)
+        return render(request, 'content/dashboard/edit_application.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
@@ -387,31 +375,33 @@ def login_view(request):
 
 
 def restore_password_view(request):
-    template = 'content/spec/restore_password.html'
     context = {}
     if request.method == 'POST':
         _last_name = request.POST.get('last_name')
         last_name = _last_name.strip().lower().capitalize()
-        _user = User.objects.filter(last_name=last_name)
+        _user = USERS_SERVICE.get_user_queryset(
+            isArchive=False,
+            last_name=last_name,
+        )
         if _user.exists():
             context['users_list'] = _user
         else:
             context['msg'] = 'Данный пользователь не найден'
-    try:
-        _default_passwd = Parameter.objects.get(name=VAR.VAR_DEFAULT_PASSWORD['name']).value
-    except Parameter.DoesNotExist:
-        _default_passwd = '1234'
-
     user_id = request.GET.get('user_id')
-    if user_id is not None and user_id != '':
-        try:
-            restore_user = User.objects.get(pk=user_id)
-            restore_user.set_password(_default_passwd)
-            restore_user.save()
-            context['msg_success'] = {'login': restore_user.username, 'password': _default_passwd}
-        except User.DoesNotExist:
-            pass
-    return render(request, template, context)
+    if U.is_valid_get_request(user_id):
+        restore_user = USERS_SERVICE.get_user(pk=user_id)
+        if restore_user:
+            default_passwd = PARAMETER_SERVICE.get_parameter(name=VAR.VAR_DEFAULT_PASSWORD['name'])
+            if default_passwd:
+                restore_user.set_password(default_passwd.value)
+                restore_user.save(update_fields=['password'])
+                context['msg_success'] = {'login': restore_user.username, 'password': default_passwd.value}
+            else:
+                log.error("Ошибка с параметром 'default_passwd'")
+                context['msg'] = 'Произошла какая-то ошибка'
+        else:
+            log.error("restore_password_view(): restore_user не найден")
+    return render(request, 'content/spec/restore_password.html', context)
 
 
 def logout_view(request):
@@ -421,20 +411,17 @@ def logout_view(request):
 
 
 def register_view(request):
-    template = 'content/register.html'
     context = {
         'user_posts': {
             ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE],
             ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER],
-        },
-        'foreman_list': User.objects.filter(post=ASSETS.FOREMAN)
+        }
     }
 
     if request.method == 'GET':
-        return render(request, template, context)
+        return render(request, 'content/register.html', context)
     if request.method == 'POST':
-        data = request.POST
-        new_user = USERS_SERVICE.add_or_edit_user(data, user_id=None)
+        new_user = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
@@ -442,25 +429,24 @@ def register_view(request):
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         else:
             context['error'] = ASSETS.ERROR_MESSAGES['register']
-            return render(request, template, context)
+            return render(request, 'content/register.html', context)
 
     return HttpResponse(status=403)
 
 
 #   Sheets--------------------------------------------------------------------------------------------------------------
-
 def workday_sheet_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Рабочие дни'}
-        context = U.get_prepared_data(context)
+        context = U.get_prepared_data(context=context)
 
         if request.method == 'POST':
             day_id = request.POST.get('item_id')
-            if day_id:
+            if U.is_valid_get_request(day_id):
                 WORK_DAY_SERVICE.change_status(work_day_id=day_id)
 
-        current_day = WORK_DAY_SERVICE.get_current_day(request).date
-        workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_day, before_days=3, after_days=7).values()
+        current_date = WORK_DAY_SERVICE.get_current_day(request).date
+        workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_date, before_days=3, after_days=7).values()
 
         for day in workdays:
             day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
@@ -481,13 +467,13 @@ def driver_sheet_view(request):
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
 
-        if current_day.status:
+        if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(current_day)
 
         driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
-            workday=current_day,
             select_related=('driver',),
-            order_by=('driver__last_name',)
+            order_by=('driver__last_name',),
+            date=current_day,
         )
 
         context['driver_sheets'] = driver_sheet
@@ -509,30 +495,33 @@ def technic_sheet_view(request):
             technic_sheet_id = request.POST.get('technic_sheet_id')
             driver_sheet_id = request.POST.get('driver_sheet_id')
             if technic_sheet_id:
-                TECHNIC_SHEET_SERVICE.change_driver(technic_sheet_id=technic_sheet_id, driver_sheet_id=driver_sheet_id)
+                TECHNIC_SHEET_SERVICE.change_driver(
+                    technic_sheet_id=technic_sheet_id,
+                    driver_sheet_id=driver_sheet_id)
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context['current_day'] = current_day
         context = U.get_prepared_data(context, current_day.date)
 
-        if current_day.status:
+        if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=current_day)
-            TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=current_day)
+            TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=current_day)
 
         technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('driver_sheet__driver', 'technic__attached_driver'),
             order_by=('technic__title',),
             date=current_day,
         )
-        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(workday=current_day, select_related=('driver',))
+        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
+            select_related=('driver',),
+            date=current_day
+        )
 
         context['technic_sheets'] = technic_sheet
         context['driver_sheets'] = driver_sheet
 
         return render(request, 'content/sheet/technic_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
-
-
 #   --------------------------------------------------------------------------------------------------------------------
 
 
@@ -585,13 +574,21 @@ def delete_technic_view(request):
             if technic_id:
                 technic = TECHNIC_SERVICE.delete_technic(technic_id)
                 if technic:
-                    _technic_sheet = TechnicSheet.objects.filter(technic=technic, date__date__gte=U.TODAY)
-                    _application_technic = ApplicationTechnic.objects.filter(technic_sheet__in=_technic_sheet)
-                    _application_today = ApplicationToday.objects.filter(date__date__gte=U.TODAY)
-                    # _application_today = ApplicationToday.objects.filter(applicationtechnic__in=_application_technic)
+
+                    _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                        technic=technic, date__date__gte=U.TODAY
+                    )
+
+                    _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                        technic_sheet__in=_technic_sheet
+                    )
+                    _application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+                        date__date__gte=U.TODAY
+                    )
 
                     _application_technic.delete()
                     _technic_sheet.delete()
+
                     for _app_today in _application_today:
                         U.check_application_today(_app_today)
         return HttpResponseRedirect(ENDPOINTS.TECHNICS)
@@ -609,9 +606,11 @@ def users_view(request):
             'users_list': [],
             'user_post': ASSETS.USER_POSTS_dict
         }
-        if U.is_administrator(request.user):
+        if USERS_SERVICE.is_administrator(request.user):
             users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',))
-        elif U.is_mechanic(request.user):
+        elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
+            users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',)).exclude(post=ASSETS.ADMINISTRATOR)
+        elif USERS_SERVICE.is_mechanic(request.user):
             users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.DRIVER, order_by=('last_name',))
         else:
             users_list = []
@@ -627,10 +626,13 @@ def edit_user_view(request):
                    'posts': ASSETS.USER_POSTS_dict,
                    'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
                    }
-        if U.is_mechanic(request.user):
+        if USERS_SERVICE.is_mechanic(request.user):
             context['posts'] = {ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER]}
+        if USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
+            context['posts'] = {ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE]}
+
         user_id = request.GET.get('user_id')
-        if user_id:
+        if U.is_valid_get_request(user_id):
             user_ = USERS_SERVICE.get_user(pk=user_id)
             if user_:
                 context['user_list'] = user_
@@ -639,8 +641,7 @@ def edit_user_view(request):
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
         if request.method == 'POST':
-            data = request.POST
-            _user = USERS_SERVICE.add_or_edit_user(data, user_id)
+            _user = USERS_SERVICE.add_or_edit_user(request.POST, user_id)
             return HttpResponseRedirect(ENDPOINTS.USERS)
 
         return render(request, 'content/users/edit_user.html', context)
@@ -649,12 +650,12 @@ def edit_user_view(request):
 
 def delete_user_view(request):
     if request.user.is_authenticated:
-        if request.user.post == ASSETS.ADMINISTRATOR:
+        if USERS_SERVICE.is_administrator(request.user):
             user_id = request.GET.get('user_id')
-            if user_id:
+            if U.is_valid_get_request(user_id):
                 _user = USERS_SERVICE.delete_user(user_id)
                 if _user:
-                    DriverSheet.objects.filter(driver=_user, date__date__gte=U.TODAY).delete()
+                    DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=_user, date__date__gte=U.TODAY).delete()
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 
@@ -667,24 +668,46 @@ def construction_site_view(request):
 
         if U.is_administrator(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',))
+                select_related=('foreman',),
+                isArchive = False
+            )
 
         if U.is_foreman(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',), foreman=request.user)
+                select_related=('foreman',),
+                isArchive=False,
+                foreman=request.user)
 
         if U.is_master(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',), foreman_id=request.user.supervisor_user_id)
+                select_related=('foreman',),
+                isArchive=False,
+                foreman_id=request.user.supervisor_user_id)
 
         hide_constr_site_id = request.GET.get('hide')
-        if hide_constr_site_id:
+        if U.is_valid_get_request(hide_constr_site_id):
             CONSTR_SITE_SERVICE.hide_construction_site(constr_site_id=hide_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         delete_constr_site_id = request.GET.get('delete')
-        if delete_constr_site_id:
-            CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+        if U.is_valid_get_request(delete_constr_site_id):
+            deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+                construction_site=deleted_construction_site,
+                date__date__gte=U.TODAY
+            )
+            application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                application_today__in=application_today
+            )
+            application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                application_today__in=application_today
+            )
+            technic_sheet_id_list = application_technic.values_list('technic_sheet', flat=True)
+            TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list)
+            application_material.delete()
+            application_technic.delete()
+            application_today.delete()
+
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         return render(request, 'content/construction_site/construction_sites.html', context)
@@ -705,7 +728,7 @@ def edit_construction_sites(request):
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
-        if constr_site_id:
+        if U.is_valid_get_request(constr_site_id):
             constr_site = CONSTR_SITE_SERVICE.get_construction_sites(pk=constr_site_id)
             if constr_site:
                 context['constr_site'] = constr_site
@@ -722,53 +745,55 @@ def change_status_application_today(request):
         current_day = request.GET.get('current_day')
         current_status = request.GET.get('current_status')
 
-        if application_today_id:
-            current_application_today = ApplicationToday.objects.get(id=application_today_id)
-            if U.is_administrator(request.user):
+        if U.is_valid_get_request(application_today_id):
+            current_application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+            if USERS_SERVICE.is_administrator(request.user):
                 status_set = ASSETS.APPLICATION_STATUS_set
-            elif U.is_foreman(request.user) or U.is_master(request.user) or U.is_supply(request.user):
-                status_set = (ASSETS.ABSENT, ASSETS.SAVED)
+            elif (USERS_SERVICE.is_foreman(request.user) or
+                  USERS_SERVICE.is_master(request.user) or
+                  USERS_SERVICE.is_supply(request.user)):
+                status_set = {ASSETS.ABSENT, ASSETS.SAVED}
             else:
                 status_set = 'None'
+
             if current_application_today.status in status_set:
-                up_status = U.get_nxt_status(current_application_today.status)
-                current_application_today.status = up_status
-                current_application_today.save()
+                up_status = U.get_uplevel_status(current_application_today.status)
+                APP_TODAY_SERVICE.set_status_for_application_today(
+                    application_today=current_application_today,
+                    status=up_status)
                 if up_status == ASSETS.SEND:
                     var_send, _ = Parameter.objects.get_or_create(
                         name=VAR.VAR_APPLICATION_SEND['name'],
                         title=VAR.VAR_APPLICATION_SEND['title'],
                         date=current_application_today.date.date)
-
                     var_send.time = U.NOW
                     var_send.flag = True
                     var_send.save(update_fields=['time', 'flag'])
                     U.send_application_for_all(current_application_today.date,
                                                application_today_id=current_application_today.id)
-
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-        elif current_day and current_status:
-            try:
-                _c_day = WorkDaySheet.objects.get(date=current_day)
-                application_today_list = ApplicationToday.objects.filter(isArchive=False, date=_c_day,
-                                                                         status=current_status)
+        elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
+            workday = WORK_DAY_SERVICE.get_current_day(request)
+            application_today_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+                isArchive=False,
+                date=workday,
+                status=current_status
+            )
+            up_status = U.get_uplevel_status(current_status)
+            application_today_list.update(status=up_status)
 
-                up_status = U.get_nxt_status(current_status)
-                application_today_list.update(status=up_status)
-                if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(
-                        name=VAR.VAR_APPLICATION_SEND['name'],
-                        title=VAR.VAR_APPLICATION_SEND['title'],
-                        date=_c_day.date)
-                    var_send.time = U.NOW
-                    var_send.flag = True
-                    var_send.save(update_fields=['time', 'flag'])
-                    U.send_application_for_all(_c_day)
-
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-            except WorkDaySheet.DoesNotExist:
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            if up_status == ASSETS.SEND:
+                parameter_send = PARAMETER_SERVICE.get_or_create_parameter(
+                    name=VAR.VAR_APPLICATION_SEND['name'],
+                    title=VAR.VAR_APPLICATION_SEND['title'],
+                    date=workday.date
+                )
+                parameter_send.time = U.NOW
+                parameter_send.flag = True
+                parameter_send.save(update_fields=['time', 'flag'])
+                U.send_application_for_all(workday)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -781,43 +806,50 @@ def change_weekend_to_workday(request):
     """
     if request.user.is_authenticated:
         _workday = request.GET.get('current_day')
-        if _workday:
+        if U.is_valid_get_request(_workday):
             workday = WORK_DAY_SERVICE.get_workday(_date=_workday)
             if not workday.status:
                 workday.status = True
                 workday.save(update_fields=['status'])
                 DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=workday)
-                TECHNIC_SHEET_SERVICE.create_technic_sheets(workday=workday)
+                TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=workday)
             return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={workday.date}')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def conflicts_list_view(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user):
-            template = 'content/spec/conflicts_list.html'
-            context = {
-                'title': 'Conflict List'
-            }
-            _current_day = request.GET.get('current_day')
-            if _current_day is None or _current_day == '':
-                current_day = WorkDaySheet.objects.get(date=U.TODAY)
-            else:
-                current_day = WorkDaySheet.objects.get(date=_current_day)
+        if USERS_SERVICE.is_administrator(request.user):
+            context = {'title': 'Conflict List'}
+
+            current_day = WORK_DAY_SERVICE.get_current_day(request)
             context['current_day'] = current_day
-            priority_id_list = U.get_priority_id_list(current_day)
+
+            technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                date=current_day,
+                driver_sheet__isnull=False,
+                status=True,
+                isArchive=False
+            )
+            priority_id_list = U.get_priority_id_list(technic_sheet_list)
             context['priority_id_list'] = priority_id_list
-            conflict_technic_sheet = U.get_conflict_technic_sheet(
-                U.get_busiest_technic_title(current_day),
-                priority_id_list, get_id_list=False)
+
+            busiest_technic_title_list = U.get_busiest_technic_title(technic_sheet_list)
+            conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
+                busiest_technic_title=busiest_technic_title_list,
+                priority_id_list=priority_id_list
+            )
             if conflict_technic_sheet:
                 for conflict_ts in conflict_technic_sheet:
-                    conflict_ts['total_count_apps'] = ApplicationTechnic.objects.filter(
+                    conflict_ts['total_count_apps'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                        isArchive=False,
                         isChecked=False,
                         technic_sheet_id__in=conflict_ts['id_list'],
-                        priority=1).values_list('priority', flat=True).count()
+                        priority=1
+                    ).values_list('priority', flat=True).count()
+
                 context['conflict_technic_sheet'] = conflict_technic_sheet
-                return render(request, template, context)
+                return render(request, 'content/spec/conflicts_list.html', context)
             else:
                 return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day.date}')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -826,75 +858,40 @@ def conflicts_list_view(request):
 
 def conflict_resolution_view(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user):
-            template = 'content/spec/conflict_resolution.html'
-            context = {
-                'title': 'Conflict Resolution'
-            }
+        if USERS_SERVICE.is_administrator(request.user):
+            context = {'title': 'Conflict Resolution'}
 
             conflict_list_id = request.GET.get('conflict_list_id')
             conflict_list_id = conflict_list_id.strip('[]').split(', ')
 
-            _current_day = request.GET.get('current_day')
-            if _current_day is None or _current_day == '':
-                current_day = WorkDaySheet.objects.get(date=U.TODAY)
-            else:
-                current_day = WorkDaySheet.objects.get(date=_current_day)
+            current_day = WORK_DAY_SERVICE.get_current_day(request)
             context['current_day'] = current_day
 
-            if request.method == 'POST':
-                app_technic_id = request.POST.get('app_technic_id')
-                app_technic_priority = request.POST.get('app_technic_priority')
-
-                technic_title_short = request.POST.get('technic_title_short')
-                technic_sheet_id = request.POST.get('technic_sheet_id')
-                technic_description = request.POST.get('technic_description')
-
-                if all((app_technic_id, app_technic_priority)):
-                    app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
-                    app_technic.priority = app_technic_priority
-                    app_technic.save(update_fields=['priority'])
-
-                if all((technic_sheet_id, app_technic_id)):
-                    app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
-
-                    if technic_sheet_id is None or technic_sheet_id == '':
-                        n_technic_titles = U.get_short_technic_name(technic_title_short, current_day)
-                        some_technic_sheet = U.get_some_technic_sheet(n_technic_titles, current_day)
-                    else:
-                        some_technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
-
-                    _old_ts = app_technic.technic_sheet
-                    _old_ts.decrement_count_application()
-                    _old_ts.save()
-
-                    some_technic_sheet.increment_count_application()
-                    some_technic_sheet.save()
-
-                    app_technic.technic_sheet = some_technic_sheet
-
-                    if technic_description:
-                        app_technic.description = technic_description
-                    app_technic.save()
-
             if conflict_list_id is not None and len(conflict_list_id) > 0:
-                applications_technic = ApplicationTechnic.objects.filter(technic_sheet__in=conflict_list_id,
-                                                                         isChecked=False,
-                                                                         isArchive=False)
-                context['applications_technic'] = applications_technic
+                conflict_applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                    select_related=('technic_sheet', 'application_today__construction_site__foreman'),
+                    technic_sheet__in=conflict_list_id,
+                    isChecked=False,
+                    isArchive=False
+                )
+                context['applications_technic'] = conflict_applications_technic
 
                 color_list = U.set_color_for_list(conflict_list_id)
                 context['color_list'] = color_list
 
-                technic_title = applications_technic.values_list(
+                technic_title = conflict_applications_technic.values_list(
                     'technic_sheet__technic__title', flat=True).first()
                 context['technic_title'] = technic_title
 
-                technic_sheets = TechnicSheet.objects.filter(isArchive=False,
-                                                             status=True,
-                                                             driver_sheet__isnull=False,
-                                                             date=current_day)
-                technic_titles_dict = U.get_short_technic_name_dict(current_day)
+                technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                    select_related=('technic', 'driver_sheet__driver'),
+                    isArchive=False,
+                    status=True,
+                    driver_sheet__isnull=False,
+                    date=current_day
+                )
+
+                technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(technic_sheets)
                 context['technic_titles_dict'] = technic_titles_dict
 
                 technic_driver_list = []
@@ -906,47 +903,83 @@ def conflict_resolution_view(request):
                     })
                 context['technic_driver_list'] = technic_driver_list
 
-                priority_id_list = U.get_priority_id_list(current_day)
+                priority_id_list = U.get_priority_id_list(technic_sheets)
                 context['priority_id_list'] = priority_id_list
-
-                conflict_technic_sheet = U.get_conflict_technic_sheet(
-                    U.get_busiest_technic_title(current_day),
-                    priority_id_list, get_id_list=False)
+                busiest_technic_title_list = U.get_busiest_technic_title(technic_sheets)
+                conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
+                    busiest_technic_title=busiest_technic_title_list,
+                    priority_id_list=priority_id_list
+                )
 
                 if conflict_technic_sheet:
-                    print(conflict_technic_sheet)
-
                     conflict_ts = list(filter(lambda item: item['technic_title'] == technic_title,
                                               conflict_technic_sheet))
                     if conflict_ts:
                         conflict_ts = conflict_ts[0]
-                        conflict_ts['total_count_apps'] = ApplicationTechnic.objects.filter(
-                            isChecked=False,
-                            technic_sheet_id__in=conflict_ts['id_list'],
-                            priority=1).values_list('priority', flat=True).count()
+                        conflict_ts['total_count_apps'] = conflict_applications_technic.count()
                         context['conflict_technic_sheet'] = conflict_ts
                     else:
                         return HttpResponseRedirect(f'{ENDPOINTS.CONFLICT_LIST}?current_day={current_day.date}')
                 else:
                     return HttpResponseRedirect(f'{ENDPOINTS.CONFLICT_LIST}?current_day={current_day.date}')
-            return render(request, template, context)
+
+                if request.method == 'POST':
+                    app_technic_id = request.POST.get('app_technic_id')
+                    app_technic_priority = request.POST.get('app_technic_priority')
+
+                    technic_title_short = request.POST.get('technic_title_short')
+                    technic_sheet_id = request.POST.get('technic_sheet_id')
+                    technic_description = request.POST.get('technic_description')
+
+                    if U.is_valid_get_request(app_technic_priority) and U.is_valid_get_request(app_technic_id):
+                        # app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
+                        app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
+                        app_technic.priority = app_technic_priority
+                        app_technic.save(update_fields=['priority'])
+
+                    if U.is_valid_get_request(technic_title_short) and U.is_valid_get_request(app_technic_id):
+                        app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
+
+                        if not U.is_valid_get_request(technic_sheet_id):
+                            n_technic_title = technic_titles_dict.get(technic_title_short)
+                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                                technic_title=n_technic_title, workday=current_day
+                            )
+
+                        else:
+                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
+
+                        _old_ts = app_technic.technic_sheet
+                        _old_ts.decrement_count_application()
+                        # _old_ts.save()
+
+                        some_technic_sheet.increment_count_application()
+                        # some_technic_sheet.save()
+
+                        app_technic.technic_sheet = some_technic_sheet
+
+                        if technic_description:
+                            app_technic.description = technic_description
+                        app_technic.save()
+
+                # end POST =============================================================
+            return render(request, 'content/spec/conflict_resolution.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def show_technic_application(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user):
+        if USERS_SERVICE.is_administrator(request.user):
             template = 'content/applications_list/technic_application_list_for_admin.html'
         else:
             template = 'content/applications_list/technic_application_list.html'
-        context = {
-            'title': 'Заявки на технику'
-        }
-        _current_day = request.GET.get('current_day')
-        if _current_day is None or _current_day == '':
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        else:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
+        context = {'title': 'Заявки на технику'}
+        # _current_day = request.GET.get('current_day')
+        # if _current_day is None or _current_day == '':
+        #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
+        # else:
+        #     current_day = WorkDaySheet.objects.get(date=_current_day)
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
         context = U.get_prepare_filter(context)
         context['current_day'] = current_day
@@ -996,7 +1029,14 @@ def show_technic_application(request):
             })
 
         context['application_technics'] = application_technics
-        context['priority_id_list'] = U.get_priority_id_list(current_day)
+
+        temp_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+                    isArchive=False,
+                    status=True,
+                    driver_sheet__isnull=False,
+                    date=current_day
+                )
+        context['priority_id_list'] = U.get_priority_id_list(temp_technic_sheet)
 
         return render(request, template, context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)

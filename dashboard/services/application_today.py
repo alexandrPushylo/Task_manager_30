@@ -1,4 +1,5 @@
 from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet
+from django.db.models import QuerySet
 import dashboard.assets as ASSETS
 import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
@@ -22,11 +23,27 @@ def get_apps_today(**kwargs) -> ApplicationToday | None:
     except ApplicationToday.DoesNotExist:
         log.error("get_apps_today(): ApplicationToday.DoesNotExist")
         return None
+    except ValueError:
+        log.error("get_apps_today(): ValueError")
+        return None
+
+
+def create_app_today(**kwargs) -> ApplicationToday:
+    """
+    Создать объект ApplicationToday
+    :param kwargs:
+    :return: объект ApplicationToday
+    """
+    try:
+        application_today = ApplicationToday.objects.create(**kwargs)
+        return application_today
+    except ValueError:
+        log.error("get_or_create_app_today(): ValueError")
 
 
 def get_apps_today_queryset(select_related: tuple = (),
                             order_by: tuple = (),
-                            **kwargs) -> ApplicationToday.objects:
+                            **kwargs) -> QuerySet[ApplicationToday]:
     """
     :param order_by:
     :param select_related:
@@ -40,7 +57,6 @@ def get_apps_today_queryset(select_related: tuple = (),
         apps_today = apps_today.select_related(*select_related)
     if order_by:
         apps_today = apps_today.order_by(*order_by)
-
     return apps_today
 
 
@@ -91,4 +107,32 @@ def delete_application_today(application_today: ApplicationToday):
     application_today.delete()
 
 
+def validate_application_today(application_today: ApplicationToday, default_status: str = None) -> bool:
+    """
+    Проверка application_today: ApplicationToday
+    :param application_today: application_today: ApplicationToday
+    :param default_status: save or submitted
+    :return: True if application_today is valid and save, else False and delete
+    """
+    app_today_description = application_today.description is not None and application_today.description != ''
+    app_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today=application_today).exists()
+    app_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(application_today=application_today).exists()
+    if any((app_today_description, app_technic, app_material)):
+        if default_status:
+            application_today.status = default_status
+        application_today.save()
+        return True
+    else:
+        application_today.delete()
+        return False
 
+
+def set_status_for_application_today(application_today: ApplicationToday, status: str):
+    """
+    Установить статус для application_today
+    :param application_today:
+    :param status:
+    :return:
+    """
+    application_today.status = status
+    application_today.save(update_fields=['status'])

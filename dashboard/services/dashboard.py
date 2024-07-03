@@ -25,15 +25,11 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         if technic_sheet_id:
             U.set_spec_task(technic_sheet_id)
 
-    priority_id_list = U.get_priority_id_list(current_day)
-    context['priority_id_list'] = priority_id_list
 
-    conflict_technic_sheet = U.get_conflict_technic_sheet(
-        U.get_busiest_technic_title(current_day),
-        priority_id_list, get_id_list=True)
-    context['conflict_technic_sheet'] = conflict_technic_sheet
 
-    construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset()
+    construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+        isArchive=False
+    )
     if not request.user.is_show_absent_app:
         construction_sites = construction_sites.filter(applicationtoday__date=current_day)
     if not request.user.is_show_saved_app:
@@ -91,6 +87,25 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
                 'isChecked',
                 'technic_sheet_id'
             )
+
+    technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+        date=current_day,
+        driver_sheet__isnull=False,
+        status=True,
+        isArchive=False
+    )
+
+    priority_id_list = U.get_priority_id_list(technic_sheet=technic_sheet_list)
+    context['priority_id_list'] = priority_id_list
+
+    busiest_technic_title_list = U.get_busiest_technic_title(technic_sheet_list)
+    conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
+        busiest_technic_title=busiest_technic_title_list,
+        priority_id_list=priority_id_list,
+        get_only_id_list=True
+    )
+    context['conflict_technic_sheet'] = conflict_technic_sheet
+
     return context
 
 
