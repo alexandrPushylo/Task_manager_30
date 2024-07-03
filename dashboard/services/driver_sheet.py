@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-
+from django.db.models import QuerySet
 from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet
 import dashboard.assets as ASSETS
 import dashboard.utilities as U
@@ -49,7 +49,7 @@ def prepare_driver_sheet(workday: WorkDaySheet):
         if count_driver > count_driver_sheets:
             log.info(f"count_driver > count_driver_sheets {count_driver} > {count_driver_sheets}")
 
-            if last_driver_sheet.exists():  # COPY
+            if last_driver_sheet.count() == count_driver:  # COPY
                 log.info(f"last_driver_sheet.exists() is {last_driver_sheet.exists()} - Копирование")
 
                 current_driver_sheet = [DriverSheet(
@@ -60,9 +60,11 @@ def prepare_driver_sheet(workday: WorkDaySheet):
             else:  # CREATE
                 log.info(f"last_driver_sheet.exists() is {last_driver_sheet.exists()} - Создание")
 
+                exclude_drivers = driver_sheets.values_list('driver_id', flat=True)
+
                 current_driver_sheet = [DriverSheet(
                     date=workday,
-                    driver=driver) for driver in drivers_list]
+                    driver=driver) for driver in drivers_list if driver.id not in exclude_drivers]
 
             DriverSheet.objects.bulk_create(current_driver_sheet)
 
@@ -92,7 +94,7 @@ def is_driver_sheet_exists(workday: WorkDaySheet) -> bool:
 
 def get_driver_sheet_queryset(select_related: tuple = (),
                               order_by: tuple = (),
-                              **kwargs) -> DriverSheet.objects:
+                              **kwargs) -> QuerySet[DriverSheet]:
     """
     :param select_related:
     :param order_by:
