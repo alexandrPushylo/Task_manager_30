@@ -202,6 +202,20 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
         technic_sheet = get_technic_sheet_queryset(isArchive=False, pk__in=technic_sheet_id_list)
         technic_sheet.update(count_application=F('count_application') - 1)
 
+def get_least_busy_technic_sheet(free_technic_sheet_list: list) -> dict:
+    """
+    Получить наименее занятого dict(technic_sheet)
+    :param free_technic_sheet_list:
+    :return: {'id',
+        'technic__title',
+        'driver_sheet_id',
+        'count_application'}
+    """
+    if free_technic_sheet_list:
+        least_busy_technic_sheet = sorted(free_technic_sheet_list, key=lambda item: item['count_application'])[0]
+        return least_busy_technic_sheet
+
+
 def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet:
     workload_dict = get_workload_dict_of_technic_sheet(workday=workday)
     free_technic_sheet_list = get_free_list_of_technic_sheet(technic_title=technic_title, workload_dict=workload_dict)
