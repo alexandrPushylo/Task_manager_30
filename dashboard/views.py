@@ -160,34 +160,17 @@ def clear_application_today(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def check_application_status(request):
+def validate_application_today_view(request):
     if request.user.is_authenticated:
         app_today_id = request.GET.get('app_today_id')
         current_day = request.GET.get('current_day')
-        if U.is_administrator(request.user):
-            _default_status = ASSETS.SUBMITTED
-        else:
-            _default_status = ASSETS.SAVED
-        if app_today_id:
-            try:
-                app_today = ApplicationToday.objects.get(id=app_today_id)
-            except ApplicationToday.DoesNotExist:
-                return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+        default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
+        application_today = APP_TODAY_SERVICE.get_apps_today(pk=app_today_id)
 
-            U.check_application_today(app_today=app_today, default_status=_default_status)
-
-            # _at_desc = app_today.description is not None and app_today.description != ''
-            # _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
-            # _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
-            # # _at_status = app_today.status != ASSETS.ABSENT
-            #
-            # if any([_at_desc, _at_at, _at_am]):
-            #     app_today.status = _default_status
-            #     app_today.save()
-            # else:
-            #     app_today.delete()
-
-            return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
+        if application_today:
+            APP_TODAY_SERVICE.validate_application_today(
+                application_today=application_today,
+                default_status=default_status)
         return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day}')
     else:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
