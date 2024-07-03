@@ -132,3 +132,10 @@ def get_supply_technic_list() -> Technic.objects:
     """
     technic_list = get_technics_queryset(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
     return technic_list
+
+
+def get_dict_short_technic_names(technic_sheets: TechnicSheet.objects) -> dict:
+    technic_titles_list = technic_sheets.values_list('technic__title', flat=True).distinct()
+    technic_titles_dict = {str(title).replace(' ', '').replace('.', ''): title
+                           for title in technic_titles_list}
+    return technic_titles_dict
