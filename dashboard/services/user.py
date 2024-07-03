@@ -57,10 +57,8 @@ def get_user(**kwargs) -> User:
         return user
     except User.DoesNotExist:
         log.error("get_user(): User.DoesNotExist ")
-        return None
     except ValueError:
         log.error("get_user(): ValueError")
-        return None
 
 
 def get_user_queryset(select_related: tuple = (),
@@ -112,8 +110,8 @@ def create_new_user(data: dict) -> User | None:
 def check_user_data(user_data: dict) -> dict | None:
     log.info('Проверка user_data')
     username = user_data.get('username')
-    first_name = user_data.get('first_name')
-    last_name = user_data.get('last_name')
+    first_name = str(user_data.get('first_name')).strip().capitalize()
+    last_name = str(user_data.get('last_name')).strip().capitalize()
     telephone = user_data.get('telephone')
     password = user_data.get('password')
     post = user_data.get('post') if user_data.get('post') is not None else ASSETS.EMPLOYEE
