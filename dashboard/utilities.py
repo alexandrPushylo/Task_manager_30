@@ -401,23 +401,24 @@ def get_busiest_technic_sheet(work_day: WorkDaySheet):
     return technic_sheet
 
 
-def get_busiest_technic_title(work_day: WorkDaySheet) -> list:
-    #   получения списка занятости technic sheet
-    _out = []
-    technic_sheet = TechnicSheet.objects.filter(date=work_day,
-                                                driver_sheet__isnull=False,
-                                                status=True,
-                                                isArchive=False)
+def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
+    """
+    Получения списка с информацией о загруженности technic_title
+    :param technic_sheet:
+    :return: [{}, {}]
+    """
+    out = []
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
+
     for technic_title in technic_title_list:
-        _out.append({
+        technic__title_list = technic_sheet.filter(technic__title=technic_title).values('id', 'count_application')
+        out.append({
             'technic_title': technic_title,
-            'free_technic_sheet_count': technic_sheet.filter(technic__title=technic_title,
-                                                             count_application=0).count(),
-            'total_technic_sheet_count': technic_sheet.filter(technic__title=technic_title).count(),
-            'id_list': list(technic_sheet.filter(technic__title=technic_title).values_list('id', flat=True))
+            'free_technic_sheet_count': technic__title_list.filter(count_application=0).count(),
+            'total_technic_sheet_count': technic__title_list.count(),
+            'id_list': list(technic__title_list.values_list('id', flat=True))
         })
-    return _out
+    return out
 
 
 def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set, get_only_id_list=False) -> list:
