@@ -1,3 +1,5 @@
+import random
+
 from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet, Technic
 from django.db.models import F, QuerySet
 import dashboard.assets as ASSETS
@@ -76,14 +78,9 @@ def prepare_technic_sheets(workday: WorkDaySheet):
         if count_technics > count_technic_sheet:
             log.info(f"count_technics > count_technic_sheet {count_technics} > {count_technic_sheet}")
 
-            if last_technic_sheet.exists():  # COPY
+            # if last_technic_sheet.exists():  # COPY
+            if last_technic_sheet.count() == count_technics:  # COPY
                 log.info(f"last_technic_sheet.exists() is {last_technic_sheet.exists()} - Копирование")
-
-                # current_technic_sheet = [TechnicSheet(
-                #     technic=ts.technic,
-                #     driver_sheet=driver_sheet_list.filter(driver=ts.driver_sheet.driver).first(),
-                #     date=workday,
-                #     status=ts.status) for ts in last_technic_sheet]
 
                 current_technic_sheet = []
                 for ts in last_technic_sheet:
@@ -103,10 +100,12 @@ def prepare_technic_sheets(workday: WorkDaySheet):
             else:  # CREATE
                 log.info(f"last_technic_sheet.exists() is {last_technic_sheet.exists()} - Создание")
 
+                excludes_technics = technic_sheet_list.values_list('technic_id', flat=True)
+
                 current_technic_sheet = [TechnicSheet(
                     technic=technic,
                     driver_sheet=driver_sheet_list.filter(driver=technic.attached_driver).first(),
-                    date=workday) for technic in technics_list]
+                    date=workday) for technic in technics_list if technic.id not in excludes_technics]
 
             TechnicSheet.objects.bulk_create(current_technic_sheet)
 
@@ -158,7 +157,7 @@ def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
 
 def get_technic_sheet_queryset(select_related: tuple = (),
                                order_by: tuple = (),
-                               **kwargs) -> TechnicSheet.objects:
+                               **kwargs) -> QuerySet[TechnicSheet]:
     """
     :param select_related:
     :param order_by:
@@ -199,8 +198,9 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
     :return:
     """
     if technic_sheet_id_list:
-        technic_sheet = get_technic_sheet_queryset(isArchive=False, pk__in=technic_sheet_id_list)
+        technic_sheet = get_technic_sheet_queryset(pk__in=technic_sheet_id_list)
         technic_sheet.update(count_application=F('count_application') - 1)
+
 
 def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
     """
@@ -227,6 +227,7 @@ def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
         'count_application'
     ))
     return technic_sheet
+
 
 def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list:
     """
