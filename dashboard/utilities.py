@@ -390,15 +390,15 @@ def prepare_sheets(work_day: WorkDaySheet):
     log.info(f"Prepare sheets done")
 
 
-def get_busiest_technic_sheet(work_day: WorkDaySheet):
-    technic_sheet = TechnicSheet.objects.filter(date=work_day,
-                                                driver_sheet__isnull=False,
-                                                status=True,
-                                                isArchive=False,
-                                                count_application__gt=1)
-    # print(f'{technic_sheet.values()}')
-
-    return technic_sheet
+# def get_busiest_technic_sheet(work_day: WorkDaySheet):
+#     technic_sheet = TechnicSheet.objects.filter(date=work_day,
+#                                                 driver_sheet__isnull=False,
+#                                                 status=True,
+#                                                 isArchive=False,
+#                                                 count_application__gt=1)
+#     # print(f'{technic_sheet.values()}')
+#
+#     return technic_sheet
 
 
 def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
@@ -508,27 +508,27 @@ def sorting_application_status(item1, item2):
         return -1
 
 
-def change_is_cancelled(app_tech_id):
-    if app_tech_id:
-        try:
-            _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
-        except ApplicationTechnic.DoesNotExist:
-            return -1
-        if _app_tech.is_cancelled:
-            _app_tech.isChecked = False
-            _app_tech.is_cancelled = False
-            _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
-            _app_tech.technic_sheet.increment_count_application()
-            # _app_tech.technic_sheet.save()
-            _app_tech.save()
-        else:
-            _app_tech.isChecked = False
-            _app_tech.is_cancelled = True
-            _app_tech.description = ASSETS.MESSAGES['reject'] + _app_tech.description
-            _app_tech.technic_sheet.decrement_count_application()
-            # _app_tech.technic_sheet.save()
-            _app_tech.save()
-        return 0
+# def change_is_cancelled(app_tech_id):
+#     if app_tech_id:
+#         try:
+#             _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
+#         except ApplicationTechnic.DoesNotExist:
+#             return -1
+#         if _app_tech.is_cancelled:
+#             _app_tech.isChecked = False
+#             _app_tech.is_cancelled = False
+#             _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
+#             _app_tech.technic_sheet.increment_count_application()
+#             # _app_tech.technic_sheet.save()
+#             _app_tech.save()
+#         else:
+#             _app_tech.isChecked = False
+#             _app_tech.is_cancelled = True
+#             _app_tech.description = ASSETS.MESSAGES['reject'] + _app_tech.description
+#             _app_tech.technic_sheet.decrement_count_application()
+#             # _app_tech.technic_sheet.save()
+#             _app_tech.save()
+#         return 0
 
 
 def accept_app_tech_to_supply(app_tech_id, application_today_id):
