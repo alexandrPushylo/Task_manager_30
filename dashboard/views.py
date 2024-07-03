@@ -732,53 +732,55 @@ def change_status_application_today(request):
         current_day = request.GET.get('current_day')
         current_status = request.GET.get('current_status')
 
-        if application_today_id:
-            current_application_today = ApplicationToday.objects.get(id=application_today_id)
-            if U.is_administrator(request.user):
+        if U.is_valid_get_request(application_today_id):
+            current_application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+            if USERS_SERVICE.is_administrator(request.user):
                 status_set = ASSETS.APPLICATION_STATUS_set
-            elif U.is_foreman(request.user) or U.is_master(request.user) or U.is_supply(request.user):
-                status_set = (ASSETS.ABSENT, ASSETS.SAVED)
+            elif (USERS_SERVICE.is_foreman(request.user) or
+                  USERS_SERVICE.is_master(request.user) or
+                  USERS_SERVICE.is_supply(request.user)):
+                status_set = {ASSETS.ABSENT, ASSETS.SAVED}
             else:
                 status_set = 'None'
+
             if current_application_today.status in status_set:
-                up_status = U.get_nxt_status(current_application_today.status)
-                current_application_today.status = up_status
-                current_application_today.save()
+                up_status = U.get_uplevel_status(current_application_today.status)
+                APP_TODAY_SERVICE.set_status_for_application_today(
+                    application_today=current_application_today,
+                    status=up_status)
                 if up_status == ASSETS.SEND:
                     var_send, _ = Parameter.objects.get_or_create(
                         name=VAR.VAR_APPLICATION_SEND['name'],
                         title=VAR.VAR_APPLICATION_SEND['title'],
                         date=current_application_today.date.date)
-
                     var_send.time = U.NOW
                     var_send.flag = True
                     var_send.save(update_fields=['time', 'flag'])
                     U.send_application_for_all(current_application_today.date,
                                                application_today_id=current_application_today.id)
-
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-        elif current_day and current_status:
-            try:
-                _c_day = WorkDaySheet.objects.get(date=current_day)
-                application_today_list = ApplicationToday.objects.filter(isArchive=False, date=_c_day,
-                                                                         status=current_status)
+        elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
+            workday = WORK_DAY_SERVICE.get_current_day(request)
+            application_today_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+                isArchive=False,
+                date=workday,
+                status=current_status
+            )
+            up_status = U.get_uplevel_status(current_status)
+            application_today_list.update(status=up_status)
 
-                up_status = U.get_nxt_status(current_status)
-                application_today_list.update(status=up_status)
-                if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(
-                        name=VAR.VAR_APPLICATION_SEND['name'],
-                        title=VAR.VAR_APPLICATION_SEND['title'],
-                        date=_c_day.date)
-                    var_send.time = U.NOW
-                    var_send.flag = True
-                    var_send.save(update_fields=['time', 'flag'])
-                    U.send_application_for_all(_c_day)
-
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-            except WorkDaySheet.DoesNotExist:
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            if up_status == ASSETS.SEND:
+                parameter_send = PARAMETER_SERVICE.get_or_create_parameter(
+                    name=VAR.VAR_APPLICATION_SEND['name'],
+                    title=VAR.VAR_APPLICATION_SEND['title'],
+                    date=workday.date
+                )
+                parameter_send.time = U.NOW
+                parameter_send.flag = True
+                parameter_send.save(update_fields=['time', 'flag'])
+                U.send_application_for_all(workday)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
