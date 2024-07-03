@@ -420,16 +420,23 @@ def get_busiest_technic_title(work_day: WorkDaySheet) -> list:
     return _out
 
 
-def get_conflict_technic_sheet(busiest_technic_title: list, priority_id_list: list, get_id_list=False) -> list:
-    _out = []
+def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set, get_only_id_list=False) -> list:
+    """
+    Получить список конфликтов technic_sheet
+    :param busiest_technic_title: список с информацией о загруженности technic_title
+    :param priority_id_list: сет technic_sheet_id с нераспределенным приоритетом
+    :param get_only_id_list: True - получить только id; False - получить более подробную информацию
+    :return: [{}, {}, ...]
+    """
+    out = []
     for _technic_sheet in busiest_technic_title:
         if _technic_sheet['free_technic_sheet_count'] == 0 and set(_technic_sheet['id_list']).intersection(
                 priority_id_list):
-            if get_id_list:
-                _out.extend(_technic_sheet['id_list'])
+            if get_only_id_list:
+                out.extend(_technic_sheet['id_list'])
             else:
-                _out.append(_technic_sheet)
-    return _out
+                out.append(_technic_sheet)
+    return out
 
 
 def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
