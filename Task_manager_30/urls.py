@@ -19,28 +19,28 @@ from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from Task_manager_30.settings import TECH_SUPPORT_MODE
-from dashboard.views import dashboard, edit_application_view
-from dashboard.views import clear_application_today
+# from dashboard.views import dashboard, edit_application_view
+# from dashboard.views import clear_application_today
 from dashboard.views import conflicts_list_view, conflict_resolution_view
 from dashboard.views import login_view, logout_view, register_view, restore_password_view
 from dashboard.views import show_technic_application, show_material_application, material_application_supply_view
 
-from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
+# from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
 from dashboard.views import construction_site_view, edit_construction_sites
 from dashboard.views import technic_view, edit_technic_view, delete_technic_view
 from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
 
-from dashboard.views import change_status_application_today, change_weekend_to_workday, check_application_status
+from dashboard.views import change_status_application_today, change_weekend_to_workday, validate_application_today_view
 from dashboard.views import settings_view
 from dashboard.views import maintenance_view
 from dashboard.views import def_test
 
 urlpatterns = [
-                  path('', dashboard, name='dashboard'),
-                  path('dashboard/', dashboard, name='dashboard'),
-                  path('edit_application/', edit_application_view, name='edit_application'),
-                  path('clear_application/', clear_application_today, name='clear_application'),
+                  path('', include('dashboard.urls')),
+                  # path('dashboard/', dashboard, name='dashboard'),
+                  # path('edit_application/', edit_application_view, name='edit_application'),
+                  # path('clear_application/', clear_application_today, name='clear_application'),
 
                   path('conflicts_list/', conflicts_list_view, name='conflicts_list'),
                   path('conflict_resolution/', conflict_resolution_view, name='conflict_resolution'),
@@ -50,9 +50,9 @@ urlpatterns = [
                   path('material_application_supply/', material_application_supply_view,
                        name='material_application_supply'),
 
-                  path('work_days/', workday_sheet_view, name='work_days'),
-                  path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
-                  path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
+                  # path('work_days/', workday_sheet_view, name='work_days'),
+                  # path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
+                  # path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
 
                   path('users/', users_view, name='users'),
                   path('edit_user/', edit_user_view, name='edit_user'),
@@ -75,11 +75,12 @@ urlpatterns = [
 
                   path('change_app_status/', change_status_application_today, name='change_app_status'),
                   path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),
-                  path('ck_app_stat/', check_application_status, name='check_application_status'),
+                  # path('ck_app_stat/', check_application_status, name='check_application_status'),
+                  path('validate_app_today', validate_application_today_view, name='validate_application_today'),
                   path('test/', def_test, name='test'),
 
                   # re_path(r'^.*', maintenance_view),
-                  re_path(r'^.*', dashboard)
+                  # re_path(r'^.*', dashboard)
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
