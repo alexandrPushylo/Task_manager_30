@@ -316,20 +316,20 @@ function applyChangesAppTechnic(e) {
 }
 
 function saveApplicationDescription(el) {
+    const operation = "save_application_description";
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            changed_desc_app: true,
-            application_id: $('input[name="application_id"]').val(),
+            // changed_desc_app: true,
+            app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            application_description: $('textarea[name="application_description"]').val()
+            application_today_description: $('textarea[name="application_description"]').val(),
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    })//.done((d) => {window.location.reload()})
 }
 
 function saveApplicationTechnic(el) {
