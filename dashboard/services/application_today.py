@@ -22,6 +22,17 @@ def get_apps_today(**kwargs) -> ApplicationToday | None:
     except ApplicationToday.DoesNotExist:
         log.error("get_apps_today(): ApplicationToday.DoesNotExist")
         return None
+def create_app_today(**kwargs) -> ApplicationToday:
+    """
+    Создать объект ApplicationToday
+    :param kwargs:
+    :return: объект ApplicationToday
+    """
+    try:
+        application_today = ApplicationToday.objects.create(**kwargs)
+        return application_today
+    except ValueError:
+        log.error("get_or_create_app_today(): ValueError")
 
 
 def get_apps_today_queryset(select_related: tuple = (),
