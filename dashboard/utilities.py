@@ -598,6 +598,11 @@ def get_table_working_technic_sheet(current_day: WorkDaySheet):
 
 
 def set_data_for_filter(request):
+    """
+    Установка параметров фильтрации
+    :param request:
+    :return:
+    """
     if request.POST.get('operation') == 'hide':
         _hide_panel = 'change'
     else:
