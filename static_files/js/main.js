@@ -497,12 +497,11 @@ function setViewProps(e) {
             is_show_technic_app: is_show_technic_app,
             is_show_material_app: is_show_material_app
         }
-    }).done((d) => {
-        window.location.reload(true)
-    })
+    }).done((d) => {window.location.reload()})
 }
 
 function setFilterProps(e) {
+    const operation = "set_props_for_filter";
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -512,11 +511,10 @@ function setFilterProps(e) {
             filter_construction_site: $('select[name="filter_construction_site"]').val(),
             filter_foreman: $('select[name="filter_foreman"]').val(),
             filter_technic: $('select[name="filter_technic"]').val(),
-            sort_by: $('select[name="sort_by"]').val()
+            sort_by: $('select[name="sort_by"]').val(),
+            operation: operation
         }
-    }).done((d) => {
-        window.location.reload()
-    })
+    }).done((d) => {window.location.reload()})
 }
 
 function changeIsCancelled(e) {
