@@ -481,6 +481,7 @@ $('#technic_sheet_list').masonry({
 });
 
 function setViewProps(e) {
+    const operation = "set_props_for_view";
     const is_show_saved_app = $('input[name="is_show_saved_app"]').is(':checked');
     const is_show_absent_app = $('input[name="is_show_absent_app"]').is(':checked');
     const is_show_technic_app = $('input[name="is_show_technic_app"]').is(':checked');
@@ -495,7 +496,8 @@ function setViewProps(e) {
             is_show_saved_app: is_show_saved_app,
             is_show_absent_app: is_show_absent_app,
             is_show_technic_app: is_show_technic_app,
-            is_show_material_app: is_show_material_app
+            is_show_material_app: is_show_material_app,
+            operation: operation,
         }
     }).done((d) => {window.location.reload()})
 }
@@ -580,7 +582,7 @@ function toggleHidePanel(e) {
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            operation: 'hide'
+            operation: 'toggle_panel'
         }
     }).done((d) => {
         window.location.reload()

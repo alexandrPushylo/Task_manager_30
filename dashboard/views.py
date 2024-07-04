@@ -70,12 +70,15 @@ def dashboard_view(request):
     context['status_list_application_today'] = status_list_application_today  # TODO: fix for supply and ...
 
     if request.method == 'POST':
-        U.set_data_for_filter(request)
+        print(request.POST)
+        operation = request.POST.get('operation')
+        if U.is_valid_get_request(operation) and operation == 'set_props_for_view':
+            U.set_data_for_filter(request)
 
         if request.POST.get('operation') == 'copy':
             target_day = request.POST.get('target_day')
             application_id = request.POST.get('application_id')
-            if all((target_day, application_id)):
+            if U.is_valid_get_request(target_day) and U.is_valid_get_request(application_id):
                 default_app_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                 U.copy_application_to_target_day(application_id, target_day, default_app_status)
 
@@ -998,17 +1001,13 @@ def show_technic_application(request):
                 list_for_updates.append(app_technic)
             ApplicationTechnic.objects.bulk_update(objs=list_for_updates, fields=['priority', 'description'])
 
-        # application_technic_list = ApplicationTechnic.objects.filter(application_today__date=current_day,
-        #                                                              isArchive=False,
-        #                                                              is_cancelled=False,
-        #                                                              isChecked=False)
         application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
             select_related=('application_today__construction_site__foreman',),
             application_today__date=current_day,
             isArchive=False,
             is_cancelled=False,
             isChecked=False
-        )
+        ).exclude(application_today__status=ASSETS.SAVED)
 
         if not USERS_SERVICE.is_administrator(request.user):
             application_technic_list = application_technic_list.filter(application_today__status=ASSETS.SEND)
