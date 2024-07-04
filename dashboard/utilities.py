@@ -645,19 +645,33 @@ def set_prepare_filter(request):
         return -1
 
 
-def get_prepare_filter(context):
-    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
+def prepare_data_for_filter(context: dict) -> dict:
+    """
+    Подготовка и получения данных для фильтра
+    :param context:
+    :return:
+    """
+    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN).values(
+        'id',
+        'last_name',
+        'first_name'
+    )
     construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-        status=True, select_related=('foreman',), order_by=('address',))
-    technic_list = TECHNIC_SERVICE.get_technics_queryset(isArchive=False).values_list('title', flat=True).distinct()
+        status=True,
+        select_related=('foreman',),
+        order_by=('address',)
+    )
+
+    technic_list = TECHNIC_SERVICE.get_technics_queryset(
+        isArchive=False
+    ).values_list('title', flat=True).distinct()
+
     sort_by_list = ASSETS.SORT_BY
+
     context['filter_foreman_list'] = foreman_list
     context['filter_construction_site_list'] = construction_site_list
     context['filter_technic_list'] = technic_list
     context['sort_by_list'] = sort_by_list
-
-    # change_reception_apps_mode_auto()
-
     return context
 
 
