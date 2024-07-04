@@ -590,11 +590,18 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
 
 
 def get_table_working_technic_sheet(current_day: WorkDaySheet):
-    _out = []
-    _technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=current_day)
+    """
+    Получить таблицу загруженность для dashboard
+    :param current_day:
+    :return:
+    """
+    _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+        select_related=('driver_sheet__driver', 'technic__attached_driver'),
+        isArchive=False,
+        date=current_day
+    )
     # _out = _technic_sheet.order_by('driver_sheet__driver__last_name')
-    _out = _technic_sheet.order_by('technic__title')
-    return _out
+    return _technic_sheet.order_by('technic__title')
 
 
 def set_data_for_filter(request):
