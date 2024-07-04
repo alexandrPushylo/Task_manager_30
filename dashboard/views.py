@@ -70,7 +70,7 @@ def dashboard_view(request):
     context['status_list_application_today'] = status_list_application_today  # TODO: fix for supply and ...
 
     if request.method == 'POST':
-        U.set_prepare_filter(request)
+        U.set_data_for_filter(request)
 
         if request.POST.get('operation') == 'copy':
             target_day = request.POST.get('target_day')
@@ -986,7 +986,7 @@ def show_technic_application(request):
 
         if request.method == 'POST':
             print(request.POST)
-            U.set_prepare_filter(request)
+            U.set_data_for_filter(request)
             app_technic_id_list = request.POST.getlist('app_technic_id')
             app_technic_priority = request.POST.getlist('app_technic_priority')
             app_technic_description = request.POST.getlist('app_technic_description')

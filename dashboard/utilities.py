@@ -597,7 +597,7 @@ def get_table_working_technic_sheet(current_day: WorkDaySheet):
     return _out
 
 
-def set_prepare_filter(request):
+def set_data_for_filter(request):
     if request.POST.get('operation') == 'hide':
         _hide_panel = 'change'
     else:
@@ -627,8 +627,8 @@ def set_prepare_filter(request):
     sort_by = request.POST.get('sort_by')
     sort_by = sort_by if sort_by != '' else None
 
-    try:
-        _user = User.objects.get(id=request.user.id)
+    _user = USERS_SERVICE.get_user(pk=request.user.id)
+    if _user:
         if is_show_saved_app:
             _user.is_show_saved_app = is_show_saved_app
         if is_show_absent_app:
@@ -645,10 +645,30 @@ def set_prepare_filter(request):
             _user.is_show_panel = False if _user.is_show_panel else True
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
-
         _user.save()
-    except User.DoesNotExist:
-        return -1
+
+    # try:
+    #     _user = User.objects.get(id=request.user.id)
+    #     if is_show_saved_app:
+    #         _user.is_show_saved_app = is_show_saved_app
+    #     if is_show_absent_app:
+    #         _user.is_show_absent_app = is_show_absent_app
+    #     if is_show_technic_app:
+    #         _user.is_show_technic_app = is_show_technic_app
+    #     if is_show_material_app:
+    #         _user.is_show_material_app = is_show_material_app
+    #     if filter_construction_site:
+    #         _user.filter_construction_site = filter_construction_site
+    #     if filter_foreman:
+    #         _user.filter_foreman = filter_foreman
+    #     if _hide_panel:
+    #         _user.is_show_panel = False if _user.is_show_panel else True
+    #     _user.filter_technic = filter_technic
+    #     _user.sort_by = sort_by
+    #
+    #     _user.save()
+    # except User.DoesNotExist:
+    #     return -1
 
 
 def prepare_data_for_filter(context: dict) -> dict:
