@@ -973,34 +973,44 @@ def show_technic_application(request):
             template = 'content/applications_list/technic_application_list_for_admin.html'
         else:
             template = 'content/applications_list/technic_application_list.html'
+
         context = {'title': 'Заявки на технику'}
-        # _current_day = request.GET.get('current_day')
-        # if _current_day is None or _current_day == '':
-        #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        # else:
-        #     current_day = WorkDaySheet.objects.get(date=_current_day)
+
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
         context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
         if request.method == 'POST':
-            print(request.POST)
-            U.set_data_for_filter(request)
+            operation = request.POST.get('operation')
+            if U.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+                U.set_data_for_filter(request)
+
             app_technic_id_list = request.POST.getlist('app_technic_id')
             app_technic_priority = request.POST.getlist('app_technic_priority')
             app_technic_description = request.POST.getlist('app_technic_description')
 
+            list_for_updates = []
             for _id, _priority, _description in zip(app_technic_id_list, app_technic_priority, app_technic_description):
-                ApplicationTechnic.objects.filter(id=_id).update(
-                    priority=_priority,
-                    description=_description)
+                app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=_id)
+                app_technic.priority = _priority
+                app_technic.description = _description
+                list_for_updates.append(app_technic)
+            ApplicationTechnic.objects.bulk_update(objs=list_for_updates, fields=['priority', 'description'])
 
-        application_technic_list = ApplicationTechnic.objects.filter(application_today__date=current_day,
-                                                                     isArchive=False,
-                                                                     is_cancelled=False,
-                                                                     isChecked=False)
-        if not U.is_administrator(request.user):
+        # application_technic_list = ApplicationTechnic.objects.filter(application_today__date=current_day,
+        #                                                              isArchive=False,
+        #                                                              is_cancelled=False,
+        #                                                              isChecked=False)
+        application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            select_related=('application_today__construction_site__foreman',),
+            application_today__date=current_day,
+            isArchive=False,
+            is_cancelled=False,
+            isChecked=False
+        )
+
+        if not USERS_SERVICE.is_administrator(request.user):
             application_technic_list = application_technic_list.filter(application_today__status=ASSETS.SEND)
 
         if request.user.filter_technic:
@@ -1023,7 +1033,9 @@ def show_technic_application(request):
         application_technics = []
         for technic_sheet in technic_sheet_list:
             application_technics.append({
-                'technic_sheet': TechnicSheet.objects.get(id=technic_sheet['technic_sheet']),
+                'technic_sheet': TECHNIC_SHEET_SERVICE.get_technic_sheet(
+                    pk=technic_sheet['technic_sheet']
+                ),
                 'applications_list': application_technic_list.filter(
                     technic_sheet_id=technic_sheet['technic_sheet']).order_by('priority')
             })
