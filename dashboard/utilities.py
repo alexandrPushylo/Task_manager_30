@@ -15,7 +15,7 @@ from logger import getLogger
 
 from datetime import date, timedelta, datetime
 import random
-import Task_manager_30.endpoints as ENDPOINTS
+import config.endpoints as ENDPOINTS
 import dashboard.assets as ASSETS
 import dashboard.telegram_bot as T
 import dashboard.variables as VAR
@@ -370,6 +370,12 @@ def get_work_days():
 
 
 def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
+    """
+    Подготовка и получения глобальных данных
+    :param context:
+    :param current_day:
+    :return:
+    """
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
     for workday in workdays:
         workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
@@ -408,6 +414,7 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     :return: [{}, {}]
     """
     out = []
+    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
 
     for technic_title in technic_title_list:
@@ -446,6 +453,7 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     :param technic_sheet:
     :return: set(.., ...)
     """
+    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
     technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
     application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         technic_sheet__in=technic_sheet_list_id_list,
@@ -584,14 +592,26 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
 
 
 def get_table_working_technic_sheet(current_day: WorkDaySheet):
-    _out = []
-    _technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=current_day)
+    """
+    Получить таблицу загруженность для dashboard
+    :param current_day:
+    :return:
+    """
+    _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+        select_related=('driver_sheet__driver', 'technic__attached_driver'),
+        isArchive=False,
+        date=current_day
+    )
     # _out = _technic_sheet.order_by('driver_sheet__driver__last_name')
-    _out = _technic_sheet.order_by('technic__title')
-    return _out
+    return _technic_sheet.order_by('technic__title')
 
 
-def set_prepare_filter(request):
+def set_data_for_filter(request):
+    """
+    Установка параметров фильтрации
+    :param request:
+    :return:
+    """
     if request.POST.get('operation') == 'hide':
         _hide_panel = 'change'
     else:
@@ -621,8 +641,8 @@ def set_prepare_filter(request):
     sort_by = request.POST.get('sort_by')
     sort_by = sort_by if sort_by != '' else None
 
-    try:
-        _user = User.objects.get(id=request.user.id)
+    _user = USERS_SERVICE.get_user(pk=request.user.id)
+    if _user:
         if is_show_saved_app:
             _user.is_show_saved_app = is_show_saved_app
         if is_show_absent_app:
@@ -639,25 +659,59 @@ def set_prepare_filter(request):
             _user.is_show_panel = False if _user.is_show_panel else True
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
-
         _user.save()
-    except User.DoesNotExist:
-        return -1
+
+    # try:
+    #     _user = User.objects.get(id=request.user.id)
+    #     if is_show_saved_app:
+    #         _user.is_show_saved_app = is_show_saved_app
+    #     if is_show_absent_app:
+    #         _user.is_show_absent_app = is_show_absent_app
+    #     if is_show_technic_app:
+    #         _user.is_show_technic_app = is_show_technic_app
+    #     if is_show_material_app:
+    #         _user.is_show_material_app = is_show_material_app
+    #     if filter_construction_site:
+    #         _user.filter_construction_site = filter_construction_site
+    #     if filter_foreman:
+    #         _user.filter_foreman = filter_foreman
+    #     if _hide_panel:
+    #         _user.is_show_panel = False if _user.is_show_panel else True
+    #     _user.filter_technic = filter_technic
+    #     _user.sort_by = sort_by
+    #
+    #     _user.save()
+    # except User.DoesNotExist:
+    #     return -1
 
 
-def get_prepare_filter(context):
-    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
+def prepare_data_for_filter(context: dict) -> dict:
+    """
+    Подготовка и получения данных для фильтра
+    :param context:
+    :return:
+    """
+    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN).values(
+        'id',
+        'last_name',
+        'first_name'
+    )
     construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-        status=True, select_related=('foreman',), order_by=('address',))
-    technic_list = TECHNIC_SERVICE.get_technics_queryset(isArchive=False).values_list('title', flat=True).distinct()
+        status=True,
+        select_related=('foreman',),
+        order_by=('address',)
+    )
+
+    technic_list = TECHNIC_SERVICE.get_technics_queryset(
+        isArchive=False
+    ).values_list('title', flat=True).distinct()
+
     sort_by_list = ASSETS.SORT_BY
+
     context['filter_foreman_list'] = foreman_list
     context['filter_construction_site_list'] = construction_site_list
     context['filter_technic_list'] = technic_list
     context['sort_by_list'] = sort_by_list
-
-    # change_reception_apps_mode_auto()
-
     return context
 
 

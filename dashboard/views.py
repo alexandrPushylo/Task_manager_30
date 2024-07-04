@@ -11,7 +11,7 @@ from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMa
 from dashboard.models import Parameter  # , Telebot
 
 import dashboard.assets as ASSETS
-import Task_manager_30.endpoints as ENDPOINTS
+import config.endpoints as ENDPOINTS
 import dashboard.utilities as U
 import dashboard.variables as VAR
 # import dashboard.telegram_bot as T
@@ -58,7 +58,7 @@ def dashboard_view(request):
         'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
     context = U.get_prepared_data(context, current_day.date)
-    context = U.get_prepare_filter(context)
+    context = U.prepare_data_for_filter(context)
 
     if not current_day.status:
         if request.GET.get('current_day') is None or request.GET.get('current_day') == '':
@@ -70,12 +70,15 @@ def dashboard_view(request):
     context['status_list_application_today'] = status_list_application_today  # TODO: fix for supply and ...
 
     if request.method == 'POST':
-        U.set_prepare_filter(request)
+        print(request.POST)
+        operation = request.POST.get('operation')
+        if U.is_valid_get_request(operation) and operation == 'set_props_for_view':
+            U.set_data_for_filter(request)
 
         if request.POST.get('operation') == 'copy':
             target_day = request.POST.get('target_day')
             application_id = request.POST.get('application_id')
-            if all((target_day, application_id)):
+            if U.is_valid_get_request(target_day) and U.is_valid_get_request(application_id):
                 default_app_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                 U.copy_application_to_target_day(application_id, target_day, default_app_status)
 
@@ -973,34 +976,40 @@ def show_technic_application(request):
             template = 'content/applications_list/technic_application_list_for_admin.html'
         else:
             template = 'content/applications_list/technic_application_list.html'
+
         context = {'title': 'Заявки на технику'}
-        # _current_day = request.GET.get('current_day')
-        # if _current_day is None or _current_day == '':
-        #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        # else:
-        #     current_day = WorkDaySheet.objects.get(date=_current_day)
+
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
-        context = U.get_prepare_filter(context)
+        context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
         if request.method == 'POST':
-            print(request.POST)
-            U.set_prepare_filter(request)
+            operation = request.POST.get('operation')
+            if U.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+                U.set_data_for_filter(request)
+
             app_technic_id_list = request.POST.getlist('app_technic_id')
             app_technic_priority = request.POST.getlist('app_technic_priority')
             app_technic_description = request.POST.getlist('app_technic_description')
 
+            list_for_updates = []
             for _id, _priority, _description in zip(app_technic_id_list, app_technic_priority, app_technic_description):
-                ApplicationTechnic.objects.filter(id=_id).update(
-                    priority=_priority,
-                    description=_description)
+                app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=_id)
+                app_technic.priority = _priority
+                app_technic.description = _description
+                list_for_updates.append(app_technic)
+            ApplicationTechnic.objects.bulk_update(objs=list_for_updates, fields=['priority', 'description'])
 
-        application_technic_list = ApplicationTechnic.objects.filter(application_today__date=current_day,
-                                                                     isArchive=False,
-                                                                     is_cancelled=False,
-                                                                     isChecked=False)
-        if not U.is_administrator(request.user):
+        application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            select_related=('application_today__construction_site__foreman',),
+            application_today__date=current_day,
+            isArchive=False,
+            is_cancelled=False,
+            isChecked=False
+        ).exclude(application_today__status=ASSETS.SAVED)
+
+        if not USERS_SERVICE.is_administrator(request.user):
             application_technic_list = application_technic_list.filter(application_today__status=ASSETS.SEND)
 
         if request.user.filter_technic:
@@ -1023,7 +1032,9 @@ def show_technic_application(request):
         application_technics = []
         for technic_sheet in technic_sheet_list:
             application_technics.append({
-                'technic_sheet': TechnicSheet.objects.get(id=technic_sheet['technic_sheet']),
+                'technic_sheet': TECHNIC_SHEET_SERVICE.get_technic_sheet(
+                    pk=technic_sheet['technic_sheet']
+                ),
                 'applications_list': application_technic_list.filter(
                     technic_sheet_id=technic_sheet['technic_sheet']).order_by('priority')
             })
@@ -1044,24 +1055,41 @@ def show_technic_application(request):
 
 def show_material_application(request):
     if request.user.is_authenticated:
-        template = 'content/applications_list/material_application_list.html'
-        context = {
-            'title': 'Materials Applications'
-        }
-        _current_day = request.GET.get('current_day')
-        if _current_day is None or _current_day == '':
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        else:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
+        context = {'title': 'Materials Applications'}
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
-        context = U.get_prepare_filter(context)
+
+        context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
-        application_materials_list = ApplicationMaterial.objects.filter(
-            isArchive=False, application_today__date=current_day).exclude(application_today__status=ASSETS.SAVED)
+        if request.method == 'POST':
+            operation = request.POST.get('operation')
+            if U.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+                U.set_data_for_filter(request)
+
+        application_today_id_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=current_day,
+        ).exclude(status=ASSETS.SAVED).values_list('pk', flat=True)
+
+        if request.user.filter_foreman != 0:
+            application_today_id_list = application_today_id_list.filter(
+                construction_site__foreman_id=request.user.filter_foreman
+            )
+
+        if request.user.filter_construction_site != 0:
+            application_today_id_list = application_today_id_list.filter(
+                construction_site_id=request.user.filter_construction_site
+            )
+
+        application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+            select_related=('application_today__construction_site__foreman',),
+            isArchive=False,
+            application_today_id__in=application_today_id_list,
+        )
         context['application_materials_list'] = application_materials_list
 
-        return render(request, template, context)
+        return render(request, 'content/applications_list/material_application_list.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
