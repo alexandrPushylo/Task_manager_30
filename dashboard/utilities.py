@@ -414,6 +414,7 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     :return: [{}, {}]
     """
     out = []
+    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
 
     for technic_title in technic_title_list:
@@ -452,6 +453,7 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     :param technic_sheet:
     :return: set(.., ...)
     """
+    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
     technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
     application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         technic_sheet__in=technic_sheet_list_id_list,
