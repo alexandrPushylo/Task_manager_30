@@ -58,7 +58,7 @@ def dashboard_view(request):
         'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
     context = U.get_prepared_data(context, current_day.date)
-    context = U.get_prepare_filter(context)
+    context = U.prepare_data_for_filter(context)
 
     if not current_day.status:
         if request.GET.get('current_day') is None or request.GET.get('current_day') == '':
@@ -981,7 +981,7 @@ def show_technic_application(request):
         #     current_day = WorkDaySheet.objects.get(date=_current_day)
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
-        context = U.get_prepare_filter(context)
+        context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
         if request.method == 'POST':
@@ -1054,7 +1054,7 @@ def show_material_application(request):
         else:
             current_day = WorkDaySheet.objects.get(date=_current_day)
         context = U.get_prepared_data(context, current_day.date)
-        context = U.get_prepare_filter(context)
+        context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
         application_materials_list = ApplicationMaterial.objects.filter(
