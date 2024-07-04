@@ -15,7 +15,7 @@ from logger import getLogger
 
 from datetime import date, timedelta, datetime
 import random
-import Task_manager_30.endpoints as ENDPOINTS
+import config.endpoints as ENDPOINTS
 import dashboard.assets as ASSETS
 import dashboard.telegram_bot as T
 import dashboard.variables as VAR

@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 import json
-from Task_manager_30.creds import TELEGRAM_BOT_TOKEN
+from config.creds import TELEGRAM_BOT_TOKEN
 import requests
 
 TELE_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates'

@@ -1,7 +1,7 @@
 import json
 import logging.config
 from logging import getLogger, basicConfig, DEBUG, FileHandler, ERROR, StreamHandler
-from Task_manager_30.settings import BASE_DIR
+from config.settings import BASE_DIR
 from os.path import sep
 
 with open(f'{BASE_DIR}{sep}logging.conf') as file:

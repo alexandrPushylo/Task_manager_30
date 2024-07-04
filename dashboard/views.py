@@ -11,7 +11,7 @@ from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMa
 from dashboard.models import Parameter  # , Telebot
 
 import dashboard.assets as ASSETS
-import Task_manager_30.endpoints as ENDPOINTS
+import config.endpoints as ENDPOINTS
 import dashboard.utilities as U
 import dashboard.variables as VAR
 # import dashboard.telegram_bot as T

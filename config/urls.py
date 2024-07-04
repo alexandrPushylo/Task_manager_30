@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from Task_manager_30.settings import TECH_SUPPORT_MODE
+from config.settings import TECH_SUPPORT_MODE
 # from dashboard.views import dashboard, edit_application_view
 # from dashboard.views import clear_application_today
 from dashboard.views import conflicts_list_view, conflict_resolution_view
