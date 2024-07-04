@@ -1056,24 +1056,41 @@ def show_technic_application(request):
 
 def show_material_application(request):
     if request.user.is_authenticated:
-        template = 'content/applications_list/material_application_list.html'
-        context = {
-            'title': 'Materials Applications'
-        }
-        _current_day = request.GET.get('current_day')
-        if _current_day is None or _current_day == '':
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        else:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
+        context = {'title': 'Materials Applications'}
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
+
         context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
-        application_materials_list = ApplicationMaterial.objects.filter(
-            isArchive=False, application_today__date=current_day).exclude(application_today__status=ASSETS.SAVED)
+        if request.method == 'POST':
+            operation = request.POST.get('operation')
+            if U.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+                U.set_data_for_filter(request)
+
+        application_today_id_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=current_day,
+        ).exclude(status=ASSETS.SAVED).values_list('pk', flat=True)
+
+        if request.user.filter_foreman != 0:
+            application_today_id_list = application_today_id_list.filter(
+                construction_site__foreman_id=request.user.filter_foreman
+            )
+
+        if request.user.filter_construction_site != 0:
+            application_today_id_list = application_today_id_list.filter(
+                construction_site_id=request.user.filter_construction_site
+            )
+
+        application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+            select_related=('application_today__construction_site__foreman',),
+            isArchive=False,
+            application_today_id__in=application_today_id_list,
+        )
         context['application_materials_list'] = application_materials_list
 
-        return render(request, template, context)
+        return render(request, 'content/applications_list/material_application_list.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
