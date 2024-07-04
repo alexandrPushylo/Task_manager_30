@@ -370,6 +370,12 @@ def get_work_days():
 
 
 def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
+    """
+    Подготовка и получения глобальных данных
+    :param context:
+    :param current_day:
+    :return:
+    """
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
     for workday in workdays:
         workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
