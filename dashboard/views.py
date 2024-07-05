@@ -572,7 +572,7 @@ def edit_technic_view(request):
 
 def delete_technic_view(request):
     if request.user.is_authenticated:
-        if U.is_administrator(request.user) or U.is_mechanic(request.user):
+        if USERS_SERVICE.is_administrator(request.user) or USERS_SERVICE.is_mechanic(request.user):
             technic_id = request.GET.get('tech_id')
             if technic_id:
                 technic = TECHNIC_SERVICE.delete_technic(technic_id)
@@ -593,7 +593,8 @@ def delete_technic_view(request):
                     _technic_sheet.delete()
 
                     for _app_today in _application_today:
-                        U.check_application_today(_app_today)
+                        APP_TODAY_SERVICE.validate_application_today(application_today=_app_today)
+                        # U.check_application_today(_app_today)
         return HttpResponseRedirect(ENDPOINTS.TECHNICS)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -669,19 +670,19 @@ def construction_site_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Строительные объекты'}
 
-        if U.is_administrator(request.user):
+        if USERS_SERVICE.is_administrator(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
-                isArchive = False
+                isArchive=False
             )
 
-        if U.is_foreman(request.user):
+        if USERS_SERVICE.is_foreman(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
                 isArchive=False,
                 foreman=request.user)
 
-        if U.is_master(request.user):
+        if USERS_SERVICE.is_master(request.user):
             context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
                 isArchive=False,
@@ -694,7 +695,8 @@ def construction_site_view(request):
 
         delete_constr_site_id = request.GET.get('delete')
         if U.is_valid_get_request(delete_constr_site_id):
-            deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+            deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(
+                constr_site_id=delete_constr_site_id)
             application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
                 construction_site=deleted_construction_site,
                 date__date__gte=U.TODAY
@@ -764,6 +766,8 @@ def change_status_application_today(request):
                 APP_TODAY_SERVICE.set_status_for_application_today(
                     application_today=current_application_today,
                     status=up_status)
+
+                # TODO: fix here
                 if up_status == ASSETS.SEND:
                     var_send, _ = Parameter.objects.get_or_create(
                         name=VAR.VAR_APPLICATION_SEND['name'],
@@ -774,6 +778,7 @@ def change_status_application_today(request):
                     var_send.save(update_fields=['time', 'flag'])
                     U.send_application_for_all(current_application_today.date,
                                                application_today_id=current_application_today.id)
+
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
@@ -796,6 +801,9 @@ def change_status_application_today(request):
                 parameter_send.flag = True
                 parameter_send.save(update_fields=['time', 'flag'])
                 U.send_application_for_all(workday)
+
+
+
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
@@ -1042,11 +1050,11 @@ def show_technic_application(request):
         context['application_technics'] = application_technics
 
         temp_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
-                    isArchive=False,
-                    status=True,
-                    driver_sheet__isnull=False,
-                    date=current_day
-                )
+            isArchive=False,
+            status=True,
+            driver_sheet__isnull=False,
+            date=current_day
+        )
         context['priority_id_list'] = U.get_priority_id_list(temp_technic_sheet)
 
         return render(request, template, context)
