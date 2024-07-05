@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block title_p %}
     {% if edit_mode != 'edit_mode_archive' %}
-        {% if status_list_application_today.saved %}
+        {% if status_list_application_today.saved and not ONLY_READ%}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
-                   role="button" class="btn btn-primary">Подать все заявки</a>
+                   role="button" class="btn btn-warning">Подать все заявки</a>
             </div>
             {#    {% elif status_list_application_today.submitted %}#}
             {#        <div>#}
@@ -159,13 +159,13 @@
                                             {% if construction_site.application_today.application_material.isChecked %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
-                                                <textarea readonly
+                                                <textarea readonly aria-label="material_description"
                                                           class="form-control border border-1 border-success material_description">{{ construction_site.application_today.application_material.description }}</textarea>
 
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
-                                                <textarea readonly
+                                                <textarea readonly aria-label="material_description"
                                                           class="form-control border border-1 border-danger material_description">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
 
@@ -181,34 +181,38 @@
                                 <hr class="p-0 m-0">
                                 <div class="card-text">
                                     <div class="btn-group d-flex justify-content-center m-1">
-                                        {% if not ONLY_READ %}
-                                            {% if construction_site.application_today %}
-                                                <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
-                                                   class="btn btn-outline-danger" aria-current="page"><i
-                                                        class="fa-solid fa-trash"></i></a>
-                                                <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                                   class="btn btn-outline-primary" aria-current="page"><i
-                                                        class="fa-regular fa-pen-to-square"></i></a>
 
-                                                {% if construction_site.application_today.status == 'saved' %}
-                                                    <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
-                                                       class="btn btn-outline-primary ps-4 pe-4"
-                                                       aria-current="page"><i class="fa-solid fa-check"></i></a>
-                                                {% endif %}
-                                            {% else %}
-                                                <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                                   class="btn btn-sm btn-outline-primary" aria-current="page">
-                                                    <i class="fa-solid fa-plus"></i></a>
+                                        {% if construction_site.application_today %}
+                                            <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
+                                               class="btn btn-outline-danger" aria-current="page"><i
+                                                    class="fa-solid fa-trash"></i></a>
+                                            <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                               class="btn btn-outline-primary" aria-current="page"><i
+                                                    class="fa-regular fa-pen-to-square"></i></a>
+
+                                            {% if construction_site.application_today.status == 'saved' and not ONLY_READ %}
+                                                <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
+                                                   class="btn btn-outline-primary ps-4 pe-4"
+                                                   aria-current="page"><i class="fa-solid fa-check"></i></a>
                                             {% endif %}
                                         {% else %}
+                                            <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
+                                               class="btn btn-sm btn-outline-primary" aria-current="page">
+                                                <i class="fa-solid fa-plus"></i></a>
+                                        {% endif %}
+
+
+                                    </div>
+
+                                    {% if ONLY_READ %}
+                                        <div style="text-align: center">
                                             <span>Подача заявок на технику ограничена
                                             {% if ONLY_READ_time %}
                                                 <span>до {{ ONLY_READ_time }}</span>
                                             {% endif %}
                                             </span>
-                                        {% endif %}
-
-                                    </div>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                         </div>
