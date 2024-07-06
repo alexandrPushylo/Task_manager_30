@@ -40,7 +40,7 @@
                 <div class="card mb-3">
                     <form id="material_application_supply_{{ application_material.id }}" method="post">{% csrf_token %}
                         <div class="card-header">
-                            {% if edit_mode != 'edit_mode_archive' %}
+                            {% if VIEW_MODE != 'view_mode_archive' %}
                                 <span>
                             {% if not application_material.isChecked %}
                                 <button type="submit" form="material_application_supply_{{ application_material.id }}"
@@ -68,7 +68,7 @@
                                     <textarea name="application_material_description"
                                               id="app_mat_desc_id_{{ application_material.id }}"
                                               class="form-control p-1 text_area_description {% if not application_material.isChecked %}border border-danger{% else %} border border-success{% endif %}"
-                                            {% if edit_mode != 'edit_mode_archive' %}
+                                            {% if VIEW_MODE != 'view_mode_archive' %}
                                               oninput="autoResize(this); onChangeApplicationMaterialDescription(this)"
                                             {% else %}
                                               disabled

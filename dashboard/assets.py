@@ -71,7 +71,7 @@ COLORS = [
 ]
 
 #   -------------------------------------------------------------
-EDIT_MODE_FUTURE = 'edit_mode_future'
-EDIT_MODE_CURRENT = 'edit_mode_current'
-EDIT_MODE_ARCHIVE = 'edit_mode_archive'
+VIEW_MODE_FUTURE = 'view_mode_future'
+VIEW_MODE_CURRENT = 'view_mode_current'
+VIEW_MODE_ARCHIVE = 'view_mode_archive'
 #   -------------------------------------------------------------

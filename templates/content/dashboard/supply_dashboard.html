@@ -57,7 +57,7 @@
         <div style="text-align: center">
             <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"
                class="btn btn-sm {% if count_not_checked_app_mater %} btn-warning {% else %}btn-outline-success{% endif %}">
-                {% if count_not_checked_app_mater and edit_mode != 'edit_mode_archive' %}
+                {% if count_not_checked_app_mater and VIEW_MODE != 'view_mode_archive' %}
                     <span>Есть {{ count_not_checked_app_mater }} не подтвержденных заявок</span>
                 {% else %}
                     <span>Заявки на материалы</span>
@@ -162,7 +162,7 @@
                             {% endif %}
                         </div>
 
-                        {% if edit_mode != 'edit_mode_archive' %}
+                        {% if VIEW_MODE != 'view_mode_archive' %}
                             <hr class="p-0 m-0">
                             <div class="card-text">
                                 <div class="btn-group d-flex justify-content-center m-1">
@@ -200,7 +200,7 @@
                 </div>
             </div>
 
-            {% if a_m_exists and edit_mode != 'edit_mode_archive' %}
+            {% if a_m_exists and VIEW_MODE != 'view_mode_archive' %}
                 <div class="application_items">
                     {% for app_tech_supply in applications_technic_for_supply %}
                         {% if app_tech_supply.application_technic %}
