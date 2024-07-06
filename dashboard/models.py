@@ -2,7 +2,7 @@ from django.db import models
 # from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
 from dashboard.assets import EMPLOYEE, ADMINISTRATOR, MECHANIC
-from dashboard.assets import ABSENT, SAVED
+# from dashboard.assets import ABSENT, SAVED
 
 
 class User(AbstractUser):
@@ -135,6 +135,12 @@ class TechnicSheet(models.Model):
 
 #   Applications--------------------------------------------------------------
 class ApplicationToday(models.Model):
+    ABSENT = 'absent'
+    SAVED = 'saved'
+    SUBMITTED = 'submitted'
+    APPROVED = 'approved'
+    SEND = 'send'
+
     construction_site = models.ForeignKey(ConstructionSite, on_delete=models.CASCADE,
                                           verbose_name="Строительный объект")
     date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
@@ -147,12 +153,25 @@ class ApplicationToday(models.Model):
         self.is_application_send = True
         self.save(update_fields=['is_application_send'])
 
+    def set_next_status(self):
+        if self.status == self.ABSENT:
+            self.status = self.SAVED
+        elif self.status == self.SAVED:
+            self.status = self.SUBMITTED
+        elif self.status == self.SUBMITTED:
+            self.status = self.APPROVED
+        elif self.status == self.APPROVED:
+            self.status = self.SEND
+            # self.is_application_send = True
+        self.save(update_fields=['status'])
+
+
     def __str__(self): return f"{self.construction_site} [{self.date.date}] - {self.status}"
 
     class Meta:
         verbose_name = "Заявка на объект"
         verbose_name_plural = "Заявки на объект"
-        ordering = ['-date', 'construction_site']
+        ordering = ['date', 'construction_site']
 
 
 class ApplicationTechnic(models.Model):

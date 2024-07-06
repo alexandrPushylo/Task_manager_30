@@ -35,36 +35,6 @@ log = getLogger(__name__)
 
 TODAY = date.today()
 NOW = datetime.now().time()
-
-
-def is_administrator(user: User) -> bool:
-    return True if user.post == ASSETS.ADMINISTRATOR else False
-
-
-def is_foreman(user: User) -> bool:
-    return True if user.post == ASSETS.FOREMAN else False
-
-
-def is_master(user: User) -> bool:
-    return True if user.post == ASSETS.MASTER else False
-
-
-def is_driver(user: User) -> bool:
-    return True if user.post == ASSETS.DRIVER else False
-
-
-def is_mechanic(user: User) -> bool:
-    return True if user.post == ASSETS.MECHANIC else False
-
-
-def is_supply(user: User) -> bool:
-    return True if user.post == ASSETS.SUPPLY else False
-
-
-def is_employee(user: User) -> bool:
-    return True if user.post == ASSETS.EMPLOYEE else False
-
-
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -75,33 +45,6 @@ def convert_str_to_date(str_date: str) -> date:
             return str_date
     except:
         print('Error date')
-
-
-# def OLD_prepare_workday(_date):     # TODO: moved to FUNC
-#     if WorkDaySheet.objects.filter(date__gte=_date).count() < 14:
-#         for n in range(14):
-#             _day = TODAY + timedelta(days=n)
-#             if _day.weekday() in (5, 6):
-#                 status = False
-#             else:
-#                 status = True
-#             WorkDaySheet.objects.update_or_create(date=_day, defaults={'status': status})
-#
-#         return WorkDaySheet.objects.get(date=_date)
-#     else:
-#         return False
-
-
-def get_create_workday(_date):
-    if WorkDaySheet.objects.filter(date=_date).exists():
-        return WorkDaySheet.objects.get(date=_date)
-    else:
-        weekday = datetime.strptime(_date, '%Y-%m-%d').weekday()
-        if weekday in (5, 6):
-            _status = False
-        else:
-            _status = True
-        return WorkDaySheet.objects.create(date=_date, status=_status)
 
 
 def get_weekday(_date: date) -> str | None:
@@ -124,72 +67,6 @@ def get_weekday(_date: date) -> str | None:
         return None
 
 
-# def prepare_driver_sheet(workday: WorkDaySheet):
-#     driver_list = User.objects.filter(isArchive=False, post=ASSETS.DRIVER)
-#     count_driver = len(driver_list)
-#
-#     driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday)
-#     count_driver_sheet = len(driver_sheet_list)
-#
-#     last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
-#     last_driver_sheet = DriverSheet.objects.filter(isArchive=False, date=last_workday)
-#     if count_driver > count_driver_sheet:
-#
-#         if last_driver_sheet.exists():
-#             for driver in last_driver_sheet:
-#                 DriverSheet.objects.get_or_create(date=workday,
-#                                                   driver=driver.driver,
-#                                                   status=driver.status)
-#         else:
-#             for driver in driver_list:
-#                 DriverSheet.objects.get_or_create(date=workday, driver=driver)
-#         print('+')
-#     elif count_driver < count_driver_sheet:
-#         print('-')
-#     else:
-#         print('=')
-
-
-def prepare_technic_sheet(workday: WorkDaySheet):
-    technic_list = Technic.objects.filter(isArchive=False)
-    count_technic = len(technic_list)
-
-    technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=workday)
-    count_technic_sheet = len(technic_sheet_list)
-
-    last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
-    last_technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=last_workday)
-    driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday, status=True)
-
-    # autocomplete_technic_sheet(technic_sheet_list)
-
-    if count_technic > count_technic_sheet:
-        print('+')
-        if last_technic_sheet.exists():
-            for technic in last_technic_sheet:
-                if technic.driver_sheet is None:
-                    driver_sheet = None
-                else:
-                    driver_sheet = driver_sheet_list.filter(driver=technic.driver_sheet.driver).first()
-                TechnicSheet.objects.get_or_create(date=workday,
-                                                   technic=technic.technic,
-                                                   status=technic.status,
-                                                   driver_sheet=driver_sheet
-                                                   )
-        else:
-            print('create')
-            for technic in technic_list:
-                driver_sheet = driver_sheet_list.filter(driver=technic.attached_driver).first()
-                TechnicSheet.objects.get_or_create(date=workday,
-                                                   technic=technic,
-                                                   driver_sheet=driver_sheet
-                                                   )
-    elif count_technic < count_technic_sheet:
-        print('-')
-    else:
-        print('=')
-
-
 def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
     empty_technic_sheet = technic_sheet.filter(driver_sheet__isnull=True,
                                                technic__attached_driver__isnull=False
@@ -204,95 +81,6 @@ def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
             technic_sheet.save()
 
 
-def get_workload_dict(current_date=TODAY):  # TODO delete
-    _work_day = WorkDaySheet.objects.get(date=current_date)
-    if _work_day.status:
-        _technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, status=True, date=_work_day,
-                                                          driver_sheet__isnull=False, driver_sheet__status=True)
-        workload_dict = _technic_sheet_list.values(
-            'id', 'technic__title', 'driver_sheet_id', 'count_application'
-        )
-        return workload_dict
-    else:
-        return None
-
-
-def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):  # TODO delete
-    _work_day = WorkDaySheet.objects.get(date=current_date)
-    if _work_day.status:
-        free_technic_sheet_list = []
-        workload_dict = get_workload_dict(current_date)
-        for workload_item in workload_dict:
-            if workload_item['technic__title'] == technic_title and f_free and workload_item['count_application'] == 0:
-                free_technic_sheet_list.append(workload_item)
-            elif workload_item['technic__title'] == technic_title and not f_free:
-                free_technic_sheet_list.append(workload_item)
-        return free_technic_sheet_list
-    else:
-        return None
-
-
-def get_random_technic_sheet(free_tech_sheet_list: list):  # TODO delete
-    if free_tech_sheet_list:
-        free_tech_sheet_list.sort(key=lambda item: item['count_application'])
-        return free_tech_sheet_list[0]  # TODO: random choice
-    else:
-        return None
-
-
-def get_random_free_technic_sheet(free_tech_sheet_list: list):
-    if free_tech_sheet_list:
-        return random.choice(free_tech_sheet_list)
-    else:
-        return None
-
-
-def get_some_technic_sheet(technic_title, current_date: WorkDaySheet) -> TechnicSheet:
-    free_technic_sheet_list = get_free_technic_sheet_list(technic_title, current_date.date)
-    free_technic_sheet = get_random_free_technic_sheet(free_technic_sheet_list)
-    if not free_technic_sheet:
-        any_technic_sheet_list = get_free_technic_sheet_list(technic_title, current_date.date,
-                                                             f_free=False)
-        any_technic_sheet = get_random_technic_sheet(any_technic_sheet_list)
-        return TechnicSheet.objects.get(id=any_technic_sheet.get('id'))
-    else:
-        return TechnicSheet.objects.get(id=free_technic_sheet.get('id'))
-
-
-def get_short_technic_name_dict(current_date: WorkDaySheet) -> dict | None:
-    if current_date.status:
-        _technic_sheet = TechnicSheet.objects.filter(isArchive=False, status=True, driver_sheet__isnull=False,
-                                                     driver_sheet__status=True, date=current_date)
-        technic_titles_list = _technic_sheet.values_list('technic__title', flat=True).distinct()
-        technic_titles_dict = {}
-        for title in technic_titles_list:
-            _title = str(title).replace(' ', '').replace('.', '')
-            technic_titles_dict[_title] = title
-        return technic_titles_dict
-    else:
-        return None
-
-
-def get_short_technic_name(short_technic_name: str, current_date: WorkDaySheet) -> str | None:
-    short_technic_name_dict = get_short_technic_name_dict(current_date)
-    if short_technic_name_dict:
-        return short_technic_name_dict[short_technic_name]
-    else:
-        return None
-
-
-# def calculate_technic_sheet_count_application(technic_sheet_list: QuerySet):
-#     if isinstance(technic_sheet_list, QuerySet):
-#         for technic_sheet_id in technic_sheet_list:
-#             _t_sh = TechnicSheet.objects.get(id=technic_sheet_id)
-#             _at_count = ApplicationTechnic.objects.filter(
-#                 technic_sheet_id=technic_sheet_id,
-#                 isChecked=False, is_cancelled=False).count()
-#             if _at_count > 0:
-#                 _t_sh.count_application = _at_count - 1
-#                 _t_sh.save()
-
-
 def decrement_all_technic_sheet(current_date: WorkDaySheet):
     technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=current_date)
     for technic_sheet in technic_sheet_list:
@@ -300,80 +88,11 @@ def decrement_all_technic_sheet(current_date: WorkDaySheet):
         technic_sheet.save(update_fields=['count_application'])
 
 
-def change_status_application(application_today_id: int):
-    try:
-        current_application_today = ApplicationToday.objects.get(id=application_today_id)
-        _status = get_uplevel_status(current_application_today.status)
-        current_application_today.status = _status
-        current_application_today.save(update_fields=['status'])
-    except ApplicationToday.DoesNotExist as e:
-        print(f'{e}')
-
-
-def get_uplevel_status(status: str) -> str:
-    """
-    Получить следующий уровень статуса
-    :param status:
-    :return:
-    """
-    if status == ASSETS.ABSENT:
-        return ASSETS.SAVED
-    elif status == ASSETS.SAVED:
-        return ASSETS.SUBMITTED
-    elif status == ASSETS.SUBMITTED:
-        return ASSETS.APPROVED
-    elif status == ASSETS.APPROVED:
-        return ASSETS.SEND
-    elif status == ASSETS.SEND:
-        return ASSETS.SEND
-
-
-def change_to_up_status(application_today_list, status: str):
-    for application_today in application_today_list:
-        if application_today.status == status:
-            application_today.status = get_uplevel_status(status)
-            application_today.save(update_fields=['status'])
-
-
-# def change_status_to_approved(application_today_list):
-#     for application_today in application_today_list:
-#         if application_today.status == ASSETS.SUBMITTED:
-#             application_today.status = ASSETS.APPROVED
-#             application_today.save(update_fields=['status'])
-#
-#
-# def change_status_to_send(application_today_list):
-#     for application_today in application_today_list:
-#         if application_today.status == ASSETS.APPROVED:
-#             application_today.status = ASSETS.SEND
-#             application_today.save(update_fields=['status'])
-
-
-def get_work_days():
-    work_days = WorkDaySheet.objects.filter(
-        Q(date__gt=TODAY - timedelta(days=2)) &
-        Q(date__lt=TODAY + timedelta(days=4))
-    ).reverse()
-    return work_days
-
-
-# def get_prev_work_day(current_work_day) -> WorkDaySheet:
-#     prev_work_day = WorkDaySheet.objects.filter(date__lt=current_work_day,
-#                                                 status=True).first()
-#     return prev_work_day
-#
-#
-# def get_next_work_day(current_work_day) -> WorkDaySheet:
-#     next_work_day = WorkDaySheet.objects.filter(date__gt=current_work_day,
-#                                                 status=True).last()
-#     return next_work_day
-
-
-def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
+def get_prepared_data(context: dict, current_date: date = TODAY) -> dict:
     """
     Подготовка и получения глобальных данных
     :param context:
-    :param current_day:
+    :param current_date:
     :return:
     """
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
@@ -382,10 +101,10 @@ def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
     context['work_days'] = workdays
 
     context['today'] = TODAY
-    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_day)
-    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_day)
-    context['weekday'] = get_weekday(current_day)
-    context['edit_mode'] = get_edit_mode(current_day)
+    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_date)
+    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_date)
+    context['weekday'] = get_weekday(current_date)
+    context['VIEW_MODE'] = get_view_mode(current_date)
     change_reception_apps_mode_auto()
     return context
 
@@ -394,17 +113,6 @@ def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
     TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
     log.info(f"Prepare sheets done")
-
-
-# def get_busiest_technic_sheet(work_day: WorkDaySheet):
-#     technic_sheet = TechnicSheet.objects.filter(date=work_day,
-#                                                 driver_sheet__isnull=False,
-#                                                 status=True,
-#                                                 isArchive=False,
-#                                                 count_application__gt=1)
-#     # print(f'{technic_sheet.values()}')
-#
-#     return technic_sheet
 
 
 def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
@@ -428,7 +136,8 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     return out
 
 
-def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set, get_only_id_list=False) -> list:
+def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set,
+                                       get_only_id_list=False) -> list:
     """
     Получить список конфликтов technic_sheet
     :param busiest_technic_title: список с информацией о загруженности technic_title
@@ -468,27 +177,6 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     return out
 
 
-# def get_status_list_application_today(work_day: WorkDaySheet) -> dict:
-#     _out = {ASSETS.ABSENT: [],
-#             ASSETS.SAVED: [],
-#             ASSETS.SUBMITTED: [],
-#             ASSETS.APPROVED: [],
-#             ASSETS.SEND: []}
-#     application_today_list = ApplicationToday.objects.filter(date=work_day, isArchive=False)
-#     for application in application_today_list:
-#         if application.status == ASSETS.ABSENT:
-#             _out[ASSETS.ABSENT].append(application.id)
-#         elif application.status == ASSETS.SAVED:
-#             _out[ASSETS.SAVED].append(application.id)
-#         elif application.status == ASSETS.SUBMITTED:
-#             _out[ASSETS.SUBMITTED].append(application.id)
-#         elif application.status == ASSETS.APPROVED:
-#             _out[ASSETS.APPROVED].append(application.id)
-#         elif application.status == ASSETS.SEND:
-#             _out[ASSETS.SEND].append(application.id)
-#     return _out
-
-
 def set_color_for_list(some_list: list) -> dict:
     """
     Привязка цвета для каждого элемента из списка some_list
@@ -514,29 +202,6 @@ def sorting_application_status(item1, item2):
         return -1
     if item1 in (None,) and item2 in (ASSETS.SEND, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED, ASSETS.ABSENT):
         return -1
-
-
-# def change_is_cancelled(app_tech_id):
-#     if app_tech_id:
-#         try:
-#             _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
-#         except ApplicationTechnic.DoesNotExist:
-#             return -1
-#         if _app_tech.is_cancelled:
-#             _app_tech.isChecked = False
-#             _app_tech.is_cancelled = False
-#             _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
-#             _app_tech.technic_sheet.increment_count_application()
-#             # _app_tech.technic_sheet.save()
-#             _app_tech.save()
-#         else:
-#             _app_tech.isChecked = False
-#             _app_tech.is_cancelled = True
-#             _app_tech.description = ASSETS.MESSAGES['reject'] + _app_tech.description
-#             _app_tech.technic_sheet.decrement_count_application()
-#             # _app_tech.technic_sheet.save()
-#             _app_tech.save()
-#         return 0
 
 
 def accept_app_tech_to_supply(app_tech_id, application_today_id):
@@ -584,11 +249,6 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
             _old_at.save()
             if not _old_at.description:
                 _old_at.delete()
-
-
-# def get_supply_technic_list() -> Technic:
-#     _out = Technic.objects.filter(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
-#     return _out
 
 
 def get_table_working_technic_sheet(current_day: WorkDaySheet):
@@ -661,29 +321,6 @@ def set_data_for_filter(request):
         _user.sort_by = sort_by
         _user.save()
 
-    # try:
-    #     _user = User.objects.get(id=request.user.id)
-    #     if is_show_saved_app:
-    #         _user.is_show_saved_app = is_show_saved_app
-    #     if is_show_absent_app:
-    #         _user.is_show_absent_app = is_show_absent_app
-    #     if is_show_technic_app:
-    #         _user.is_show_technic_app = is_show_technic_app
-    #     if is_show_material_app:
-    #         _user.is_show_material_app = is_show_material_app
-    #     if filter_construction_site:
-    #         _user.filter_construction_site = filter_construction_site
-    #     if filter_foreman:
-    #         _user.filter_foreman = filter_foreman
-    #     if _hide_panel:
-    #         _user.is_show_panel = False if _user.is_show_panel else True
-    #     _user.filter_technic = filter_technic
-    #     _user.sort_by = sort_by
-    #
-    #     _user.save()
-    # except User.DoesNotExist:
-    #     return -1
-
 
 def prepare_data_for_filter(context: dict) -> dict:
     """
@@ -715,154 +352,187 @@ def prepare_data_for_filter(context: dict) -> dict:
     return context
 
 
-def send_messages(chat_id, messages):
-    T.BOT.send_message(chat_id=chat_id,
-                       text=messages,
-                       parse_mode='html')
+def send_messages_by_telegram(chat_id, messages):
+    """
+    Отправка messages пользователю с chat_id через Telegram
+    :param chat_id:
+    :param messages:
+    :return:
+    """
+    T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
 
 
-def get_user_key(user_id) -> str | None:
-    try:
-        _user = User.objects.get(pk=user_id)
+def get_user_key(user_id) -> str:
+    """
+    Получить уникальный ключ для привязки Telegram
+    :param user_id:
+    :return:
+    """
+    _user = USERS_SERVICE.get_user(pk=user_id)
+    if _user:
         _key = random.randint(100, 999)
         return f'{_key}{_user.id}'
-    except User.DoesNotExist:
-        return None
 
 
-def send_application_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    _out = []
-    send_flag, created = Parameter.objects.get_or_create(
-        name=VAR.VAR_APPLICATION_SEND['name'],
-        title=VAR.VAR_APPLICATION_SEND['title'],
-        date=current_day.date)
-    driver_list = TechnicSheet.objects.filter(date=current_day, status=True, driver_sheet__status=True, isArchive=False)
-
-    m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    # print(m_day)
-    if application_today_id is None:
-        application_today = ApplicationToday.objects.filter(isArchive=False, date=current_day, status=ASSETS.SEND)
+def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    all_already_send = current_day.is_all_application_send
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    driver_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+        date=current_day,
+        status=True,
+        driver_sheet__status=True,
+        isArchive=False
+    )
+    if application_today_id:
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(pk=application_today_id)
     else:
-        application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=current_day,
+            status=ASSETS.SEND)
 
-    application_technic_list = ApplicationTechnic.objects.filter(application_today__in=application_today,
-                                                                 isArchive=False, is_cancelled=False, isChecked=False)
+    application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        select_related=('technic_sheet', 'application_today__construction_site__foreman'),
+        isArchive=False,
+        is_cancelled=False,
+        isChecked=False,
+        application_today__in=application_today
+    )
 
-    driver_list = driver_list.filter(id__in=application_technic_list.values_list('technic_sheet_id', flat=True))
+    driver_sheet_list = driver_list.filter(id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
+        'id',
+        'driver_sheet__driver__telegram_id_chat',
+        'driver_sheet__driver__last_name',
+        'driver_sheet__driver__first_name',
+    )
 
-    for driver in driver_list:
-        _out.append((
-            driver,
-            application_technic_list.filter(technic_sheet=driver).order_by('priority')
-        ))
+    for driver_sheet_item in driver_sheet_list:
+        driver_sheet_item['applications'] = application_technic_list.filter(
+            technic_sheet_id=driver_sheet_item['id']).values(
+            'priority',
+            'application_today__construction_site__address',
+            'application_today__construction_site__foreman__last_name',
+            'application_today__is_application_send',
+            'description'
+        ).order_by('priority')
 
-    for drv, apps in _out:
-        if send_flag.flag:
-            mess = f'{drv.driver_sheet.driver.last_name} {drv.driver_sheet.driver.first_name}\nОбновленная заявка на:\n{m_day}\n\n'
-        else:
-            mess = f'{drv.driver_sheet.driver.last_name} {drv.driver_sheet.driver.first_name}\nЗаявка на:\n{m_day}\n\n'
-        for app in apps:
-            if app.application_today.construction_site.foreman:
-                mess += f'\t{app.priority}) {app.application_today.construction_site.address} ({app.application_today.construction_site.foreman.last_name})\n'
-            else:
-                mess += f'\t{app.priority}) {app.application_today.construction_site.address}\n'
-            mess += f'{app.description}\n\n'
-        if messages:
-            mess = messages
-        if drv.driver_sheet.driver.telegram_id_chat:
-            send_messages(drv.driver_sheet.driver.telegram_id_chat, mess)
-
-
-def send_application_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    _out = []
-    send_flag, created = Parameter.objects.get_or_create(
-        name=VAR.VAR_APPLICATION_SEND['name'],
-        title=VAR.VAR_APPLICATION_SEND['title'],
-        date=current_day.date)
-
-    m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    # print(m_day)
-    if application_today_id is None:
-        application_today = ApplicationToday.objects.filter(isArchive=False, date=current_day, status=ASSETS.SEND)
+    if all_already_send:
+        msg = f'Обновленная заявка на:\n{template_date}\n\n'
     else:
-        application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
+        msg = f'Заявка на:\n{template_date}\n\n'
 
-    foreman_list = User.objects.filter(isArchive=False, post__in=(ASSETS.FOREMAN, ASSETS.MASTER, ASSETS.SUPPLY))
-    # application_technic_list = ApplicationTechnic.objects.filter(application_today__in=application_today,
-    #                                                              isArchive=False, is_cancelled=False, isChecked=False)
-
-    # print(foreman_list)
-
-    for foreman in foreman_list:
-        if foreman.post == ASSETS.FOREMAN:
-            _out.append((foreman, application_today.filter(construction_site__foreman=foreman)))
-        elif foreman.post == ASSETS.MASTER:
-            foreman = User.objects.get(pk=foreman.supervisor_user_id)
-            _out.append((foreman, application_today.filter(construction_site__foreman=foreman)))
-    # print(_out)
-
-    for foreman, apps in _out:
-        if send_flag.flag:
-            mess = f"Повторное уведомление:\n{m_day}\n"
-        else:
-            mess = f"{m_day}\n"
-        for app in apps:
-            mess += f"Заявка на {app.construction_site.address} одобрена\n"
-
-        if messages:
-            mess = messages
-        # print(mess)
-        # send_messages('385035447', mess)
-        if foreman.telegram_id_chat:
-            send_messages(foreman.telegram_id_chat, mess)
+    for item in driver_sheet_list:
+        msg = f"{item['driver_sheet__driver__last_name']} {item['driver_sheet__driver__first_name']}\n{msg}"
+        for app in item['applications']:
+            if app['application_today__construction_site__foreman__last_name']:
+                msg += f"{app['priority']}) {app['application_today__construction_site__address']} ({app['application_today__construction_site__foreman__last_name']})\n"
+            else:
+                msg += f"{app['priority']}) {app['application_today__construction_site__address']}\n"
+            if app['description']:
+                msg += f"{app['description']}\n\n"
+            else:
+                msg += f"\n"
+        if item['driver_sheet__driver__telegram_id_chat']:
+            send_messages_by_telegram(chat_id=item['driver_sheet__driver__telegram_id_chat'], messages=msg)
 
 
-def send_application_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    _out = []
-    send_flag, created = Parameter.objects.get_or_create(
-        name=VAR.VAR_APPLICATION_SEND['name'],
-        title=VAR.VAR_APPLICATION_SEND['title'],
-        date=current_day.date)
+def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    all_already_send = current_day.is_all_application_send
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    foreman_list = USERS_SERVICE.get_user_queryset(
+        isArchive=False,
+        post__in=(ASSETS.FOREMAN, ASSETS.MASTER, ASSETS.SUPPLY)
+    ).values(
+        'id',
+        'last_name',
+        'first_name',
+        'post',
+        'supervisor_user_id',
+        'telegram_id_chat'
+    )
 
-    m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    # print(m_day)
-    admin_list = User.objects.filter(isArchive=False, post=ASSETS.ADMINISTRATOR)
-
-    if application_today_id is None:
-        if send_flag.flag:
-            mess = f"Заявки на:\n{m_day} отправлены повторно"
-        else:
-            mess = f"Заявки на:\n{m_day} отправлены"
-        if messages:
-            mess = messages
-        for admin in admin_list:
-            if admin.telegram_id_chat:
-                send_messages(admin.telegram_id_chat, mess)
+    if application_today_id:
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            select_related=('construction_site__foreman',),
+            pk=application_today_id)
     else:
-        application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            select_related=('construction_site__foreman',),
+            isArchive=False, date=current_day, status=ASSETS.SEND)
 
-        for app in application_today:
-            if app.construction_site.foreman:
-                cs = f'{app.construction_site.address} ({app.construction_site.foreman})'
+    for item in foreman_list:
+        if item['post'] == ASSETS.FOREMAN:
+            foreman_id = item['id']
+        else:
+            foreman_id = item['supervisor_user_id']
+        if foreman_id:
+            app_today = application_today.filter(construction_site__foreman_id=foreman_id)
+        else:
+            app_today = application_today.filter(construction_site__address=ASSETS.CS_SUPPLY_TITLE)
+        item['applications'] = app_today.values(
+            'construction_site__address',
+            'is_application_send'
+        )
+
+    for item in foreman_list:
+        if all_already_send:
+            msg = f"Повторное уведомление:\n{template_date}\n"
+        else:
+            msg = f"{template_date}\n"
+        if item['applications']:
+            for app in item['applications']:
+                if app['is_application_send']:
+                    msg = f"Повторное уведомление:\n{template_date}\n"
+                else:
+                    msg = msg
+                msg += f"Заявка на {app['construction_site__address']} одобрена\n"
+            if item['telegram_id_chat']:
+                send_messages_by_telegram(chat_id=item['telegram_id_chat'], messages=msg)
+
+
+def send_application_by_telegram_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.ADMINISTRATOR)
+
+    if current_day.is_all_application_send:
+        msg = f"Заявки на:\n{template_date} отправлены повторно"
+    else:
+        msg = f"Заявки на:\n{template_date} отправлены"
+
+    if application_today_id:
+        app_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+        if app_today:
+            if app_today.construction_site.foreman:
+                msg_constr_site = f'{app_today.construction_site.address} ({app_today.construction_site.foreman})'
             else:
-                cs = f'{app.construction_site.address}'
+                msg_constr_site = f'{app_today.construction_site.address}'
 
-            if send_flag.flag:
-                mess = f"Заявка на:\n{m_day}\nобъект: {cs} отправлена повторно"
+            if app_today.is_application_send:
+                msg = f"Заявка на:\n{template_date}\nобъект: {msg_constr_site} отправлена повторно"
             else:
-                mess = f"Заявка на:\n{m_day}\nобъект: {cs} отправлена"
+                msg = f"Заявка на:\n{template_date}\nобъект: {msg_constr_site} отправлена"
 
-            if messages:
-                mess = messages
-            for admin in admin_list:
-                if admin.telegram_id_chat:
-                    send_messages(admin.telegram_id_chat, mess)
+    messages = messages if messages else msg
+
+    [send_messages_by_telegram(admin.telegram_id_chat, messages)
+     for admin in administrators_list if admin.telegram_id_chat]
 
 
-def send_application_for_all(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    send_application_for_driver(current_day, messages, application_today_id)
-    send_application_for_foreman(current_day, messages, application_today_id)
-    send_application_for_admin(current_day, messages, application_today_id)
+def send_application_by_telegram_for_all(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    """
+    Отправка заявок всем пользователям через Telegram
+    :param current_day:
+    :param messages:
+    :param application_today_id:
+    :return:
+    """
+    send_application_by_telegram_for_driver(current_day, messages, application_today_id)
+    send_application_by_telegram_for_foreman(current_day, messages, application_today_id)
+    send_application_by_telegram_for_admin(current_day, messages, application_today_id)
+    if application_today_id:
+        APP_TODAY_SERVICE.get_apps_today(pk=application_today_id).send_application()
+    else:
+        current_day.send_all_application()
 
 
 def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
@@ -908,41 +578,6 @@ def copy_application_to_target_day(id_application_today, _target_day, default_st
                 target_technic_sheet.increment_count_application()
 
 
-# def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
-#     try:
-#         target_day = WorkDaySheet.objects.get(date=_target_day)
-#         current_application = ApplicationToday.objects.get(id=id_application_today)
-#
-#         new_application, _ = ApplicationToday.objects.get_or_create(
-#             date=target_day, status=default_status, description=current_application.description,
-#             construction_site=current_application.construction_site)
-#
-#         current_application_material = ApplicationMaterial.objects.filter(application_today=current_application)
-#         if current_application_material.exists():
-#             new_application_material, _ = ApplicationMaterial.objects.get_or_create(application_today=new_application)
-#             new_application_material.description = current_application_material.first().description
-#             new_application_material.save()
-#
-#         current_application_technic = ApplicationTechnic.objects.filter(application_today=current_application)
-#
-#         for tech_app in current_application_technic:
-#             if tech_app.technic_sheet:
-#                 target_tech_sheet = TechnicSheet.objects.filter(date=target_day,
-#                                                                 status=True,
-#                                                                 isArchive=False,
-#                                                                 technic=tech_app.technic_sheet.technic)
-#                 if target_tech_sheet.exists():
-#                     new_app_tech, _ = ApplicationTechnic.objects.get_or_create(
-#                         application_today=new_application,
-#                         technic_sheet=target_tech_sheet.first())
-#                     new_app_tech.description = tech_app.description
-#                     new_app_tech.save()
-#                     target_tech_sheet.first().increment_count_application()
-#
-#     except (WorkDaySheet.DoesNotExist, ApplicationToday.DoesNotExist):
-#         print('COPY ERROR')
-
-
 def set_spec_task(technic_sheet_id):
     construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.CS_SPEC_TITLE)
     try:
@@ -963,29 +598,20 @@ def set_spec_task(technic_sheet_id):
         print('SET_SPEC_TASK ERROR')
 
 
-def get_edit_mode(_date: date):
+def get_view_mode(_date: date) -> str:
+    """
+    Получить режим отображения
+    :param _date:
+    :return:
+    """
     if _date == TODAY:
-        return ASSETS.EDIT_MODE_CURRENT
+        return ASSETS.VIEW_MODE_CURRENT
     elif _date < TODAY:
-        return ASSETS.EDIT_MODE_ARCHIVE
+        return ASSETS.VIEW_MODE_ARCHIVE
     elif _date > TODAY:
-        return ASSETS.EDIT_MODE_FUTURE
+        return ASSETS.VIEW_MODE_FUTURE
     else:
-        return None
-
-
-def check_application_today(app_today: ApplicationToday, default_status=None):
-    """ if empty - delete or save """
-    _at_desc = app_today.description is not None and app_today.description != ''
-    _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
-    _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
-    print((_at_desc, _at_at, _at_am))
-    if any((_at_desc, _at_at, _at_am)):
-        if default_status:
-            app_today.status = default_status
-        app_today.save()
-    else:
-        app_today.delete()
+        return 'None'
 
 
 def prepare_variables():
@@ -1059,3 +685,44 @@ def is_valid_get_request(value: str) -> bool:
         return True
     else:
         return False
+
+
+def get_current_status_set_for_apps_today(current_user: User) -> set:
+    """
+    Получить статус set() для application_today на основании user.post
+    :param current_user: User
+    :return: {.., ...}
+    """
+    if USERS_SERVICE.is_administrator(current_user):
+        return ASSETS.APPLICATION_STATUS_set
+    elif (USERS_SERVICE.is_foreman(current_user) or
+          USERS_SERVICE.is_master(current_user) or
+          USERS_SERVICE.is_supply(current_user)):
+        return {ASSETS.ABSENT, ASSETS.SAVED}
+    else:
+        return set()
+
+
+def change_up_status_for_application_today(workday: WorkDaySheet, application_today_id=None,
+                                           current_status=None) -> str:
+    """
+    Изменить статус заявки на следующий статус
+    :param workday:
+    :param application_today_id:
+    :param current_status:
+    :return:
+    """
+    if application_today_id:
+        application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+        application_today.set_next_status()
+        return application_today.status
+    else:
+        application_today_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=workday,
+            status=current_status
+        )
+        [application_today.set_next_status() for application_today in application_today_list]
+        return application_today_list.first().status
+
+

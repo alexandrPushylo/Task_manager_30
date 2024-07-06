@@ -67,10 +67,10 @@ def dashboard_view(request):
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
-    context['status_list_application_today'] = status_list_application_today  # TODO: fix for supply and ...
+    context['status_list_application_today'] = status_list_application_today
 
+    #   POST    ===================================================================================================
     if request.method == 'POST':
-        print(request.POST)
         operation = request.POST.get('operation')
         if U.is_valid_get_request(operation) and operation == 'set_props_for_view':
             U.set_data_for_filter(request)
@@ -81,6 +81,7 @@ def dashboard_view(request):
             if U.is_valid_get_request(target_day) and U.is_valid_get_request(application_id):
                 default_app_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                 U.copy_application_to_target_day(application_id, target_day, default_app_status)
+    #   POST    ===================================================================================================
 
     #   get dashboard for administrator -----------------------------------------------------------------------
     if USERS_SERVICE.is_administrator(request.user):
@@ -271,10 +272,10 @@ def edit_application_view(request):
                     if application_technic.technic_sheet.id != some_technic_sheet.id:
                         application_technic.technic_sheet.decrement_count_application()
                         application_technic.technic_sheet = some_technic_sheet
-
+                        some_technic_sheet.increment_count_application()
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
-                    some_technic_sheet.increment_count_application()
+
 
             elif operation == 'save_application_description':
                 if U.is_valid_get_request(post_application_today_id):
@@ -525,6 +526,8 @@ def technic_sheet_view(request):
 
         return render(request, 'content/sheet/technic_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
 #   --------------------------------------------------------------------------------------------------------------------
 
 
@@ -750,59 +753,20 @@ def change_status_application_today(request):
         current_day = request.GET.get('current_day')
         current_status = request.GET.get('current_status')
 
+        workday = WORK_DAY_SERVICE.get_current_day(request)
+
         if U.is_valid_get_request(application_today_id):
-            current_application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
-            if USERS_SERVICE.is_administrator(request.user):
-                status_set = ASSETS.APPLICATION_STATUS_set
-            elif (USERS_SERVICE.is_foreman(request.user) or
-                  USERS_SERVICE.is_master(request.user) or
-                  USERS_SERVICE.is_supply(request.user)):
-                status_set = {ASSETS.ABSENT, ASSETS.SAVED}
-            else:
-                status_set = 'None'
-
-            if current_application_today.status in status_set:
-                up_status = U.get_uplevel_status(current_application_today.status)
-                APP_TODAY_SERVICE.set_status_for_application_today(
-                    application_today=current_application_today,
-                    status=up_status)
-
-                # TODO: fix here
-                if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(
-                        name=VAR.VAR_APPLICATION_SEND['name'],
-                        title=VAR.VAR_APPLICATION_SEND['title'],
-                        date=current_application_today.date.date)
-                    var_send.time = U.NOW
-                    var_send.flag = True
-                    var_send.save(update_fields=['time', 'flag'])
-                    U.send_application_for_all(current_application_today.date,
-                                               application_today_id=current_application_today.id)
-
+            up_level_status = U.change_up_status_for_application_today(
+                workday=workday,
+                application_today_id=application_today_id)
+            if up_level_status == ASSETS.SEND:
+                U.send_application_by_telegram_for_all(current_day=workday, application_today_id=application_today_id)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
-            workday = WORK_DAY_SERVICE.get_current_day(request)
-            application_today_list = APP_TODAY_SERVICE.get_apps_today_queryset(
-                isArchive=False,
-                date=workday,
-                status=current_status
-            )
-            up_status = U.get_uplevel_status(current_status)
-            application_today_list.update(status=up_status)
-
-            if up_status == ASSETS.SEND:
-                parameter_send = PARAMETER_SERVICE.get_or_create_parameter(
-                    name=VAR.VAR_APPLICATION_SEND['name'],
-                    title=VAR.VAR_APPLICATION_SEND['title'],
-                    date=workday.date
-                )
-                parameter_send.time = U.NOW
-                parameter_send.flag = True
-                parameter_send.save(update_fields=['time', 'flag'])
-                U.send_application_for_all(workday)
-
-
+            up_level_status = U.change_up_status_for_application_today(workday=workday, current_status=current_status)
+            if up_level_status == ASSETS.SEND:
+                U.send_application_by_telegram_for_all(workday)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
@@ -943,7 +907,6 @@ def conflict_resolution_view(request):
                     technic_description = request.POST.get('technic_description')
 
                     if U.is_valid_get_request(app_technic_priority) and U.is_valid_get_request(app_technic_id):
-                        # app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
                         app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
                         app_technic.priority = app_technic_priority
                         app_technic.save(update_fields=['priority'])
@@ -956,17 +919,13 @@ def conflict_resolution_view(request):
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
                                 technic_title=n_technic_title, workday=current_day
                             )
-
                         else:
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
 
                         _old_ts = app_technic.technic_sheet
                         _old_ts.decrement_count_application()
-                        # _old_ts.save()
 
                         some_technic_sheet.increment_count_application()
-                        # some_technic_sheet.save()
-
                         app_technic.technic_sheet = some_technic_sheet
 
                         if technic_description:
@@ -1103,49 +1062,47 @@ def show_material_application(request):
 
 def material_application_supply_view(request):
     if request.user.is_authenticated:
-        template = 'content/applications_list/material_application_list_for_supply.html'
-        context = {
-            'title': 'Materials Applications'
-        }
-        _current_day = request.GET.get('current_day')
+        context = {'title': 'Materials Applications'}
         _is_print = request.GET.get('print')
-        if _current_day is None or _current_day == '':
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        else:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
         context['current_day'] = current_day
 
-        if _is_print:
-            template = 'content/spec/print_material_application.html'
-            application_materials_list = ApplicationMaterial.objects.filter(isArchive=False,
-                                                                            application_today__date=current_day,
-                                                                            isChecked=True)
+        if U.is_valid_get_request(_is_print):
+            application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                select_related=('application_today__construction_site__foreman',),
+                isArchive=False,
+                application_today__date=current_day,
+                isChecked=True
+            )
             context['application_materials_list'] = application_materials_list
             context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
-            return render(request, template, context)
+            return render(request, 'content/spec/print_material_application.html', context)
 
         if request.method == 'POST':
             application_material_id = request.POST.get('application_material_id')
             application_material_description = request.POST.get('application_material_description')
-            if application_material_id is not None and application_material_id != '':
-                try:
-                    _application_material = ApplicationMaterial.objects.get(id=application_material_id)
-                except ApplicationMaterial.DoesNotExist:
-                    return HttpResponseRedirect(ENDPOINTS.ERROR)
-                if application_material_description != _application_material.description or not _application_material.isChecked:
-                    _application_material.description = application_material_description
-                    _application_material.isChecked = True
-                    _application_material.save()
-                else:
-                    _application_material.isChecked = False
-                    _application_material.save()
+            if U.is_valid_get_request(application_material_id):
 
-        application_materials_list = ApplicationMaterial.objects.filter(isArchive=False,
-                                                                        application_today__date=current_day)
+                application_material = APP_MATERIAL_SERVICE.get_app_material(pk=application_material_id)
+
+                if application_material_description != application_material.description or not application_material.isChecked:
+                    application_material.description = application_material_description
+                    application_material.isChecked = True
+                    application_material.save()
+                else:
+                    application_material.isChecked = False
+                    application_material.save()
+
+        application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+            select_related=('application_today__construction_site__foreman',),
+            isArchive=False,
+            application_today__date=current_day
+        )
         context['application_materials_list'] = application_materials_list
 
-        return render(request, template, context)
+        return render(request, 'content/applications_list/material_application_list_for_supply.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
@@ -1170,8 +1127,8 @@ def profile_view(request):
                 if _chat_id:
                     current_user.telegram_id_chat = _chat_id
                     current_user.save()
-                    U.send_messages(chat_id=_chat_id,
-                                    messages='Связь установлена')
+                    U.send_messages_by_telegram(chat_id=_chat_id,
+                                                messages='Связь установлена')
 
         context['current_user'] = current_user
         return render(request, template, context)
@@ -1180,26 +1137,27 @@ def profile_view(request):
 
 
 def def_test(request):  # TODO: def TEST
-    _current_day = request.GET.get('current_day')
-    if _current_day:
-        current_day = WorkDaySheet.objects.get(date=_current_day)
-    else:
-        current_day = WorkDaySheet.objects.get(date=U.TODAY)
-    work_days = U.get_work_days().values()
-    for work_day in work_days:
-        work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
+    context = {}
+    # _current_day = request.GET.get('current_day')
+    # if _current_day:
+    #     current_day = WorkDaySheet.objects.get(date=_current_day)
+    # else:
+    #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
+    # work_days = U.get_work_days().values()
+    # for work_day in work_days:
+    #     work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
     template = 'content/tests/change_workday.html'
-    context = {
-        'title': 'Test',
-        'today': U.TODAY,
-        'current_day': current_day,
-        'work_days': work_days,
-        # 'weekday': ASSETS.WEEKDAY
-    }
+    # context = {
+    #     'title': 'Test',
+    #     'today': U.TODAY,
+    #     'current_day': current_day,
+    #     'work_days': work_days,
+    #     # 'weekday': ASSETS.WEEKDAY
+    # }
 
     # U.send_application_for_driver(current_day)
     # U.send_application_for_foreman(current_day)
-    U.send_application_for_admin(current_day)
+    # U.send_application_for_admin(current_day)
 
     return render(request, template, context)
 

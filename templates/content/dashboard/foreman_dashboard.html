@@ -1,23 +1,11 @@
 {% extends 'base.html' %}
 {% block title_p %}
-    {% if edit_mode != 'edit_mode_archive' %}
+    {% if VIEW_MODE != 'view_mode_archive' %}
         {% if status_list_application_today.saved and not ONLY_READ%}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
                    role="button" class="btn btn-warning">Подать все заявки</a>
             </div>
-            {#    {% elif status_list_application_today.submitted %}#}
-            {#        <div>#}
-            {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>#}
-            {#        </div>#}
-            {#    {% elif status_list_application_today.approved %}#}
-            {#        <div>#}
-            {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>#}
-            {#        </div>#}
-            {#    {% elif status_list_application_today.send %}#}
-            {#        <div>#}
-            {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
-            {#        </div>#}
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -177,7 +165,7 @@
 
                             </div>
 
-                            {% if edit_mode != 'edit_mode_archive' %}
+                            {% if VIEW_MODE != 'view_mode_archive' %}
                                 <hr class="p-0 m-0">
                                 <div class="card-text">
                                     <div class="btn-group d-flex justify-content-center m-1">

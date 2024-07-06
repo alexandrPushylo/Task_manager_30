@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title_p %}
-    {% if edit_mode != 'edit_mode_archive' %}
+    {% if VIEW_MODE != 'view_mode_archive' %}
         {% if conflict_technic_sheet %}
             <div>
                 <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" role="button"
@@ -201,7 +201,7 @@
                                 {% endif %}
 
                             </div>
-                            {% if edit_mode != 'edit_mode_archive' %}
+                            {% if VIEW_MODE != 'view_mode_archive' %}
                                 <hr class="p-0 m-0">
                                 <div class="card-body p-0">
                                     <div class="my-2" style="text-align: center">
@@ -256,7 +256,7 @@
                 <div class="overflow-auto" style="height: 100%;">
                     {% for w_ts in table_working_technic_sheet %}
                         <div class="m-0 p-0"
-                                {% if edit_mode != 'edit_mode_archive' %}
+                                {% if VIEW_MODE != 'view_mode_archive' %}
                                     {% if w_ts.driver_sheet.status %}
                              onclick="setSpecTask(this, {{ w_ts.id }})"
                                     {% endif %}

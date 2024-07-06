@@ -1,10 +1,10 @@
 # template = {'title': '', 'name': ''}
 from datetime import datetime
 
-VAR_APPLICATION_SEND = {
-    'title': 'Отметка отправки приложений',
-    'name': 'apps_status_send'
-}
+# VAR_APPLICATION_SEND = {
+#     'title': 'Отметка отправки приложений',
+#     'name': 'apps_status_send'
+# }
 VAR_DEFAULT_PASSWORD = {
     'title': 'Пароль по умолчанию',
     'name': 'default_password',

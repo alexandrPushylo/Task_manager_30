@@ -20,6 +20,7 @@ log = getLogger(__name__)
 
 
 def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -> dict:
+    VIEW_MODE = context.get('VIEW_MODE')
     if request.POST.get('operation') == 'set_spec_task':
         technic_sheet_id = request.POST.get('technic_sheet_id')
         if technic_sheet_id:
@@ -32,9 +33,16 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
             _user.is_show_panel = False if _user.is_show_panel else True
             _user.save(update_fields=['is_show_panel'])
 
-    construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-        isArchive=False
-    )
+    if VIEW_MODE == ASSETS.VIEW_MODE_ARCHIVE:
+        construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            applicationtoday__date=current_day
+        )
+    else:
+        construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            isArchive=False,
+            status=True
+        )
+
     if not request.user.is_show_absent_app:
         construction_sites = construction_sites.filter(applicationtoday__date=current_day)
     if not request.user.is_show_saved_app:
@@ -116,9 +124,14 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
 
 
 def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: WorkDaySheet, context: dict) -> dict:
+    VIEW_MODE = context.get('VIEW_MODE')
 
-    construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-        foreman=foreman, isArchive=False, status=True)
+    if VIEW_MODE == ASSETS.VIEW_MODE_ARCHIVE:
+        construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            foreman=foreman, applicationtoday__date=current_day)
+    else:
+        construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            foreman=foreman, isArchive=False, status=True)
 
     if not request.user.is_show_absent_app:
         construction_sites = construction_sites.filter(applicationtoday__date=current_day)

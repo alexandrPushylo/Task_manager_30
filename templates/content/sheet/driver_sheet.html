@@ -60,6 +60,8 @@
                             style="text-align: center"
                         >
                             <input type="checkbox" role="switch" class="form-check-input"
+                                   {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
+                                   aria-label=""
                                    onchange="toggleButtonStatus(this, {{ driver.id }})"
                                    name="status_{{ driver.id }}"
                                    {% if driver.status %}checked{% endif %}/>

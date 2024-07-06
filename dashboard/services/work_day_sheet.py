@@ -63,7 +63,6 @@ def get_prev_workday(current_day: date = TODAY) -> WorkDaySheet:
 
 def get_current_day(request) -> WorkDaySheet:
     """
-
     :param request: request.GET.get('current_day')
     :return: WorkDaySheet
     """
