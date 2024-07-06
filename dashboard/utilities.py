@@ -792,31 +792,38 @@ def send_application_for_foreman(current_day: WorkDaySheet, messages=None, appli
     #                                                              isArchive=False, is_cancelled=False, isChecked=False)
 
     # print(foreman_list)
+def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    all_already_send = current_day.is_all_application_send
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    foreman_list = USERS_SERVICE.get_user_queryset(
+        isArchive=False,
+        post__in=(ASSETS.FOREMAN, ASSETS.MASTER, ASSETS.SUPPLY)
+    ).values(
+        'id',
+        'last_name',
+        'first_name',
+        'post',
+        'supervisor_user_id',
+        'telegram_id_chat'
+    )
 
-    for foreman in foreman_list:
-        if foreman.post == ASSETS.FOREMAN:
-            _out.append((foreman, application_today.filter(construction_site__foreman=foreman)))
-        elif foreman.post == ASSETS.MASTER:
-            foreman = User.objects.get(pk=foreman.supervisor_user_id)
-            _out.append((foreman, application_today.filter(construction_site__foreman=foreman)))
-    # print(_out)
+    if application_today_id:
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            select_related=('construction_site__foreman',),
+            pk=application_today_id)
+    else:
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            select_related=('construction_site__foreman',),
+            isArchive=False, date=current_day, status=ASSETS.SEND)
 
-    for foreman, apps in _out:
-        if send_flag.flag:
-            mess = f"Повторное уведомление:\n{m_day}\n"
+    for item in foreman_list:
+        if item['post'] == ASSETS.FOREMAN:
+            foreman_id = item['id']
         else:
-            mess = f"{m_day}\n"
-        for app in apps:
-            mess += f"Заявка на {app.construction_site.address} одобрена\n"
-
-        if messages:
-            mess = messages
-        # print(mess)
-        # send_messages('385035447', mess)
-        if foreman.telegram_id_chat:
-            send_messages(foreman.telegram_id_chat, mess)
-
-
+            foreman_id = item['supervisor_user_id']
+        if foreman_id:
+            app_today = application_today.filter(construction_site__foreman_id=foreman_id)
+        else:
 def send_application_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
     _out = []
     send_flag, created = Parameter.objects.get_or_create(
