@@ -138,5 +138,3 @@ def set_status_for_application_today(application_today: ApplicationToday, status
     application_today.save(update_fields=['status'])
 
 
-def send_current_application_today(application_today: ApplicationToday):
-    application_today.send_application()

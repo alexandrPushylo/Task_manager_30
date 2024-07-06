@@ -88,11 +88,11 @@ def decrement_all_technic_sheet(current_date: WorkDaySheet):
         technic_sheet.save(update_fields=['count_application'])
 
 
-def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
+def get_prepared_data(context: dict, current_date: date = TODAY) -> dict:
     """
     Подготовка и получения глобальных данных
     :param context:
-    :param current_day:
+    :param current_date:
     :return:
     """
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
@@ -101,10 +101,10 @@ def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
     context['work_days'] = workdays
 
     context['today'] = TODAY
-    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_day)
-    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_day)
-    context['weekday'] = get_weekday(current_day)
-    context['edit_mode'] = get_edit_mode(current_day)
+    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_date)
+    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_date)
+    context['weekday'] = get_weekday(current_date)
+    context['VIEW_MODE'] = get_view_mode(current_date)
     change_reception_apps_mode_auto()
     return context
 
@@ -136,7 +136,8 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     return out
 
 
-def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set, get_only_id_list=False) -> list:
+def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_list: set,
+                                       get_only_id_list=False) -> list:
     """
     Получить список конфликтов technic_sheet
     :param busiest_technic_title: список с информацией о загруженности technic_title
@@ -371,9 +372,6 @@ def get_user_key(user_id) -> str:
     if _user:
         _key = random.randint(100, 999)
         return f'{_key}{_user.id}'
-    except User.DoesNotExist:
-        return None
-
 
 
 def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):

@@ -5,18 +5,6 @@
             <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
                role="button" class="btn btn-primary">Подать все заявки</a>
         </div>
-        {#    {% elif status_list_application_today.submitted %}#}
-        {#        <div>#}
-        {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted" role="button" class="btn btn-success">Одобрить все заявки</a>#}
-        {#        </div>#}
-        {#    {% elif status_list_application_today.approved %}#}
-        {#        <div>#}
-        {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved" role="button" class="btn btn-warning">Отправить все заявки</a>#}
-        {#        </div>#}
-        {#    {% elif status_list_application_today.send %}#}
-        {#        <div>#}
-        {#            <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send" role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>#}
-        {#        </div>#}
     {% endif %}
 {% endblock %}
 {% block content %}
