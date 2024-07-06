@@ -752,59 +752,20 @@ def change_status_application_today(request):
         current_day = request.GET.get('current_day')
         current_status = request.GET.get('current_status')
 
+        workday = WORK_DAY_SERVICE.get_current_day(request)
+
         if U.is_valid_get_request(application_today_id):
-            current_application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
-            if USERS_SERVICE.is_administrator(request.user):
-                status_set = ASSETS.APPLICATION_STATUS_set
-            elif (USERS_SERVICE.is_foreman(request.user) or
-                  USERS_SERVICE.is_master(request.user) or
-                  USERS_SERVICE.is_supply(request.user)):
-                status_set = {ASSETS.ABSENT, ASSETS.SAVED}
-            else:
-                status_set = 'None'
-
-            if current_application_today.status in status_set:
-                up_status = U.get_uplevel_status(current_application_today.status)
-                APP_TODAY_SERVICE.set_status_for_application_today(
-                    application_today=current_application_today,
-                    status=up_status)
-
-                # TODO: fix here
-                if up_status == ASSETS.SEND:
-                    var_send, _ = Parameter.objects.get_or_create(
-                        name=VAR.VAR_APPLICATION_SEND['name'],
-                        title=VAR.VAR_APPLICATION_SEND['title'],
-                        date=current_application_today.date.date)
-                    var_send.time = U.NOW
-                    var_send.flag = True
-                    var_send.save(update_fields=['time', 'flag'])
-                    U.send_application_for_all(current_application_today.date,
-                                               application_today_id=current_application_today.id)
-
+            up_level_status = U.change_up_status_for_application_today(
+                workday=workday,
+                application_today_id=application_today_id)
+            if up_level_status == ASSETS.SEND:
+                U.send_application_by_telegram_for_all(current_day=workday, application_today_id=application_today_id)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
-            workday = WORK_DAY_SERVICE.get_current_day(request)
-            application_today_list = APP_TODAY_SERVICE.get_apps_today_queryset(
-                isArchive=False,
-                date=workday,
-                status=current_status
-            )
-            up_status = U.get_uplevel_status(current_status)
-            application_today_list.update(status=up_status)
-
-            if up_status == ASSETS.SEND:
-                parameter_send = PARAMETER_SERVICE.get_or_create_parameter(
-                    name=VAR.VAR_APPLICATION_SEND['name'],
-                    title=VAR.VAR_APPLICATION_SEND['title'],
-                    date=workday.date
-                )
-                parameter_send.time = U.NOW
-                parameter_send.flag = True
-                parameter_send.save(update_fields=['time', 'flag'])
-                U.send_application_for_all(workday)
-
-
+            up_level_status = U.change_up_status_for_application_today(workday=workday, current_status=current_status)
+            if up_level_status == ASSETS.SEND:
+                U.send_application_by_telegram_for_all(workday)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
