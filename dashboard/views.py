@@ -67,11 +67,10 @@ def dashboard_view(request):
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
-    context['status_list_application_today'] = status_list_application_today  # TODO: fix for supply and ...
+    context['status_list_application_today'] = status_list_application_today
 
     #   POST    ===================================================================================================
     if request.method == 'POST':
-        print(request.POST)
         operation = request.POST.get('operation')
         if U.is_valid_get_request(operation) and operation == 'set_props_for_view':
             U.set_data_for_filter(request)
@@ -527,6 +526,8 @@ def technic_sheet_view(request):
 
         return render(request, 'content/sheet/technic_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
 #   --------------------------------------------------------------------------------------------------------------------
 
 
@@ -906,7 +907,6 @@ def conflict_resolution_view(request):
                     technic_description = request.POST.get('technic_description')
 
                     if U.is_valid_get_request(app_technic_priority) and U.is_valid_get_request(app_technic_id):
-                        # app_technic = ApplicationTechnic.objects.get(id=app_technic_id)
                         app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
                         app_technic.priority = app_technic_priority
                         app_technic.save(update_fields=['priority'])
@@ -919,17 +919,13 @@ def conflict_resolution_view(request):
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
                                 technic_title=n_technic_title, workday=current_day
                             )
-
                         else:
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
 
                         _old_ts = app_technic.technic_sheet
                         _old_ts.decrement_count_application()
-                        # _old_ts.save()
 
                         some_technic_sheet.increment_count_application()
-                        # some_technic_sheet.save()
-
                         app_technic.technic_sheet = some_technic_sheet
 
                         if technic_description:
@@ -1131,8 +1127,8 @@ def profile_view(request):
                 if _chat_id:
                     current_user.telegram_id_chat = _chat_id
                     current_user.save()
-                    U.send_messages(chat_id=_chat_id,
-                                    messages='Связь установлена')
+                    U.send_messages_by_telegram(chat_id=_chat_id,
+                                                messages='Связь установлена')
 
         context['current_user'] = current_user
         return render(request, template, context)
@@ -1141,26 +1137,27 @@ def profile_view(request):
 
 
 def def_test(request):  # TODO: def TEST
-    _current_day = request.GET.get('current_day')
-    if _current_day:
-        current_day = WorkDaySheet.objects.get(date=_current_day)
-    else:
-        current_day = WorkDaySheet.objects.get(date=U.TODAY)
-    work_days = U.get_work_days().values()
-    for work_day in work_days:
-        work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
+    context = {}
+    # _current_day = request.GET.get('current_day')
+    # if _current_day:
+    #     current_day = WorkDaySheet.objects.get(date=_current_day)
+    # else:
+    #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
+    # work_days = U.get_work_days().values()
+    # for work_day in work_days:
+    #     work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
     template = 'content/tests/change_workday.html'
-    context = {
-        'title': 'Test',
-        'today': U.TODAY,
-        'current_day': current_day,
-        'work_days': work_days,
-        # 'weekday': ASSETS.WEEKDAY
-    }
+    # context = {
+    #     'title': 'Test',
+    #     'today': U.TODAY,
+    #     'current_day': current_day,
+    #     'work_days': work_days,
+    #     # 'weekday': ASSETS.WEEKDAY
+    # }
 
     # U.send_application_for_driver(current_day)
     # U.send_application_for_foreman(current_day)
-    U.send_application_for_admin(current_day)
+    # U.send_application_for_admin(current_day)
 
     return render(request, template, context)
 
