@@ -73,6 +73,7 @@
                                     {% endif %}
 
                                     <textarea class="form-control p-1 text_area_description" name="app_technic_description"
+                                              {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
                                               oninput="autoResize(this);$('#btn_submit_app_tech').show();"                                              
                                               aria-label="">{{ application.description }}</textarea>
 

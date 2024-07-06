@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title_p %}
-    {% if status_list_application_today.saved and edit_mode != 'edit_mode_archive' %}
+    {% if status_list_application_today.saved and VIEW_MODE != 'view_mode_archive' and not ONLY_READ%}
         <div>
             <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
                role="button" class="btn btn-primary">Подать все заявки</a>
