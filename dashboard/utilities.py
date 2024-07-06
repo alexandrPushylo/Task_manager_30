@@ -697,3 +697,19 @@ def is_valid_get_request(value: str) -> bool:
         return True
     else:
         return False
+
+
+def get_current_status_set_for_apps_today(current_user: User) -> set:
+    """
+    Получить статус set() для application_today на основании user.post
+    :param current_user: User
+    :return: {.., ...}
+    """
+    if USERS_SERVICE.is_administrator(current_user):
+        return ASSETS.APPLICATION_STATUS_set
+    elif (USERS_SERVICE.is_foreman(current_user) or
+          USERS_SERVICE.is_master(current_user) or
+          USERS_SERVICE.is_supply(current_user)):
+        return {ASSETS.ABSENT, ASSETS.SAVED}
+    else:
+        return set()
