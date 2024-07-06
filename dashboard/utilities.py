@@ -824,27 +824,28 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
         if foreman_id:
             app_today = application_today.filter(construction_site__foreman_id=foreman_id)
         else:
-def send_application_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    _out = []
-    send_flag, created = Parameter.objects.get_or_create(
-        name=VAR.VAR_APPLICATION_SEND['name'],
-        title=VAR.VAR_APPLICATION_SEND['title'],
-        date=current_day.date)
+            app_today = application_today.filter(construction_site__address=ASSETS.CS_SUPPLY_TITLE)
+        item['applications'] = app_today.values(
+            'construction_site__address',
+            'is_application_send'
+        )
 
-    m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    # print(m_day)
-    admin_list = User.objects.filter(isArchive=False, post=ASSETS.ADMINISTRATOR)
-
-    if application_today_id is None:
-        if send_flag.flag:
-            mess = f"Заявки на:\n{m_day} отправлены повторно"
+    for item in foreman_list:
+        if all_already_send:
+            msg = f"Повторное уведомление:\n{template_date}\n"
         else:
-            mess = f"Заявки на:\n{m_day} отправлены"
-        if messages:
-            mess = messages
-        for admin in admin_list:
-            if admin.telegram_id_chat:
-                send_messages(admin.telegram_id_chat, mess)
+            msg = f"{template_date}\n"
+        if item['applications']:
+            for app in item['applications']:
+                if app['is_application_send']:
+                    msg = f"Повторное уведомление:\n{template_date}\n"
+                else:
+                    msg = msg
+                msg += f"Заявка на {app['construction_site__address']} одобрена\n"
+            if item['telegram_id_chat']:
+                send_messages_by_telegram(chat_id=item['telegram_id_chat'], messages=msg)
+
+
     else:
         application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
 
