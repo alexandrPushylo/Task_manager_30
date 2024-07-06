@@ -29,7 +29,7 @@
                         <label class="row">
                             <span class="small">Примечание к объекту:</span>
                             <textarea
-                                    onblur="saveApplicationDescription(this)"
+                                    onblur="saveApplicationDescription(this);"
                                     oninput="autoResize(this)"
                                     class="form-control app_tech_description"
                                     name="application_description">{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>

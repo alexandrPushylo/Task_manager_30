@@ -69,6 +69,7 @@ def dashboard_view(request):
     status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
     context['status_list_application_today'] = status_list_application_today  # TODO: fix for supply and ...
 
+    #   POST    ===================================================================================================
     if request.method == 'POST':
         print(request.POST)
         operation = request.POST.get('operation')
@@ -81,6 +82,7 @@ def dashboard_view(request):
             if U.is_valid_get_request(target_day) and U.is_valid_get_request(application_id):
                 default_app_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                 U.copy_application_to_target_day(application_id, target_day, default_app_status)
+    #   POST    ===================================================================================================
 
     #   get dashboard for administrator -----------------------------------------------------------------------
     if USERS_SERVICE.is_administrator(request.user):
