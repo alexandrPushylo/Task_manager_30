@@ -713,3 +713,28 @@ def get_current_status_set_for_apps_today(current_user: User) -> set:
         return {ASSETS.ABSENT, ASSETS.SAVED}
     else:
         return set()
+
+
+def change_up_status_for_application_today(workday: WorkDaySheet, application_today_id=None,
+                                           current_status=None) -> str:
+    """
+    Изменить статус заявки на следующий статус
+    :param workday:
+    :param application_today_id:
+    :param current_status:
+    :return:
+    """
+    if application_today_id:
+        application_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+        application_today.set_next_status()
+        return application_today.status
+    else:
+        application_today_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=workday,
+            status=current_status
+        )
+        [application_today.set_next_status() for application_today in application_today_list]
+        return application_today_list.first().status
+
+
