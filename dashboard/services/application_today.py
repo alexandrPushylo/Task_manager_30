@@ -134,7 +134,9 @@ def set_status_for_application_today(application_today: ApplicationToday, status
     :param status:
     :return:
     """
-    application_today.status = status
-    application_today.save(update_fields=['status'])
+    if status in ASSETS.APPLICATION_STATUS_set:
+        application_today.status = status
+        application_today.save(update_fields=['status'])
+
 
 
