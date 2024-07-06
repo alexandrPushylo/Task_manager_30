@@ -273,10 +273,10 @@ def edit_application_view(request):
                     if application_technic.technic_sheet.id != some_technic_sheet.id:
                         application_technic.technic_sheet.decrement_count_application()
                         application_technic.technic_sheet = some_technic_sheet
-
+                        some_technic_sheet.increment_count_application()
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
-                    some_technic_sheet.increment_count_application()
+
 
             elif operation == 'save_application_description':
                 if U.is_valid_get_request(post_application_today_id):
