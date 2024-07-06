@@ -846,31 +846,49 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
                 send_messages_by_telegram(chat_id=item['telegram_id_chat'], messages=msg)
 
 
+def send_application_by_telegram_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.ADMINISTRATOR)
+
+    if current_day.is_all_application_send:
+        msg = f"Заявки на:\n{template_date} отправлены повторно"
     else:
-        application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
+        msg = f"Заявки на:\n{template_date} отправлены"
 
-        for app in application_today:
-            if app.construction_site.foreman:
-                cs = f'{app.construction_site.address} ({app.construction_site.foreman})'
+    if application_today_id:
+        app_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+        if app_today:
+            if app_today.construction_site.foreman:
+                msg_constr_site = f'{app_today.construction_site.address} ({app_today.construction_site.foreman})'
             else:
-                cs = f'{app.construction_site.address}'
+                msg_constr_site = f'{app_today.construction_site.address}'
 
-            if send_flag.flag:
-                mess = f"Заявка на:\n{m_day}\nобъект: {cs} отправлена повторно"
+            if app_today.is_application_send:
+                msg = f"Заявка на:\n{template_date}\nобъект: {msg_constr_site} отправлена повторно"
             else:
-                mess = f"Заявка на:\n{m_day}\nобъект: {cs} отправлена"
+                msg = f"Заявка на:\n{template_date}\nобъект: {msg_constr_site} отправлена"
 
-            if messages:
-                mess = messages
-            for admin in admin_list:
-                if admin.telegram_id_chat:
-                    send_messages(admin.telegram_id_chat, mess)
+    messages = messages if messages else msg
+
+    [send_messages_by_telegram(admin.telegram_id_chat, messages)
+     for admin in administrators_list if admin.telegram_id_chat]
 
 
-def send_application_for_all(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    send_application_for_driver(current_day, messages, application_today_id)
-    send_application_for_foreman(current_day, messages, application_today_id)
-    send_application_for_admin(current_day, messages, application_today_id)
+def send_application_by_telegram_for_all(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    """
+    Отправка заявок всем пользователям через Telegram
+    :param current_day:
+    :param messages:
+    :param application_today_id:
+    :return:
+    """
+    send_application_by_telegram_for_driver(current_day, messages, application_today_id)
+    send_application_by_telegram_for_foreman(current_day, messages, application_today_id)
+    send_application_by_telegram_for_admin(current_day, messages, application_today_id)
+    if application_today_id:
+        APP_TODAY_SERVICE.get_apps_today(pk=application_today_id).send_application()
+    else:
+        current_day.send_all_application()
 
 
 def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
