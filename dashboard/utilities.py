@@ -361,9 +361,14 @@ def send_messages_by_telegram(chat_id, messages):
     T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
 
 
-def get_user_key(user_id) -> str | None:
-    try:
-        _user = User.objects.get(pk=user_id)
+def get_user_key(user_id) -> str:
+    """
+    Получить уникальный ключ для привязки Telegram
+    :param user_id:
+    :return:
+    """
+    _user = USERS_SERVICE.get_user(pk=user_id)
+    if _user:
         _key = random.randint(100, 999)
         return f'{_key}{_user.id}'
     except User.DoesNotExist:
