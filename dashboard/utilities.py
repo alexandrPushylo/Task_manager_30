@@ -429,25 +429,15 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
             if app['application_today__construction_site__foreman__last_name']:
                 msg += f"{app['priority']}) {app['application_today__construction_site__address']} ({app['application_today__construction_site__foreman__last_name']})\n"
             else:
-def send_application_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    _out = []
-    send_flag, created = Parameter.objects.get_or_create(
-        name=VAR.VAR_APPLICATION_SEND['name'],
-        title=VAR.VAR_APPLICATION_SEND['title'],
-        date=current_day.date)
+                msg += f"{app['priority']}) {app['application_today__construction_site__address']}\n"
+            if app['description']:
+                msg += f"{app['description']}\n\n"
+            else:
+                msg += f"\n"
+        if item['driver_sheet__driver__telegram_id_chat']:
+            send_messages_by_telegram(chat_id=item['driver_sheet__driver__telegram_id_chat'], messages=msg)
 
-    m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    # print(m_day)
-    if application_today_id is None:
-        application_today = ApplicationToday.objects.filter(isArchive=False, date=current_day, status=ASSETS.SEND)
-    else:
-        application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
 
-    foreman_list = User.objects.filter(isArchive=False, post__in=(ASSETS.FOREMAN, ASSETS.MASTER, ASSETS.SUPPLY))
-    # application_technic_list = ApplicationTechnic.objects.filter(application_today__in=application_today,
-    #                                                              isArchive=False, is_cancelled=False, isChecked=False)
-
-    # print(foreman_list)
 def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
     all_already_send = current_day.is_all_application_send
     template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
