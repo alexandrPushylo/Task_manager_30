@@ -350,7 +350,7 @@ function saveApplicationMaterials(el) {
             material_description: $('textarea[name="app_material_desc"]').val(),
             operation: operation
         }
-    }).done((d) => {window.location.reload()})
+    }).done((d) => {window.location.reload();})
 }
 
 
