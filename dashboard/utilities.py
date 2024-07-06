@@ -375,49 +375,60 @@ def get_user_key(user_id) -> str:
         return None
 
 
-def send_application_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    _out = []
-    send_flag, created = Parameter.objects.get_or_create(
-        name=VAR.VAR_APPLICATION_SEND['name'],
-        title=VAR.VAR_APPLICATION_SEND['title'],
-        date=current_day.date)
-    driver_list = TechnicSheet.objects.filter(date=current_day, status=True, driver_sheet__status=True, isArchive=False)
 
-    m_day = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    # print(m_day)
-    if application_today_id is None:
-        application_today = ApplicationToday.objects.filter(isArchive=False, date=current_day, status=ASSETS.SEND)
+def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):
+    all_already_send = current_day.is_all_application_send
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    driver_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+        date=current_day,
+        status=True,
+        driver_sheet__status=True,
+        isArchive=False
+    )
+    if application_today_id:
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(pk=application_today_id)
     else:
-        application_today = ApplicationToday.objects.filter(id=application_today_id, date=current_day)
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=current_day,
+            status=ASSETS.SEND)
 
-    application_technic_list = ApplicationTechnic.objects.filter(application_today__in=application_today,
-                                                                 isArchive=False, is_cancelled=False, isChecked=False)
+    application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        select_related=('technic_sheet', 'application_today__construction_site__foreman'),
+        isArchive=False,
+        is_cancelled=False,
+        isChecked=False,
+        application_today__in=application_today
+    )
 
-    driver_list = driver_list.filter(id__in=application_technic_list.values_list('technic_sheet_id', flat=True))
+    driver_sheet_list = driver_list.filter(id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
+        'id',
+        'driver_sheet__driver__telegram_id_chat',
+        'driver_sheet__driver__last_name',
+        'driver_sheet__driver__first_name',
+    )
 
-    for driver in driver_list:
-        _out.append((
-            driver,
-            application_technic_list.filter(technic_sheet=driver).order_by('priority')
-        ))
+    for driver_sheet_item in driver_sheet_list:
+        driver_sheet_item['applications'] = application_technic_list.filter(
+            technic_sheet_id=driver_sheet_item['id']).values(
+            'priority',
+            'application_today__construction_site__address',
+            'application_today__construction_site__foreman__last_name',
+            'application_today__is_application_send',
+            'description'
+        ).order_by('priority')
 
-    for drv, apps in _out:
-        if send_flag.flag:
-            mess = f'{drv.driver_sheet.driver.last_name} {drv.driver_sheet.driver.first_name}\nОбновленная заявка на:\n{m_day}\n\n'
-        else:
-            mess = f'{drv.driver_sheet.driver.last_name} {drv.driver_sheet.driver.first_name}\nЗаявка на:\n{m_day}\n\n'
-        for app in apps:
-            if app.application_today.construction_site.foreman:
-                mess += f'\t{app.priority}) {app.application_today.construction_site.address} ({app.application_today.construction_site.foreman.last_name})\n'
+    if all_already_send:
+        msg = f'Обновленная заявка на:\n{template_date}\n\n'
+    else:
+        msg = f'Заявка на:\n{template_date}\n\n'
+
+    for item in driver_sheet_list:
+        msg = f"{item['driver_sheet__driver__last_name']} {item['driver_sheet__driver__first_name']}\n{msg}"
+        for app in item['applications']:
+            if app['application_today__construction_site__foreman__last_name']:
+                msg += f"{app['priority']}) {app['application_today__construction_site__address']} ({app['application_today__construction_site__foreman__last_name']})\n"
             else:
-                mess += f'\t{app.priority}) {app.application_today.construction_site.address}\n'
-            mess += f'{app.description}\n\n'
-        if messages:
-            mess = messages
-        if drv.driver_sheet.driver.telegram_id_chat:
-            send_messages(drv.driver_sheet.driver.telegram_id_chat, mess)
-
-
 def send_application_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
     _out = []
     send_flag, created = Parameter.objects.get_or_create(
