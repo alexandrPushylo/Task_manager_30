@@ -75,6 +75,11 @@ class WorkDaySheet(models.Model):
     status = models.BooleanField(default=True, verbose_name="Рабочий день")
     is_only_read = models.BooleanField(default=False, verbose_name="Режим 'Только чтение'")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
+    is_all_application_send = models.BooleanField(default=False, verbose_name="Заявки отправлены?")
+
+    def send_all_application(self):
+        self.is_all_application_send = True
+        self.save(update_fields=['is_all_application_send'])
 
     def __str__(self):
         return f"{self.date} - {'Рабочий' if self.status else 'Выходной'}"
@@ -136,6 +141,11 @@ class ApplicationToday(models.Model):
     status = models.CharField(max_length=255, null=True, blank=True, verbose_name="Статус заявки", default=ABSENT)
     description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Примечание для объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
+    is_application_send = models.BooleanField(default=False, verbose_name="Заявка отправлена?")
+
+    def send_application(self):
+        self.is_application_send = True
+        self.save(update_fields=['is_application_send'])
 
     def __str__(self): return f"{self.construction_site} [{self.date.date}] - {self.status}"
 

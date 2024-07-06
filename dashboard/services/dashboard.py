@@ -66,7 +66,8 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
     context['construction_sites'] = construction_sites.values()
 
     for construction_site in context['construction_sites']:
-        construction_site['foreman'] = USERS_SERVICE.get_user(pk=construction_site.get('foreman_id'))
+        foreman_id = construction_site.get('foreman_id')
+        construction_site['foreman'] = USERS_SERVICE.get_user(pk=foreman_id) if foreman_id else None
 
         construction_site['application_today'] = applications_today.filter(
             construction_site_id=construction_site['id']).values().first()
