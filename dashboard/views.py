@@ -1066,49 +1066,47 @@ def show_material_application(request):
 
 def material_application_supply_view(request):
     if request.user.is_authenticated:
-        template = 'content/applications_list/material_application_list_for_supply.html'
-        context = {
-            'title': 'Materials Applications'
-        }
-        _current_day = request.GET.get('current_day')
+        context = {'title': 'Materials Applications'}
         _is_print = request.GET.get('print')
-        if _current_day is None or _current_day == '':
-            current_day = WorkDaySheet.objects.get(date=U.TODAY)
-        else:
-            current_day = WorkDaySheet.objects.get(date=_current_day)
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day.date)
         context['current_day'] = current_day
 
-        if _is_print:
-            template = 'content/spec/print_material_application.html'
-            application_materials_list = ApplicationMaterial.objects.filter(isArchive=False,
-                                                                            application_today__date=current_day,
-                                                                            isChecked=True)
+        if U.is_valid_get_request(_is_print):
+            application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                select_related=('application_today__construction_site__foreman',),
+                isArchive=False,
+                application_today__date=current_day,
+                isChecked=True
+            )
             context['application_materials_list'] = application_materials_list
             context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
-            return render(request, template, context)
+            return render(request, 'content/spec/print_material_application.html', context)
 
         if request.method == 'POST':
             application_material_id = request.POST.get('application_material_id')
             application_material_description = request.POST.get('application_material_description')
-            if application_material_id is not None and application_material_id != '':
-                try:
-                    _application_material = ApplicationMaterial.objects.get(id=application_material_id)
-                except ApplicationMaterial.DoesNotExist:
-                    return HttpResponseRedirect(ENDPOINTS.ERROR)
-                if application_material_description != _application_material.description or not _application_material.isChecked:
-                    _application_material.description = application_material_description
-                    _application_material.isChecked = True
-                    _application_material.save()
-                else:
-                    _application_material.isChecked = False
-                    _application_material.save()
+            if U.is_valid_get_request(application_material_id):
 
-        application_materials_list = ApplicationMaterial.objects.filter(isArchive=False,
-                                                                        application_today__date=current_day)
+                application_material = APP_MATERIAL_SERVICE.get_app_material(pk=application_material_id)
+
+                if application_material_description != application_material.description or not application_material.isChecked:
+                    application_material.description = application_material_description
+                    application_material.isChecked = True
+                    application_material.save()
+                else:
+                    application_material.isChecked = False
+                    application_material.save()
+
+        application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+            select_related=('application_today__construction_site__foreman',),
+            isArchive=False,
+            application_today__date=current_day
+        )
         context['application_materials_list'] = application_materials_list
 
-        return render(request, template, context)
+        return render(request, 'content/applications_list/material_application_list_for_supply.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
