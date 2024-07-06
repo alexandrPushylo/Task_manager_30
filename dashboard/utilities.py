@@ -35,36 +35,6 @@ log = getLogger(__name__)
 
 TODAY = date.today()
 NOW = datetime.now().time()
-
-
-def is_administrator(user: User) -> bool:
-    return True if user.post == ASSETS.ADMINISTRATOR else False
-
-
-def is_foreman(user: User) -> bool:
-    return True if user.post == ASSETS.FOREMAN else False
-
-
-def is_master(user: User) -> bool:
-    return True if user.post == ASSETS.MASTER else False
-
-
-def is_driver(user: User) -> bool:
-    return True if user.post == ASSETS.DRIVER else False
-
-
-def is_mechanic(user: User) -> bool:
-    return True if user.post == ASSETS.MECHANIC else False
-
-
-def is_supply(user: User) -> bool:
-    return True if user.post == ASSETS.SUPPLY else False
-
-
-def is_employee(user: User) -> bool:
-    return True if user.post == ASSETS.EMPLOYEE else False
-
-
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -75,33 +45,6 @@ def convert_str_to_date(str_date: str) -> date:
             return str_date
     except:
         print('Error date')
-
-
-# def OLD_prepare_workday(_date):     # TODO: moved to FUNC
-#     if WorkDaySheet.objects.filter(date__gte=_date).count() < 14:
-#         for n in range(14):
-#             _day = TODAY + timedelta(days=n)
-#             if _day.weekday() in (5, 6):
-#                 status = False
-#             else:
-#                 status = True
-#             WorkDaySheet.objects.update_or_create(date=_day, defaults={'status': status})
-#
-#         return WorkDaySheet.objects.get(date=_date)
-#     else:
-#         return False
-
-
-def get_create_workday(_date):
-    if WorkDaySheet.objects.filter(date=_date).exists():
-        return WorkDaySheet.objects.get(date=_date)
-    else:
-        weekday = datetime.strptime(_date, '%Y-%m-%d').weekday()
-        if weekday in (5, 6):
-            _status = False
-        else:
-            _status = True
-        return WorkDaySheet.objects.create(date=_date, status=_status)
 
 
 def get_weekday(_date: date) -> str | None:
@@ -124,72 +67,6 @@ def get_weekday(_date: date) -> str | None:
         return None
 
 
-# def prepare_driver_sheet(workday: WorkDaySheet):
-#     driver_list = User.objects.filter(isArchive=False, post=ASSETS.DRIVER)
-#     count_driver = len(driver_list)
-#
-#     driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday)
-#     count_driver_sheet = len(driver_sheet_list)
-#
-#     last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
-#     last_driver_sheet = DriverSheet.objects.filter(isArchive=False, date=last_workday)
-#     if count_driver > count_driver_sheet:
-#
-#         if last_driver_sheet.exists():
-#             for driver in last_driver_sheet:
-#                 DriverSheet.objects.get_or_create(date=workday,
-#                                                   driver=driver.driver,
-#                                                   status=driver.status)
-#         else:
-#             for driver in driver_list:
-#                 DriverSheet.objects.get_or_create(date=workday, driver=driver)
-#         print('+')
-#     elif count_driver < count_driver_sheet:
-#         print('-')
-#     else:
-#         print('=')
-
-
-def prepare_technic_sheet(workday: WorkDaySheet):
-    technic_list = Technic.objects.filter(isArchive=False)
-    count_technic = len(technic_list)
-
-    technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=workday)
-    count_technic_sheet = len(technic_sheet_list)
-
-    last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
-    last_technic_sheet = TechnicSheet.objects.filter(isArchive=False, date=last_workday)
-    driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday, status=True)
-
-    # autocomplete_technic_sheet(technic_sheet_list)
-
-    if count_technic > count_technic_sheet:
-        print('+')
-        if last_technic_sheet.exists():
-            for technic in last_technic_sheet:
-                if technic.driver_sheet is None:
-                    driver_sheet = None
-                else:
-                    driver_sheet = driver_sheet_list.filter(driver=technic.driver_sheet.driver).first()
-                TechnicSheet.objects.get_or_create(date=workday,
-                                                   technic=technic.technic,
-                                                   status=technic.status,
-                                                   driver_sheet=driver_sheet
-                                                   )
-        else:
-            print('create')
-            for technic in technic_list:
-                driver_sheet = driver_sheet_list.filter(driver=technic.attached_driver).first()
-                TechnicSheet.objects.get_or_create(date=workday,
-                                                   technic=technic,
-                                                   driver_sheet=driver_sheet
-                                                   )
-    elif count_technic < count_technic_sheet:
-        print('-')
-    else:
-        print('=')
-
-
 def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
     empty_technic_sheet = technic_sheet.filter(driver_sheet__isnull=True,
                                                technic__attached_driver__isnull=False
@@ -204,169 +81,11 @@ def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
             technic_sheet.save()
 
 
-def get_workload_dict(current_date=TODAY):  # TODO delete
-    _work_day = WorkDaySheet.objects.get(date=current_date)
-    if _work_day.status:
-        _technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, status=True, date=_work_day,
-                                                          driver_sheet__isnull=False, driver_sheet__status=True)
-        workload_dict = _technic_sheet_list.values(
-            'id', 'technic__title', 'driver_sheet_id', 'count_application'
-        )
-        return workload_dict
-    else:
-        return None
-
-
-def get_free_technic_sheet_list(technic_title, current_date=TODAY, f_free=True):  # TODO delete
-    _work_day = WorkDaySheet.objects.get(date=current_date)
-    if _work_day.status:
-        free_technic_sheet_list = []
-        workload_dict = get_workload_dict(current_date)
-        for workload_item in workload_dict:
-            if workload_item['technic__title'] == technic_title and f_free and workload_item['count_application'] == 0:
-                free_technic_sheet_list.append(workload_item)
-            elif workload_item['technic__title'] == technic_title and not f_free:
-                free_technic_sheet_list.append(workload_item)
-        return free_technic_sheet_list
-    else:
-        return None
-
-
-def get_random_technic_sheet(free_tech_sheet_list: list):  # TODO delete
-    if free_tech_sheet_list:
-        free_tech_sheet_list.sort(key=lambda item: item['count_application'])
-        return free_tech_sheet_list[0]  # TODO: random choice
-    else:
-        return None
-
-
-def get_random_free_technic_sheet(free_tech_sheet_list: list):
-    if free_tech_sheet_list:
-        return random.choice(free_tech_sheet_list)
-    else:
-        return None
-
-
-def get_some_technic_sheet(technic_title, current_date: WorkDaySheet) -> TechnicSheet:
-    free_technic_sheet_list = get_free_technic_sheet_list(technic_title, current_date.date)
-    free_technic_sheet = get_random_free_technic_sheet(free_technic_sheet_list)
-    if not free_technic_sheet:
-        any_technic_sheet_list = get_free_technic_sheet_list(technic_title, current_date.date,
-                                                             f_free=False)
-        any_technic_sheet = get_random_technic_sheet(any_technic_sheet_list)
-        return TechnicSheet.objects.get(id=any_technic_sheet.get('id'))
-    else:
-        return TechnicSheet.objects.get(id=free_technic_sheet.get('id'))
-
-
-def get_short_technic_name_dict(current_date: WorkDaySheet) -> dict | None:
-    if current_date.status:
-        _technic_sheet = TechnicSheet.objects.filter(isArchive=False, status=True, driver_sheet__isnull=False,
-                                                     driver_sheet__status=True, date=current_date)
-        technic_titles_list = _technic_sheet.values_list('technic__title', flat=True).distinct()
-        technic_titles_dict = {}
-        for title in technic_titles_list:
-            _title = str(title).replace(' ', '').replace('.', '')
-            technic_titles_dict[_title] = title
-        return technic_titles_dict
-    else:
-        return None
-
-
-def get_short_technic_name(short_technic_name: str, current_date: WorkDaySheet) -> str | None:
-    short_technic_name_dict = get_short_technic_name_dict(current_date)
-    if short_technic_name_dict:
-        return short_technic_name_dict[short_technic_name]
-    else:
-        return None
-
-
-# def calculate_technic_sheet_count_application(technic_sheet_list: QuerySet):
-#     if isinstance(technic_sheet_list, QuerySet):
-#         for technic_sheet_id in technic_sheet_list:
-#             _t_sh = TechnicSheet.objects.get(id=technic_sheet_id)
-#             _at_count = ApplicationTechnic.objects.filter(
-#                 technic_sheet_id=technic_sheet_id,
-#                 isChecked=False, is_cancelled=False).count()
-#             if _at_count > 0:
-#                 _t_sh.count_application = _at_count - 1
-#                 _t_sh.save()
-
-
 def decrement_all_technic_sheet(current_date: WorkDaySheet):
     technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=current_date)
     for technic_sheet in technic_sheet_list:
         technic_sheet.count_application = 0
         technic_sheet.save(update_fields=['count_application'])
-
-
-def change_status_application(application_today_id: int):
-    try:
-        current_application_today = ApplicationToday.objects.get(id=application_today_id)
-        _status = get_uplevel_status(current_application_today.status)
-        current_application_today.status = _status
-        current_application_today.save(update_fields=['status'])
-    except ApplicationToday.DoesNotExist as e:
-        print(f'{e}')
-
-
-def get_uplevel_status(status: str) -> str:
-    """
-    Получить следующий уровень статуса
-    :param status:
-    :return:
-    """
-    if status == ASSETS.ABSENT:
-        return ASSETS.SAVED
-    elif status == ASSETS.SAVED:
-        return ASSETS.SUBMITTED
-    elif status == ASSETS.SUBMITTED:
-        return ASSETS.APPROVED
-    elif status == ASSETS.APPROVED:
-        return ASSETS.SEND
-    elif status == ASSETS.SEND:
-        return ASSETS.SEND
-
-
-def change_to_up_status(application_today_list, status: str):
-    for application_today in application_today_list:
-        if application_today.status == status:
-            application_today.status = get_uplevel_status(status)
-            application_today.save(update_fields=['status'])
-
-
-# def change_status_to_approved(application_today_list):
-#     for application_today in application_today_list:
-#         if application_today.status == ASSETS.SUBMITTED:
-#             application_today.status = ASSETS.APPROVED
-#             application_today.save(update_fields=['status'])
-#
-#
-# def change_status_to_send(application_today_list):
-#     for application_today in application_today_list:
-#         if application_today.status == ASSETS.APPROVED:
-#             application_today.status = ASSETS.SEND
-#             application_today.save(update_fields=['status'])
-
-
-def get_work_days():
-    work_days = WorkDaySheet.objects.filter(
-        Q(date__gt=TODAY - timedelta(days=2)) &
-        Q(date__lt=TODAY + timedelta(days=4))
-    ).reverse()
-    return work_days
-
-
-# def get_prev_work_day(current_work_day) -> WorkDaySheet:
-#     prev_work_day = WorkDaySheet.objects.filter(date__lt=current_work_day,
-#                                                 status=True).first()
-#     return prev_work_day
-#
-#
-# def get_next_work_day(current_work_day) -> WorkDaySheet:
-#     next_work_day = WorkDaySheet.objects.filter(date__gt=current_work_day,
-#                                                 status=True).last()
-#     return next_work_day
 
 
 def get_prepared_data(context: dict, current_day: date = TODAY) -> dict:
@@ -394,17 +113,6 @@ def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
     TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
     log.info(f"Prepare sheets done")
-
-
-# def get_busiest_technic_sheet(work_day: WorkDaySheet):
-#     technic_sheet = TechnicSheet.objects.filter(date=work_day,
-#                                                 driver_sheet__isnull=False,
-#                                                 status=True,
-#                                                 isArchive=False,
-#                                                 count_application__gt=1)
-#     # print(f'{technic_sheet.values()}')
-#
-#     return technic_sheet
 
 
 def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
@@ -468,27 +176,6 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     return out
 
 
-# def get_status_list_application_today(work_day: WorkDaySheet) -> dict:
-#     _out = {ASSETS.ABSENT: [],
-#             ASSETS.SAVED: [],
-#             ASSETS.SUBMITTED: [],
-#             ASSETS.APPROVED: [],
-#             ASSETS.SEND: []}
-#     application_today_list = ApplicationToday.objects.filter(date=work_day, isArchive=False)
-#     for application in application_today_list:
-#         if application.status == ASSETS.ABSENT:
-#             _out[ASSETS.ABSENT].append(application.id)
-#         elif application.status == ASSETS.SAVED:
-#             _out[ASSETS.SAVED].append(application.id)
-#         elif application.status == ASSETS.SUBMITTED:
-#             _out[ASSETS.SUBMITTED].append(application.id)
-#         elif application.status == ASSETS.APPROVED:
-#             _out[ASSETS.APPROVED].append(application.id)
-#         elif application.status == ASSETS.SEND:
-#             _out[ASSETS.SEND].append(application.id)
-#     return _out
-
-
 def set_color_for_list(some_list: list) -> dict:
     """
     Привязка цвета для каждого элемента из списка some_list
@@ -514,29 +201,6 @@ def sorting_application_status(item1, item2):
         return -1
     if item1 in (None,) and item2 in (ASSETS.SEND, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED, ASSETS.ABSENT):
         return -1
-
-
-# def change_is_cancelled(app_tech_id):
-#     if app_tech_id:
-#         try:
-#             _app_tech = ApplicationTechnic.objects.get(id=app_tech_id)
-#         except ApplicationTechnic.DoesNotExist:
-#             return -1
-#         if _app_tech.is_cancelled:
-#             _app_tech.isChecked = False
-#             _app_tech.is_cancelled = False
-#             _app_tech.description = _app_tech.description.replace(ASSETS.MESSAGES['reject'], "")
-#             _app_tech.technic_sheet.increment_count_application()
-#             # _app_tech.technic_sheet.save()
-#             _app_tech.save()
-#         else:
-#             _app_tech.isChecked = False
-#             _app_tech.is_cancelled = True
-#             _app_tech.description = ASSETS.MESSAGES['reject'] + _app_tech.description
-#             _app_tech.technic_sheet.decrement_count_application()
-#             # _app_tech.technic_sheet.save()
-#             _app_tech.save()
-#         return 0
 
 
 def accept_app_tech_to_supply(app_tech_id, application_today_id):
@@ -584,11 +248,6 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
             _old_at.save()
             if not _old_at.description:
                 _old_at.delete()
-
-
-# def get_supply_technic_list() -> Technic:
-#     _out = Technic.objects.filter(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
-#     return _out
 
 
 def get_table_working_technic_sheet(current_day: WorkDaySheet):
@@ -660,29 +319,6 @@ def set_data_for_filter(request):
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
         _user.save()
-
-    # try:
-    #     _user = User.objects.get(id=request.user.id)
-    #     if is_show_saved_app:
-    #         _user.is_show_saved_app = is_show_saved_app
-    #     if is_show_absent_app:
-    #         _user.is_show_absent_app = is_show_absent_app
-    #     if is_show_technic_app:
-    #         _user.is_show_technic_app = is_show_technic_app
-    #     if is_show_material_app:
-    #         _user.is_show_material_app = is_show_material_app
-    #     if filter_construction_site:
-    #         _user.filter_construction_site = filter_construction_site
-    #     if filter_foreman:
-    #         _user.filter_foreman = filter_foreman
-    #     if _hide_panel:
-    #         _user.is_show_panel = False if _user.is_show_panel else True
-    #     _user.filter_technic = filter_technic
-    #     _user.sort_by = sort_by
-    #
-    #     _user.save()
-    # except User.DoesNotExist:
-    #     return -1
 
 
 def prepare_data_for_filter(context: dict) -> dict:
@@ -934,41 +570,6 @@ def copy_application_to_target_day(id_application_today, _target_day, default_st
                 target_technic_sheet.increment_count_application()
 
 
-# def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
-#     try:
-#         target_day = WorkDaySheet.objects.get(date=_target_day)
-#         current_application = ApplicationToday.objects.get(id=id_application_today)
-#
-#         new_application, _ = ApplicationToday.objects.get_or_create(
-#             date=target_day, status=default_status, description=current_application.description,
-#             construction_site=current_application.construction_site)
-#
-#         current_application_material = ApplicationMaterial.objects.filter(application_today=current_application)
-#         if current_application_material.exists():
-#             new_application_material, _ = ApplicationMaterial.objects.get_or_create(application_today=new_application)
-#             new_application_material.description = current_application_material.first().description
-#             new_application_material.save()
-#
-#         current_application_technic = ApplicationTechnic.objects.filter(application_today=current_application)
-#
-#         for tech_app in current_application_technic:
-#             if tech_app.technic_sheet:
-#                 target_tech_sheet = TechnicSheet.objects.filter(date=target_day,
-#                                                                 status=True,
-#                                                                 isArchive=False,
-#                                                                 technic=tech_app.technic_sheet.technic)
-#                 if target_tech_sheet.exists():
-#                     new_app_tech, _ = ApplicationTechnic.objects.get_or_create(
-#                         application_today=new_application,
-#                         technic_sheet=target_tech_sheet.first())
-#                     new_app_tech.description = tech_app.description
-#                     new_app_tech.save()
-#                     target_tech_sheet.first().increment_count_application()
-#
-#     except (WorkDaySheet.DoesNotExist, ApplicationToday.DoesNotExist):
-#         print('COPY ERROR')
-
-
 def set_spec_task(technic_sheet_id):
     construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.CS_SPEC_TITLE)
     try:
@@ -1002,20 +603,7 @@ def get_view_mode(_date: date) -> str:
     elif _date > TODAY:
         return ASSETS.VIEW_MODE_FUTURE
     else:
-
-
-def check_application_today(app_today: ApplicationToday, default_status=None):
-    """ if empty - delete or save """
-    _at_desc = app_today.description is not None and app_today.description != ''
-    _at_at = ApplicationTechnic.objects.filter(application_today=app_today).exists()
-    _at_am = ApplicationMaterial.objects.filter(application_today=app_today).exists()
-    print((_at_desc, _at_at, _at_am))
-    if any((_at_desc, _at_at, _at_am)):
-        if default_status:
-            app_today.status = default_status
-        app_today.save()
-    else:
-        app_today.delete()
+        return 'None'
 
 
 def prepare_variables():
