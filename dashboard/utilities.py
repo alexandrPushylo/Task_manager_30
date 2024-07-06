@@ -351,10 +351,14 @@ def prepare_data_for_filter(context: dict) -> dict:
     return context
 
 
-def send_messages(chat_id, messages):
-    T.BOT.send_message(chat_id=chat_id,
-                       text=messages,
-                       parse_mode='html')
+def send_messages_by_telegram(chat_id, messages):
+    """
+    Отправка messages пользователю с chat_id через Telegram
+    :param chat_id:
+    :param messages:
+    :return:
+    """
+    T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
 
 
 def get_user_key(user_id) -> str | None:
