@@ -989,15 +989,19 @@ def set_spec_task(technic_sheet_id):
         print('SET_SPEC_TASK ERROR')
 
 
-def get_edit_mode(_date: date):
+def get_view_mode(_date: date) -> str:
+    """
+    Получить режим отображения
+    :param _date:
+    :return:
+    """
     if _date == TODAY:
-        return ASSETS.EDIT_MODE_CURRENT
+        return ASSETS.VIEW_MODE_CURRENT
     elif _date < TODAY:
-        return ASSETS.EDIT_MODE_ARCHIVE
+        return ASSETS.VIEW_MODE_ARCHIVE
     elif _date > TODAY:
-        return ASSETS.EDIT_MODE_FUTURE
+        return ASSETS.VIEW_MODE_FUTURE
     else:
-        return None
 
 
 def check_application_today(app_today: ApplicationToday, default_status=None):
