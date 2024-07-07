@@ -452,7 +452,7 @@ function applyChangesForConflictResolution(e) {
             technic_description: technic_description
         }
     }).done((d) => {
-        window.location.reload(true)
+        window.location.reload()
     })
 }
 
