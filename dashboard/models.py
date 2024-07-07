@@ -148,6 +148,7 @@ class ApplicationToday(models.Model):
     description = models.TextField(max_length=1024, null=True, blank=True, verbose_name="Примечание для объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
     is_application_send = models.BooleanField(default=False, verbose_name="Заявка отправлена?")
+    is_edited = models.BooleanField(default=False, verbose_name="Был отредактирован?")
 
     def send_application(self):
         self.is_application_send = True
@@ -164,6 +165,10 @@ class ApplicationToday(models.Model):
             self.status = self.SEND
             # self.is_application_send = True
         self.save(update_fields=['status'])
+
+    def make_edited(self):
+        self.is_edited = True
+        self.save(update_fields=['is_edited'])
 
 
     def __str__(self): return f"{self.construction_site} [{self.date.date}] - {self.status}"

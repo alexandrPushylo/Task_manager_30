@@ -244,12 +244,14 @@ def edit_application_view(request):
                         description=description
                     )
                     some_technic_sheet.increment_count_application()
+                    APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             elif operation == 'reject_application_technic':
                 log.info('reject_application_technic')
                 if (U.is_valid_get_request(post_application_today_id) and
                         U.is_valid_get_request(post_application_technic_id)):
                     APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+                    APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             elif operation == 'apply_changes_application_technic':
                 log.info('apply_changes_application_technic')
@@ -272,6 +274,7 @@ def edit_application_view(request):
                         some_technic_sheet.increment_count_application()
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
+                    APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
 
             elif operation == 'save_application_description':
@@ -281,23 +284,27 @@ def edit_application_view(request):
                         application_today.description = post_application_today_description
                     else:
                         application_today.description = None
-                    application_today.save(update_fields=['description'])
+                    application_today.is_edited = True
+                    application_today.save()
 
             elif operation == 'save_application_materials':
                 log.info('save_application_materials')
                 if U.is_valid_get_request(post_application_material_id) and post_application_material_description == '':
                     APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id).delete()
+                    APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
                 elif not U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
                         post_application_material_description) and U.is_valid_get_request(post_application_today_id):
                     APP_MATERIAL_SERVICE.create_app_material(
                         application_today_id=post_application_today_id,
                         description=post_application_material_description
                     )
+                    APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
                 elif U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
                         post_application_material_description):
                     application_material = APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id)
                     application_material.description = post_application_material_description
                     application_material.save(update_fields=['description'])
+                    APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
@@ -315,6 +322,8 @@ def edit_application_view(request):
                 date=current_day,
                 isArchive=False
             )
+            # if request.POST:
+            #     application_today.make_edited()
             if not application_today:
                 default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                 application_today = APP_TODAY_SERVICE.create_app_today(
@@ -328,7 +337,8 @@ def edit_application_view(request):
                     'id': application_today.id,
                     'date__date': application_today.date,
                     'status': application_today.status,
-                    'description': application_today.description
+                    'description': application_today.description,
+                    'is_edited': application_today.is_edited
                 }
                 context['application_today']['application_technic'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
                     isArchive=False,

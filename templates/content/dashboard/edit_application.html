@@ -257,10 +257,14 @@
 {% block footer %}
     <div></div>
     <div>
+        {% if application_today.is_edited %}
+            <a id="btn_apply_for_edit_app" href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Принять</a>
+        {% else %}
+            <a id="btn_cancel_for_edit_app" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-primary">Назад</a>
+        {% endif %}
         
-{#        <a id="btn_cancel_for_edit_app" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-primary">Назад</a>#}
         
-        <a id="btn_apply_for_edit_app" href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success">Принять</a>
+        
         
 
     </div>
