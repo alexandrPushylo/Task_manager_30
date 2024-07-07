@@ -53,3 +53,25 @@ def prepare_global_parameters(global_parameters: list[dict] = V.VARIABLES_LIST):
                 )
 
 
+def set_parameters(request_data: dict):
+    if request_data:
+        parameter_name_list = request_data.getlist('parameters_name')
+        for parameter_name in parameter_name_list:
+            parameter_name = str(parameter_name).strip()
+            parameter = get_parameter(name=parameter_name)
+            if parameter:
+                value = request_data.get(f'{parameter_name}__value')
+                flag = request_data.get(f'{parameter_name}__flag', False)
+                time = request_data.get(f'{parameter_name}__time')
+                date = request_data.get(f'{parameter_name}__date')
+                description = request_data.get(f'{parameter_name}__description')
+
+                parameter.value = value
+                parameter.flag = bool(flag)
+                parameter.time = time
+                parameter.date = date
+                parameter.description = description
+                parameter.save()
+
+
+
