@@ -45,25 +45,22 @@ def dashboard_view(request):
 
     current_day = WORK_DAY_SERVICE.get_current_day(request)
 
-    if request.POST.get('operation') == 'change_read_only_mode':
-        if request.POST.get('read_only') == '0':
-            U.change_reception_apps_mode_manual(current_day, False)
-        if request.POST.get('read_only') == '1':
-            U.change_reception_apps_mode_manual(current_day, True)
-
     context = {
         'title': request.user,
         'current_day': current_day,
         'ONLY_READ': current_day.is_only_read,
         'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
-    context = U.get_prepared_data(context, current_day.date)
+    context = U.get_prepared_data(context, current_day)
     context = U.prepare_data_for_filter(context)
 
     if not current_day.status:
-        if request.GET.get('current_day') is None or request.GET.get('current_day') == '':
+        if (request.GET.get('current_day') is None or request.GET.get('current_day') == '' or
+                USERS_SERVICE.is_driver(request.user) or
+                USERS_SERVICE.is_employee(request.user)):
             next_workday = WORK_DAY_SERVICE.get_next_workday(current_day.date)
-            return HttpResponseRedirect(ENDPOINTS.DASHBOARD + f'?current_day={next_workday}')
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD + f'?current_day={next_workday.date}')
+
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
@@ -442,14 +439,14 @@ def register_view(request):
 def workday_sheet_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Рабочие дни'}
-        context = U.get_prepared_data(context=context)
 
         if request.method == 'POST':
             day_id = request.POST.get('item_id')
             if U.is_valid_get_request(day_id):
                 WORK_DAY_SERVICE.change_status(work_day_id=day_id)
-
-        current_date = WORK_DAY_SERVICE.get_current_day(request).date
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context=context, current_workday=current_day)
+        current_date = current_day.date
         workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_date, before_days=3, after_days=7).values()
 
         for day in workdays:
@@ -469,7 +466,7 @@ def driver_sheet_view(request):
                 DRIVER_SHEET_SERVICE.change_status(driver_sheet_id=driver_sheet_id)
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
 
         if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(current_day)
@@ -505,7 +502,7 @@ def technic_sheet_view(request):
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context['current_day'] = current_day
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
 
         if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=current_day)
@@ -947,7 +944,7 @@ def show_technic_application(request):
         context = {'title': 'Заявки на технику'}
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
         context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
@@ -1024,7 +1021,7 @@ def show_material_application(request):
     if request.user.is_authenticated:
         context = {'title': 'Materials Applications'}
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
 
         context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
@@ -1066,7 +1063,7 @@ def material_application_supply_view(request):
         _is_print = request.GET.get('print')
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
         context['current_day'] = current_day
 
         if U.is_valid_get_request(_is_print):
@@ -1170,14 +1167,15 @@ def maintenance_view(request):
 
 def settings_view(request):
     if request.user.is_authenticated:
-        template = 'content/spec/settings.html'
-        context = {
-            'title': 'Settings',
-        }
+        context = {'title': 'Параметры'}
+        PARAMETER_SERVICE.prepare_global_parameters()
 
-        rez = U.prepare_variables()
-        print(rez)
+        if request.method == 'POST':
+            PARAMETER_SERVICE.set_parameters(request.POST)
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
-        return render(request, template, context)
+        parameter_list = PARAMETER_SERVICE.get_parameter_queryset()
+        context['parameter_list'] = parameter_list
+        return render(request, 'content/spec/settings.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)

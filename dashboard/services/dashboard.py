@@ -26,6 +26,12 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         if technic_sheet_id:
             U.set_spec_task(technic_sheet_id)
 
+    if request.POST.get('operation') == 'change_read_only_mode':
+        if request.POST.get('read_only') == '0':
+            U.change_reception_apps_mode_manual(current_day, False)
+        if request.POST.get('read_only') == '1':
+            U.change_reception_apps_mode_manual(current_day, True)
+
     if request.POST.get('operation') == 'toggle_panel':
         _hide_panel = 'change'
         if _hide_panel:

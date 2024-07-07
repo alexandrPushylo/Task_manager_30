@@ -5,14 +5,67 @@
 
 
 {% block content %}
-    <div><h3><u>{{ title }}</u></h3></div>
+    <div id="setting_page" class="container" style="width: max-content">
+        <div>
+            <p class="m-0 fs-3"><u>{{ title }}</u></p>
+        </div>
+        <form id="setting_form" method="post">{% csrf_token %}
+            {% for parameter in parameter_list %}
+                <div class="border border-1 rounded-2 my-2 p-1">
+                    <input type="hidden" name="parameters_name" value="{{ parameter.name }} ">
+                    <div class="ms-2">
+                        <p class="fw-bolder">{{ parameter.title }}</p>
+                    </div>
+
+                    <div>
+                        {% if parameter.value %}
+                            <label>Значение
+                                <input class="form-control" name="{{ parameter.name }}__value" type="text"
+                                       value="{{ parameter.value }}" aria-label="">
+                            </label>{% endif %}
+                            <label>Флаг
+                                <input type="checkbox" role="switch" class="form-check-input"
+                                       aria-label=""
+                                       name="{{ parameter.name }}__flag"
+                                       {% if parameter.flag %}checked{% endif %}
+                                       value="{{ parameter.flag }}"/>
+                            </label>
+                    </div>
+                    <div>
+                        {% if parameter.time %}
+                            <label>Время
+                                <input class="form-control" name="{{ parameter.name }}__time"
+                                       value="{{ parameter.time }}"
+                                       aria-label="" type="time">
+                            </label>{% endif %}
+                        {% if parameter.date %}
+                            <label>Дата
+                                <input class="form-control" name="{{ parameter.name }}__date"
+                                       value="{{ parameter.date.isoformat }}" aria-label="" type="date">
+                            </label>{% endif %}
+
+                    </div>
+                    {% if parameter.description %}
+                        <div class="m-1">
+                            <label class="w-100" for="">Описание
+                                <textarea class="form-control" name="{{ parameter.name }}__description"
+                                          aria-label="">{{ parameter.description }}</textarea>
+                            </label>
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+        </form>
+    </div>
 {% endblock %}
 
 
 {% block footer %}
     <div></div>
     <div>
-
+        <button class="btn btn-sm btn-success" type="submit" form="setting_form">Сохранить</button>
     </div>
     <div></div>
 {% endblock %}

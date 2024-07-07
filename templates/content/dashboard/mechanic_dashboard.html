@@ -10,8 +10,8 @@
         <nav aria-label="Page navigation example" class="d-flex justify-content-center">
             <ul class="pagination">
 
-                <li class="page-item"><a 
-                        class="page-link fw-bold text-dark me-2 ps-4 pe-4" 
+                <li class="page-item"><a
+                        class="page-link fw-bold text-dark me-2 ps-4 pe-4"
                         href="{% url 'dashboard' %}?current_day={{ prev_work_day.date.isoformat }}"><i
                         class="fa-solid fa-angles-left"></i></a></li>
                 {% for day in work_days %}
@@ -23,71 +23,73 @@
                             <span class="small">{{ day.weekday }}</span>
                         </a></li>
                 {% endfor %}
-                <li class="page-item"><a 
-                        class="page-link fw-bold text-dark ms-2 ps-4 pe-4" 
+                <li class="page-item"><a
+                        class="page-link fw-bold text-dark ms-2 ps-4 pe-4"
                         href="{% url 'dashboard' %}?current_day={{ next_work_day.date.isoformat }}"><i
                         class="fa-solid fa-angles-right"></i></a></li>
 
             </ul>
         </nav>
     </div>
-    
+    {% if VIEW_MODE == 'view_mode_archive' %}
+        {% include 'includes/label_archive.html' %}
+    {% endif %}
     {% include 'includes/weekday_current_day.html' %}
     {% include 'includes/btn_add_driver_and_technic.html' %}
-    
+
     <div id="mechanic_dashboard" class="translate-middle-x position-relative start-50">
-        <div id="technic_sheet_list" >
+        <div id="technic_sheet_list">
             {% for technic_sheet in technic_sheet_list %}
                 <div class="technic_sheet_item card m-3"
                      style="width: 18rem">
                     <div {% if technic_sheet.status %}
-                            class="card-header mb-1 p-1 border border-2 border-success"
-                        {% else %}
-                            class="card-header mb-1 p-1 border border-2 border-danger"
-                        {% endif %}>
+                        class="card-header mb-1 p-1 border border-2 border-success"
+                    {% else %}
+                        class="card-header mb-1 p-1 border border-2 border-danger"
+                    {% endif %}>
                         <span class="fw-bolder fs-6">{{ technic_sheet.technic.title }}</span>
-                        {% if technic_sheet.technic.attached_driver%}
+                        {% if technic_sheet.technic.attached_driver %}
                             <span>({{ technic_sheet.technic.attached_driver }})</span>
                         {% else %}
                             <span class="text-warning">(Не закреплен)</span>
                         {% endif %}
                         <p class="m-0">[ {{ technic_sheet.technic.id_information }} ]</p>
                     </div>
-                    
+
                     <div {% if technic_sheet.driver_sheet.status %}
                         class="card-footer p-1 border border-2 border-success">
                     {% else %}
                         class="card-footer p-1 border border-2 border-danger">
                     {% endif %}
-                            <span class="form-text">Водитель:</span>
-                        {% if technic_sheet.driver_sheet %}                            
-                            <span class="fw-bolder">{{ technic_sheet.driver_sheet.driver.last_name }}</span>
-                            <span class="fw-bolder">{{ technic_sheet.driver_sheet.driver.first_name }}</span>
-                        {% else %}
-                            <span class="text-warning">Не назначен</span>
-                        {% endif %}
-                    </div>
-                {% for application_technic in applications_technic %}
-                    {% if technic_sheet.id == application_technic.technic_sheet_id and application_technic.applications %}
-                        {% for app_tech in application_technic.applications %}
-                            {% if app_tech.description %}
-                            <div class="card-body p-1">
-                            <span class="fw-bolder form-text">{{ app_tech.application_today__construction_site__address }}</span>
-                                {% if app_tech.application_today__construction_site__foreman__last_name %}
-                                    <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
-                                {% endif %}
-                            
-                            <textarea class="form-control p-1 text_area_description"
-                                      aria-label="With textarea"
-                            >{{ app_tech.description }}</textarea>                            
-                            </div>
-                            {% endif %}
-                            
-                        {% endfor %}
+                    <span class="form-text">Водитель:</span>
+                    {% if technic_sheet.driver_sheet %}
+                        <span class="fw-bolder">{{ technic_sheet.driver_sheet.driver.last_name }}</span>
+                        <span class="fw-bolder">{{ technic_sheet.driver_sheet.driver.first_name }}</span>
+                    {% else %}
+                        <span class="text-warning">Не назначен</span>
                     {% endif %}
-                {% endfor %}
+                    </div>
+                    {% for application_technic in applications_technic %}
+                        {% if technic_sheet.id == application_technic.technic_sheet_id and application_technic.applications %}
+                            {% for app_tech in application_technic.applications %}
+                                {% if app_tech.description %}
+                                    <div class="card-body p-1">
+                                        <span class="fw-bolder form-text">{{ app_tech.application_today__construction_site__address }}</span>
+                                        {% if app_tech.application_today__construction_site__foreman__last_name %}
+                                            <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
+                                        {% endif %}
+
+                                        <textarea class="form-control p-1 text_area_description"
+                                                  aria-label="With textarea"
+                                        >{{ app_tech.description }}</textarea>
+                                    </div>
+                                {% endif %}
+
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
                 </div>
-                
+
             {% endfor %}
         </div>
 
@@ -98,7 +100,8 @@
 {% block footer %}
     <div></div>
     <div>
-        <a class="btn btn-primary" href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
+        <a class="btn btn-primary"
+           href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
     </div>
     <div></div>
 {% endblock %}

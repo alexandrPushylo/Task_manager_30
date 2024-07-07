@@ -21,7 +21,7 @@
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send"
                    role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>
             </div>
-        {% endif %}
+        {% endif %}    
     {% endif %}
 {% endblock %}
 
@@ -61,7 +61,10 @@
             </nav>
         </div>
 
-        <div style="text-align: center">            
+        <div style="text-align: center">
+            {% if VIEW_MODE == 'view_mode_archive' %}
+                {% include 'includes/label_archive.html' %}
+            {% endif %}
             {% include 'includes/weekday_current_day.html' %}
             {% include 'includes/btn_lock_unlock_edit_app.html' %}
             {% include 'includes/btn_modal_view_props.html' %}
