@@ -35,6 +35,9 @@
             </nav>
         </div>
         <div style="text-align: center">
+            {% if VIEW_MODE == 'view_mode_archive' %}
+                {% include 'includes/label_archive.html' %}
+            {% endif %}
             {% include 'includes/weekday_current_day.html' %}
             {% include 'includes/btn_modal_filter.html' %}            
         </div>

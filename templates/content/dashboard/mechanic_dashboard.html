@@ -31,7 +31,9 @@
             </ul>
         </nav>
     </div>
-    
+    {% if VIEW_MODE == 'view_mode_archive' %}
+        {% include 'includes/label_archive.html' %}
+    {% endif %}
     {% include 'includes/weekday_current_day.html' %}
     {% include 'includes/btn_add_driver_and_technic.html' %}
 
