@@ -29,6 +29,7 @@ import dashboard.services.dashboard as DASHBOARD_SERVICE
 import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
+import dashboard.services.parametr as PARAMETER_SERVICE
 
 #   ------------------------------------------------------------------------------------------------------------------
 log = getLogger(__name__)
@@ -105,7 +106,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
     context['weekday'] = get_weekday(current_workday.date)
     context['VIEW_MODE'] = get_view_mode(current_workday.date)
-    change_reception_apps_mode_auto()
+    change_reception_apps_mode_auto(workday=current_workday)
     return context
 
 
@@ -614,44 +615,41 @@ def get_view_mode(_date: date) -> str:
         return 'None'
 
 
-def change_reception_apps_mode_auto():  # TODO: move to service
+def change_reception_apps_mode_auto(workday: WorkDaySheet):
     """ Автоматическое переключение режима приема заявок"""
-    try:
-        work_day = WorkDaySheet.objects.get(date=TODAY)
-    except WorkDaySheet.DoesNotExist:
-        return -1
-    try:
-        var_time_recept_apps = Parameter.objects.get(name=VAR.VAR_TIME_RECEPTION_OF_APPS['name'])
-    except Parameter.DoesNotExist:
-        return -1
 
-    if var_time_recept_apps.date != work_day.date or var_time_recept_apps.flag:
-        var_time_recept_apps.date = work_day.date
-        var_time_recept_apps.flag = True
-        var_time_recept_apps.save()
-        if var_time_recept_apps.time < datetime.now().time():
-            work_day.is_only_read = True
-            work_day.save()
-        else:
-            work_day.is_only_read = False
-            work_day.save()
+    var_time_recept_apps = PARAMETER_SERVICE.get_parameter(
+        name=VAR.VAR_TIME_RECEPTION_OF_APPS['name']
+    )
+    if var_time_recept_apps:
+        if var_time_recept_apps.date != workday.date or var_time_recept_apps.flag:
+            var_time_recept_apps.date = workday.date
+            var_time_recept_apps.flag = True
+            var_time_recept_apps.save()
+            if var_time_recept_apps.time < datetime.now().time():
+                workday.is_only_read = True
+                workday.save()
+            else:
+                workday.is_only_read = False
+                workday.save()
 
 
-def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps):
-    """ Ручное переключение режима приема заявок"""
+def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: bool):
+    """
+    Ручное переключение режима приема заявок
+    """
     if is_recept_apps:
         workday.is_only_read = True
         workday.save(update_fields=['is_only_read'])
     else:
         workday.is_only_read = False
         workday.save(update_fields=['is_only_read'])
-
-    try:
-        _var_recept_apps = Parameter.objects.get(name=VAR.VAR_TIME_RECEPTION_OF_APPS['name'])
-        _var_recept_apps.flag = False
-        _var_recept_apps.save(update_fields=['flag'])
-    except Parameter.DoesNotExist:
-        pass
+    var_recept_apps = PARAMETER_SERVICE.get_parameter(
+        name=VAR.VAR_TIME_RECEPTION_OF_APPS['name']
+    )
+    if var_recept_apps:
+        var_recept_apps.flag = False
+        var_recept_apps.save(update_fields=['flag'])
 
 
 def is_valid_get_request(value: str) -> bool:
