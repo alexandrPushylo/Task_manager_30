@@ -212,9 +212,17 @@
                                             {% if construction_site.application_today.status == 'saved' %}
                                                 <p class="m-0 fw-bolder text-warning">Ожидание подачи заявки</p>
                                             {% else %}
-                                                <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"
-                                                   class="btn btn-outline-danger" aria-current="page"><i
-                                                        class="fa-solid fa-trash"></i></a>
+                                                
+{#                                                <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"#}
+{#                                                   class="btn btn-outline-danger" aria-current="page"><i#}
+{#                                                        class="fa-solid fa-trash"></i></a>#}
+
+                                                <button type="button" class="btn btn-outline-danger"
+                                                        onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}')"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i></button>
+                                                
+                                                
                                                 <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
                                                    class="btn btn-outline-primary px-5"
                                                    aria-current="page"><i
@@ -302,6 +310,7 @@
     {% csrf_token %}
     {% include 'includes/modal_view_props.html' %}
     {% include 'includes/modal_copy_app.html' %}
+    {% include 'includes/modal_delete_app.html' %}
 
     {#    ------------------------------------------------------------------------------------------------------------#}
 {% endblock %}
