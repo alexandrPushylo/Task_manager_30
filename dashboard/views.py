@@ -1167,13 +1167,15 @@ def maintenance_view(request):
 
 def settings_view(request):
     if request.user.is_authenticated:
-        template = 'content/spec/settings.html'
-        context = {
-            'title': 'Settings',
-        }
-
+        context = {'title': 'Параметры'}
         PARAMETER_SERVICE.prepare_global_parameters()
 
-        return render(request, template, context)
+        if request.method == 'POST':
+            PARAMETER_SERVICE.set_parameters(request.POST)
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+
+        parameter_list = PARAMETER_SERVICE.get_parameter_queryset()
+        context['parameter_list'] = parameter_list
+        return render(request, 'content/spec/settings.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
