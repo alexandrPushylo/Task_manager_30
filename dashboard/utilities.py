@@ -614,27 +614,6 @@ def get_view_mode(_date: date) -> str:
         return 'None'
 
 
-def prepare_variables():
-    """ Подготовка переменных"""
-    variables_list = VAR.VARIABLES_LIST
-    error = 0
-    for variable in variables_list:
-        try:
-            Parameter.objects.get_or_create(
-                title=variable.get('title'),
-                name=variable.get('name'),
-                value=variable.get('value'),
-                flag=variable.get('flag', False),
-                description=variable.get('description'),
-                time=variable.get('time'),
-                date=variable.get('date'),
-                permissions=variable.get('permissions')
-            )
-        except ValueError:
-            error += 1
-    return error
-
-
 def change_reception_apps_mode_auto():  # TODO: move to service
     """ Автоматическое переключение режима приема заявок"""
     try:

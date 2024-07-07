@@ -1178,8 +1178,7 @@ def settings_view(request):
             'title': 'Settings',
         }
 
-        rez = U.prepare_variables()
-        print(rez)
+        PARAMETER_SERVICE.prepare_global_parameters()
 
         return render(request, template, context)
 
