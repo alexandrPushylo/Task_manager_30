@@ -120,6 +120,7 @@ def validate_application_today(application_today: ApplicationToday, default_stat
     if any((app_today_description, app_technic, app_material)):
         if default_status:
             application_today.status = default_status
+            application_today.is_edited = False
         application_today.save()
         return True
     else:
