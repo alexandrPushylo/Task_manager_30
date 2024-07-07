@@ -57,7 +57,7 @@ def dashboard_view(request):
         'ONLY_READ': current_day.is_only_read,
         'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
-    context = U.get_prepared_data(context, current_day.date)
+    context = U.get_prepared_data(context, current_day)
     context = U.prepare_data_for_filter(context)
 
     if not current_day.status:
@@ -445,14 +445,14 @@ def register_view(request):
 def workday_sheet_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Рабочие дни'}
-        context = U.get_prepared_data(context=context)
 
         if request.method == 'POST':
             day_id = request.POST.get('item_id')
             if U.is_valid_get_request(day_id):
                 WORK_DAY_SERVICE.change_status(work_day_id=day_id)
-
-        current_date = WORK_DAY_SERVICE.get_current_day(request).date
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context=context, current_workday=current_day)
+        current_date = current_day.date
         workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_date, before_days=3, after_days=7).values()
 
         for day in workdays:
@@ -472,7 +472,7 @@ def driver_sheet_view(request):
                 DRIVER_SHEET_SERVICE.change_status(driver_sheet_id=driver_sheet_id)
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
 
         if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(current_day)
@@ -508,7 +508,7 @@ def technic_sheet_view(request):
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context['current_day'] = current_day
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
 
         if current_day.date >= U.TODAY and current_day.status:
             DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=current_day)
@@ -950,7 +950,7 @@ def show_technic_application(request):
         context = {'title': 'Заявки на технику'}
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
         context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
 
@@ -1027,7 +1027,7 @@ def show_material_application(request):
     if request.user.is_authenticated:
         context = {'title': 'Materials Applications'}
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
 
         context = U.prepare_data_for_filter(context)
         context['current_day'] = current_day
@@ -1069,7 +1069,7 @@ def material_application_supply_view(request):
         _is_print = request.GET.get('print')
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day.date)
+        context = U.get_prepared_data(context, current_day)
         context['current_day'] = current_day
 
         if U.is_valid_get_request(_is_print):

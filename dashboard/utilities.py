@@ -88,11 +88,11 @@ def decrement_all_technic_sheet(current_date: WorkDaySheet):
         technic_sheet.save(update_fields=['count_application'])
 
 
-def get_prepared_data(context: dict, current_date: date = TODAY) -> dict:
+def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     """
     Подготовка и получения глобальных данных
     :param context:
-    :param current_date:
+    :param current_workday:
     :return:
     """
     workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
@@ -101,10 +101,10 @@ def get_prepared_data(context: dict, current_date: date = TODAY) -> dict:
     context['work_days'] = workdays
 
     context['today'] = TODAY
-    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_date)
-    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_date)
-    context['weekday'] = get_weekday(current_date)
-    context['VIEW_MODE'] = get_view_mode(current_date)
+    context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_workday.date)
+    context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
+    context['weekday'] = get_weekday(current_workday.date)
+    context['VIEW_MODE'] = get_view_mode(current_workday.date)
     change_reception_apps_mode_auto()
     return context
 
