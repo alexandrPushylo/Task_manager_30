@@ -60,7 +60,6 @@ def dashboard_view(request):
                 USERS_SERVICE.is_employee(request.user)):
             next_workday = WORK_DAY_SERVICE.get_next_workday(current_day.date)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD + f'?current_day={next_workday.date}')
-
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
@@ -275,7 +274,6 @@ def edit_application_view(request):
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
-
 
             elif operation == 'save_application_description':
                 if U.is_valid_get_request(post_application_today_id):
