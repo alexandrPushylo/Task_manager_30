@@ -380,31 +380,36 @@ $('.io_choice_day').change(function () {
     // console.log(dd)
 })
 
-$('#conflict_resolution_container').masonry({
-// указываем элемент-контейнер в котором расположены блоки для динамической верстки
-    itemSelector: '.conflict_resolution_items',
-    // columnWidth: 200,
-// указываем класс элемента являющегося блоком в нашей сетке
-    singleMode: true,
-// true - если у вас все блоки одинаковой ширины
-    isResizable: true,
-// перестраивает блоки при изменении размеров окна
-    isAnimated: true,
-// анимируем перестроение блоков
-    animationOptions: {
-        queue: false,
-        duration: 500
-    }
-// опции анимации - очередь и продолжительность анимации
-});
+// $('#conflict_resolution_container').masonry({
+// // указываем элемент-контейнер в котором расположены блоки для динамической верстки
+//     itemSelector: '.conflict_resolution_items',
+//     // columnWidth: 200,
+// // указываем класс элемента являющегося блоком в нашей сетке
+//     singleMode: true,
+// // true - если у вас все блоки одинаковой ширины
+//     isResizable: true,
+// // перестраивает блоки при изменении размеров окна
+//     isAnimated: true,
+// // анимируем перестроение блоков
+//     animationOptions: {
+//         queue: false,
+//         duration: 500
+//     }
+// // опции анимации - очередь и продолжительность анимации
+// });
 
 function selectTechnicTitleForConflictResolution(e) {
     const technic_title = e.value;
     const app_technic_id = e.id.replace('title_', '');
     const select_technic_sheet = $('.' + technic_title + '.at_' + app_technic_id);
     const technic_driver_CR = $('.technic_driver_CR' + '.at_' + app_technic_id);
+
     technic_driver_CR.hide();
+    technic_driver_CR.attr('disabled', true);
+
     select_technic_sheet.show();
+    select_technic_sheet.attr('disabled', false);
+
     $('.btn_reload_' + app_technic_id).show();
     $('.btn_apply_' + app_technic_id).show();
 }
@@ -415,7 +420,9 @@ function selectTechnicSheetForConflictResolution(e) {
     $('.btn_apply_' + app_technic_id).show();
 }
 
-$('.technic_driver_CR > option[selected]').parent().show();
+const conflictTechnicDriver = $('.technic_driver_CR > option[selected]').parent();
+conflictTechnicDriver.show();
+conflictTechnicDriver.removeAttr('disabled');
 
 function changePriorityForConflictResolution(e) {
     const appTechnicId = e.id.replace('priority_', '');
