@@ -16,16 +16,14 @@ from logger import getLogger
 log = getLogger(__name__)
 
 
-def get_apps_today(**kwargs) -> ApplicationToday | None:
+def get_apps_today(**kwargs) -> ApplicationToday:
     try:
         application_today = ApplicationToday.objects.get(**kwargs)
         return application_today
     except ApplicationToday.DoesNotExist:
-        log.error("get_apps_today(): ApplicationToday.DoesNotExist")
-        return None
+        log.warning("get_apps_today(): ApplicationToday.DoesNotExist")
     except ValueError:
         log.error("get_apps_today(): ValueError")
-        return None
 
 
 def create_app_today(**kwargs) -> ApplicationToday:
