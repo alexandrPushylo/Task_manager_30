@@ -16,16 +16,14 @@ from logger import getLogger
 log = getLogger(__name__)
 
 
-def get_apps_today(**kwargs) -> ApplicationToday | None:
+def get_apps_today(**kwargs) -> ApplicationToday:
     try:
         application_today = ApplicationToday.objects.get(**kwargs)
         return application_today
     except ApplicationToday.DoesNotExist:
-        log.error("get_apps_today(): ApplicationToday.DoesNotExist")
-        return None
+        log.warning("get_apps_today(): ApplicationToday.DoesNotExist")
     except ValueError:
         log.error("get_apps_today(): ValueError")
-        return None
 
 
 def create_app_today(**kwargs) -> ApplicationToday:
@@ -118,7 +116,7 @@ def validate_application_today(application_today: ApplicationToday, default_stat
     app_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today=application_today).exists()
     app_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(application_today=application_today).exists()
     if any((app_today_description, app_technic, app_material)):
-        if default_status:
+        if application_today.is_edited and default_status:
             application_today.status = default_status
             application_today.is_edited = False
         application_today.save()

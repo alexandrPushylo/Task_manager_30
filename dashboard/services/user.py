@@ -56,7 +56,7 @@ def get_user(**kwargs) -> User:
         user = User.objects.get(**kwargs)
         return user
     except User.DoesNotExist:
-        log.error("get_user(): User.DoesNotExist ")
+        log.warning("get_user(): User.DoesNotExist ")
     except ValueError:
         log.error("get_user(): ValueError")
 

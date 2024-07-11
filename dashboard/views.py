@@ -60,7 +60,6 @@ def dashboard_view(request):
                 USERS_SERVICE.is_employee(request.user)):
             next_workday = WORK_DAY_SERVICE.get_next_workday(current_day.date)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD + f'?current_day={next_workday.date}')
-
         return render(request, 'content/spec/weekend.html', context)
 
     status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
@@ -275,7 +274,6 @@ def edit_application_view(request):
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
-
 
             elif operation == 'save_application_description':
                 if U.is_valid_get_request(post_application_today_id):
@@ -876,6 +874,34 @@ def conflict_resolution_view(request):
                 technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(technic_sheets)
                 context['technic_titles_dict'] = technic_titles_dict
 
+                if request.method == 'POST':
+                    update_list = []
+                    application_technic_id_list = request.POST.getlist('application_technic_id')
+                    for application_technic_id in application_technic_id_list:
+                        title = request.POST.get(f"{application_technic_id}_title")
+                        technic_sheet_id = request.POST.get(f"{application_technic_id}_technic_sheet")
+                        priority = request.POST.get(f"{application_technic_id}_priority")
+                        description = request.POST.get(f"{application_technic_id}_description")
+
+                        application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=application_technic_id)
+                        if not U.is_valid_get_request(technic_sheet_id):
+                            n_technic_title = technic_titles_dict.get(title)
+                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                                technic_title=n_technic_title, workday=current_day
+                            )
+                        else:
+                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
+                        description = description if description else ''
+                        if application_technic.technic_sheet.id != some_technic_sheet.id:
+                            application_technic.technic_sheet.decrement_count_application()
+                            application_technic.technic_sheet = some_technic_sheet
+                            some_technic_sheet.increment_count_application()
+                        application_technic.priority = priority
+                        application_technic.description = description
+                        # application_technic.save()
+                        update_list.append(application_technic)
+                    ApplicationTechnic.objects.bulk_update(update_list, ['technic_sheet', 'priority', 'description'])
+
                 technic_driver_list = []
                 for title_short, title in technic_titles_dict.items():
                     technic_driver_list.append({
@@ -904,40 +930,6 @@ def conflict_resolution_view(request):
                         return HttpResponseRedirect(f'{ENDPOINTS.CONFLICT_LIST}?current_day={current_day.date}')
                 else:
                     return HttpResponseRedirect(f'{ENDPOINTS.CONFLICT_LIST}?current_day={current_day.date}')
-
-                if request.method == 'POST':
-                    app_technic_id = request.POST.get('app_technic_id')
-                    app_technic_priority = request.POST.get('app_technic_priority')
-
-                    technic_title_short = request.POST.get('technic_title_short')
-                    technic_sheet_id = request.POST.get('technic_sheet_id')
-                    technic_description = request.POST.get('technic_description')
-
-                    if U.is_valid_get_request(app_technic_priority) and U.is_valid_get_request(app_technic_id):
-                        app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
-                        app_technic.priority = app_technic_priority
-                        app_technic.save(update_fields=['priority'])
-
-                    if U.is_valid_get_request(technic_title_short) and U.is_valid_get_request(app_technic_id):
-                        app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=app_technic_id)
-
-                        if not U.is_valid_get_request(technic_sheet_id):
-                            n_technic_title = technic_titles_dict.get(technic_title_short)
-                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
-                                technic_title=n_technic_title, workday=current_day
-                            )
-                        else:
-                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
-
-                        _old_ts = app_technic.technic_sheet
-                        _old_ts.decrement_count_application()
-
-                        some_technic_sheet.increment_count_application()
-                        app_technic.technic_sheet = some_technic_sheet
-
-                        if technic_description:
-                            app_technic.description = technic_description
-                        app_technic.save()
 
                 # end POST =============================================================
             return render(request, 'content/spec/conflict_resolution.html', context)

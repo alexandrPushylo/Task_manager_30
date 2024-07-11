@@ -68,9 +68,8 @@ function changeDriverForTechnic(e, techSheetId) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             driver_sheet_id: $('select[name=' + e_name + ']').val(),
             technic_sheet_id: techSheetId
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -216,9 +215,8 @@ function addTechnicSheetToApp(e) {
             technic_sheet_id: technic_driver_selects_add.val(),
             app_tech_desc: app_technic_description.val(),
             operation: operation
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 
     $('.technic_driver_selects_add').hide()
@@ -253,8 +251,9 @@ $('.button_reject_app_tech').click(function () {
             app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             operation: operation
-        }
-    }).done((d) => {window.location.reload()})
+        },
+        success: (d) => {window.location.reload()}
+    })
 })
 // const toggleWorkdayStatus = (e) => {
 //     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
@@ -305,8 +304,9 @@ function applyChangesAppTechnic(e) {
             technic_sheet_id: technic_sheet_id,
             app_tech_desc: app_tech_description,
             operation: operation
-        }
-    }).done((d) => {window.location.reload()})
+        },
+        success: (d) => {window.location.reload()}
+    })
 }
 
 function saveApplicationDescription(el) {
@@ -322,8 +322,9 @@ function saveApplicationDescription(el) {
             construction_site_id: $('input[name="construction_site_id"]').val(),
             application_today_description: $('textarea[name="application_description"]').val(),
             operation: operation
-        }
-    })//.done((d) => {window.location.reload()})
+        },
+        success: (d) => {window.location.reload()}
+    })
 }
 
 function saveApplicationTechnic(el) {
@@ -349,8 +350,9 @@ function saveApplicationMaterials(el) {
             app_material_id: $('input[name="app_material_id"]').val(),
             material_description: $('textarea[name="app_material_desc"]').val(),
             operation: operation
-        }
-    }).done((d) => {window.location.reload();})
+        },
+        success: (d) => {window.location.reload()}
+    })
 }
 
 
@@ -378,31 +380,36 @@ $('.io_choice_day').change(function () {
     // console.log(dd)
 })
 
-$('#conflict_resolution_container').masonry({
-// указываем элемент-контейнер в котором расположены блоки для динамической верстки
-    itemSelector: '.conflict_resolution_items',
-    // columnWidth: 200,
-// указываем класс элемента являющегося блоком в нашей сетке
-    singleMode: true,
-// true - если у вас все блоки одинаковой ширины
-    isResizable: true,
-// перестраивает блоки при изменении размеров окна
-    isAnimated: true,
-// анимируем перестроение блоков
-    animationOptions: {
-        queue: false,
-        duration: 500
-    }
-// опции анимации - очередь и продолжительность анимации
-});
+// $('#conflict_resolution_container').masonry({
+// // указываем элемент-контейнер в котором расположены блоки для динамической верстки
+//     itemSelector: '.conflict_resolution_items',
+//     // columnWidth: 200,
+// // указываем класс элемента являющегося блоком в нашей сетке
+//     singleMode: true,
+// // true - если у вас все блоки одинаковой ширины
+//     isResizable: true,
+// // перестраивает блоки при изменении размеров окна
+//     isAnimated: true,
+// // анимируем перестроение блоков
+//     animationOptions: {
+//         queue: false,
+//         duration: 500
+//     }
+// // опции анимации - очередь и продолжительность анимации
+// });
 
 function selectTechnicTitleForConflictResolution(e) {
     const technic_title = e.value;
     const app_technic_id = e.id.replace('title_', '');
     const select_technic_sheet = $('.' + technic_title + '.at_' + app_technic_id);
     const technic_driver_CR = $('.technic_driver_CR' + '.at_' + app_technic_id);
+
     technic_driver_CR.hide();
+    technic_driver_CR.attr('disabled', true);
+
     select_technic_sheet.show();
+    select_technic_sheet.attr('disabled', false);
+
     $('.btn_reload_' + app_technic_id).show();
     $('.btn_apply_' + app_technic_id).show();
 }
@@ -413,7 +420,9 @@ function selectTechnicSheetForConflictResolution(e) {
     $('.btn_apply_' + app_technic_id).show();
 }
 
-$('.technic_driver_CR > option[selected]').parent().show();
+const conflictTechnicDriver = $('.technic_driver_CR > option[selected]').parent();
+conflictTechnicDriver.show();
+conflictTechnicDriver.removeAttr('disabled');
 
 function changePriorityForConflictResolution(e) {
     const appTechnicId = e.id.replace('priority_', '');
@@ -426,9 +435,8 @@ function changePriorityForConflictResolution(e) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             app_technic_id: appTechnicId,
             app_technic_priority: appTechnicPriority
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -450,9 +458,8 @@ function applyChangesForConflictResolution(e) {
             technic_title_short: technic_title_short,
             technic_sheet_id: technic_sheet_id,
             technic_description: technic_description
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -498,8 +505,9 @@ function setViewProps(e) {
             is_show_technic_app: is_show_technic_app,
             is_show_material_app: is_show_material_app,
             operation: operation,
-        }
-    }).done((d) => {window.location.reload()})
+        },
+        success: (d) => {window.location.reload()}
+    })
 }
 
 function setFilterProps(e) {
@@ -515,8 +523,9 @@ function setFilterProps(e) {
             filter_technic: $('select[name="filter_technic"]').val(),
             sort_by: $('select[name="sort_by"]').val(),
             operation: operation
-        }
-    }).done((d) => {window.location.reload()})
+        },
+        success: (d) => {window.location.reload()}
+    })
 }
 
 function changeIsCancelled(e) {
@@ -529,9 +538,8 @@ function changeIsCancelled(e) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             applicationTechnicId: applicationTechnicId,
             operation: 'reject'
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -546,9 +554,8 @@ function changeIsChecked(e, appTodayId) {
             applicationTechnicId: applicationTechnicId,
             application_today_id: appTodayId,
             operation: 'accept'
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -583,9 +590,8 @@ function toggleHidePanel(e) {
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             operation: 'toggle_panel'
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -598,9 +604,8 @@ function connectTelegramBot(e, userKey) {
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             user_key: userKey
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -615,9 +620,8 @@ function copyApplicationTo(e) {
             application_id: $('select[name="copy_modal_application_id"]').val(),
             operation: 'copy'
 
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -630,9 +634,8 @@ function setSpecTask(e, technicSheetId) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             technic_sheet_id: technicSheetId,
             operation: 'set_spec_task'
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 
@@ -646,9 +649,8 @@ function changeReadOnlyMode(readOnly) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             read_only: readOnly,
             operation: 'change_read_only_mode'
-        }
-    }).done((d) => {
-        window.location.reload()
+        },
+        success: (d) => {window.location.reload()}
     })
 }
 

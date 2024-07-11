@@ -1,138 +1,121 @@
 {% extends 'base.html' %}
 {% block content %}
     <div id="conflict_resolution" class="container">
-{#        <div><h3><u>{{ title }}</u> {{ current_date.date }}</h3></div>#}
-        <div id="conflict_resolution_container" class="mt-3">
-            <div class="conflict_resolution_items card m-2">
-                <div class="card-header">
-                    <p class="m-0 fw-bolder">{{ technic_title }}</p>
-                    <p class="m-0 text-success">
-                        <span class="form-text me-1">Всего ед. техники:</span>
-                        <span>{{ conflict_technic_sheet.total_technic_sheet_count }}</span>
-                    </p>
-                    <p class="m-0 text-danger">
-                        <span class="form-text me-1">Количество необходимой техники:</span>
-                        <span>{{ conflict_technic_sheet.total_count_apps }}</span>
-                    </p>
-                </div>
+        {#        <div><h3><u>{{ title }}</u> {{ current_date.date }}</h3></div>#}
+        <div class="card mt-3 position-relative translate-middle-x start-50"
+             style="width: max-content">
+
+            <div class="card-header">
+                <p class="m-0 fw-bolder">{{ technic_title }}</p>
+                <p class="m-0 text-success">
+                    <span class="form-text me-1">Всего ед. техники:</span>
+                    <span>{{ conflict_technic_sheet.total_technic_sheet_count }}</span>
+                </p>
+                <p class="m-0 text-danger">
+                    <span class="form-text me-1">Количество необходимой техники:</span>
+                    <span>{{ conflict_technic_sheet.total_count_apps }}</span>
+                </p>
             </div>
-            {% csrf_token %}
-            {% for conflict_at in applications_technic %}                
-                <div class="conflict_resolution_items card m-2 mb-5"
-                        {% for ts_id, color in color_list.items %}
-                            {% if conflict_at.technic_sheet.id == ts_id %}
+        </div>
+        <div id="conflict_resolution_container" class="mt-3">
+            <form id="conflict_resolution_form" method="post">{% csrf_token %}
+                {% for conflict_at in applications_technic %}
+                    <div class="card m-3 ">
+                        <div class="card-header">
+                            <input type="hidden" name="application_technic_id" value="{{ conflict_at.id  }}">
+                            <div {% if conflict_at.technic_sheet.id in priority_id_list %}
+                                class="input-group  rounded p-1 m-0"
+                                {% for ts_id, color in color_list.items %}
+                                    {% if conflict_at.technic_sheet.id == ts_id %}
                                 style="border: solid 2px {{ color }}"
-                            {% endif %}
-                        {% endfor %}
-                >
-                    <div class="card-header"> 
-                        <span class="small">Объект:</span><span
-                            class="fw-bolder ms-2">{{ conflict_at.application_today.construction_site.address }}</span>
-
-                        {% if conflict_at.application_today.construction_site.foreman %}
-                            <br>
-                            <span class="small">Прораб:</span>
-                            <span class="fw-lighter ms-1">{{ conflict_at.application_today.construction_site.foreman }}</span>
-                        {% endif %}
-
-                    </div>
-                    <div class="card-body m-0">
-
-                        <div class="row mb-2">
-                            <label for="priority_{{ conflict_at.id }}" class="form-text col-auto">Приоритет заявки:</label>
-                            <input id="priority_{{ conflict_at.id }}"
-                                   onchange="changePriorityForConflictResolution(this)"
-                                    {% if conflict_at.technic_sheet.id in priority_id_list %}
-                                   class="form-control p-1 col-auto border border-2 border-primary"
-                                    {% else %}
-                                   class="form-control p-1 col-auto"
                                     {% endif %}
-                                   style="width: 50px" min="1" max="10" type="number"
-                                   value="{{ conflict_at.priority }}">
-                        </div>
-
-                        <div {% if conflict_at.technic_sheet.id in priority_id_list %}
-                            class="input-group border border-2 border-primary rounded p-1 m-0"
-                        {% else %}
-                            class="input-group p-0"
-                        {% endif %}>
-                            <label class="m-0 p-0 col-auto">
-                                <select id="title_{{ conflict_at.id }}" class="form-control p-1"
-                                        onchange="selectTechnicTitleForConflictResolution(this)">
-                                    {% for title_short, title in technic_titles_dict.items %}
-                                        {% if title == technic_title %}
-                                            <option selected value="{{ title_short }}">{{ title }}</option>
-                                        {% else %}
-                                            <option value="{{ title_short }}">{{ title }}</option>
-                                        {% endif %}
-
-                                    {% endfor %}
-                                </select>
-                            </label>
-
-                            {% for technic_driver in technic_driver_list %}
-                                <label class="m-0 p-0">
-                                    <select id="tech_sheet_{{ conflict_at.id }}"
-                                            onchange="selectTechnicSheetForConflictResolution(this)"
-                                            style="display: none"
-                                            class="form-control technic_driver_CR {{ technic_driver.title_short }} at_{{ conflict_at.id }} p-1">
-                                        <option value="">--Любой--</option>
-                                        {% for technic_sheet in technic_driver.technic_sheets %}
-                                            {% if conflict_at.technic_sheet.id == technic_sheet.id %}
-                                                <option selected value="{{ technic_sheet.id }}"
-                                                >{{ technic_sheet.driver_sheet.driver.last_name }}</option>
+                                {% endfor %}
+                            {% else %}
+                                class="input-group p-0"
+                            {% endif %}>
+                                <label class="m-0 p-0 col-auto">
+                                    <select id="title_{{ conflict_at.id }}" class="form-control p-1" name="{{ conflict_at.id }}_title"
+                                            onchange="selectTechnicTitleForConflictResolution(this); $('#btn_submit_for_CR').show();">
+                                        {% for title_short, title in technic_titles_dict.items %}
+                                            {% if title == technic_title %}
+                                                <option selected value="{{ title_short }}">{{ title }}</option>
                                             {% else %}
-                                                <option value="{{ technic_sheet.id }}"
-                                                >{{ technic_sheet.driver_sheet.driver.last_name }}</option>
+                                                <option value="{{ title_short }}">{{ title }}</option>
                                             {% endif %}
                                         {% endfor %}
                                     </select>
                                 </label>
-                            {% endfor %}
-
-                        </div>
-                        {% if conflict_at.description %}
-                            <div class="row mb-0 mt-1">
-                                <label class="m-0 p-0">
-                                    <textarea id="app_tech_description_{{ conflict_at.id }}" 
-                                              class="form-control"
-                                              oninput="onInput_app_tech_description(this)"
-                                    >{{ conflict_at.description }}</textarea>
-                                </label>
-
+                                {% for technic_driver in technic_driver_list %}
+                                    <label class="m-0 p-0">
+                                        <select id="tech_sheet_{{ conflict_at.id }}" name="{{ conflict_at.id }}_technic_sheet"
+                                                onchange="selectTechnicSheetForConflictResolution(this); $('#btn_submit_for_CR').show();"
+                                                style="display: none" disabled
+                                                class="form-control technic_driver_CR {{ technic_driver.title_short }} at_{{ conflict_at.id }} p-1">
+                                            <option value="">--Любой--</option>
+                                            {% for technic_sheet in technic_driver.technic_sheets %}
+                                                {% if conflict_at.technic_sheet.id == technic_sheet.id %}
+                                                    <option selected value="{{ technic_sheet.id }}"
+                                                    >{{ technic_sheet.driver_sheet.driver.last_name }}</option>
+                                                {% else %}
+                                                    <option value="{{ technic_sheet.id }}"
+                                                    >{{ technic_sheet.driver_sheet.driver.last_name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </label>
+                                {% endfor %}
                             </div>
-                        {% endif %}
-                        <div class="btn-group mt-2 mb-2 d-flex">
-                            <button type="button" 
-                                    style="display: none"
-                                    class="btn btn-sm btn-outline-danger btn_reload_{{ conflict_at.id }}"
-                                    onclick="reloadPage(this)"
-                            >Отменить</button>
-                            
-                            <button id="btn_apply_{{ conflict_at.id }}"
-                                    type="button"
-                                    style="display: none"
-                                    class="btn btn-sm btn-success btn_apply_{{ conflict_at.id }}"  
-                                    onclick="applyChangesForConflictResolution(this)"
-                            >Применить</button>                     
+                        </div>
+                        <div class="card-title">
+                            <div class="card-body input-group p-1">
+                                <div class="col-auto input-group-text p-1"
+                                        {% if conflict_at.technic_sheet.id in priority_id_list %}
+                                            {% for ts_id, color in color_list.items %}
+                                                {% if conflict_at.technic_sheet.id == ts_id %}
+                                     style="border: solid 2px {{ color }}"
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}>
+                                    <input class="fs-5 fw-bolder p-1"
+                                           name="{{ conflict_at.id }}_priority"
+                                           onchange="$('#btn_submit_for_CR').show();"
+                                           style="width: 52px"
+                                           aria-label=""
+                                           type="number" min="1" max="10" value="{{ conflict_at.priority }}">
+                                </div>
+
+                                <div class="col ms-1">
+                                    <span class="fw-bolder small ms-2">{{ conflict_at.application_today.construction_site.address }}</span>
+                                    {% if conflict_at.application_today.construction_site.foreman %}
+                                        <span class="small">({{ conflict_at.application_today.construction_site.foreman }})</span>
+                                    {% endif %}
+
+                                    <textarea class="form-control p-1 text_area_description"
+                                              name="{{ conflict_at.id }}_description"
+                                              oninput="autoResize(this);$('#btn_submit_for_CR').show();"
+                                              aria-label="">{{ conflict_at.description }}</textarea>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
-                </div>
-
-            {% endfor %}
+                {% endfor %}
+            </form>
         </div>
+
+
     </div>
 {% endblock %}
 
 {% block footer %}
-<div></div>
-<div>
-    <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" 
-       class="btn btn-sm btn-success">На главную страницу</a>
-    <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" 
-       class="btn btn-sm btn-primary">Назад</a>    
-</div>
-<div></div>
+    <div></div>
+    <div>
+        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}"
+           class="btn btn-sm btn-success">На главную страницу</a>
+        <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}"
+           class="btn btn-sm btn-primary">Назад</a>
+    <button id="btn_submit_for_CR" style="display: none" type="submit" form="conflict_resolution_form" class="btn btn-sm btn-warning">Сохранить</button>
+    </div>
+    <div></div>
 {% endblock %}
 
