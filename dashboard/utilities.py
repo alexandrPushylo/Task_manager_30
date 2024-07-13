@@ -617,9 +617,9 @@ def get_view_mode(_date: date) -> str:
     :return:
     """
     if _date == TODAY:
-        return ASSETS.VIEW_MODE_CURRENT
+        return ASSETS.ViewMode.CURRENT.value
     elif _date < TODAY:
-        return ASSETS.VIEW_MODE_ARCHIVE
+        return ASSETS.ViewMode.ARCHIVE.value
     elif _date > TODAY:
         return ASSETS.VIEW_MODE_FUTURE
     else:

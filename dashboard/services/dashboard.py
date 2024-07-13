@@ -39,7 +39,7 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
             _user.is_show_panel = False if _user.is_show_panel else True
             _user.save(update_fields=['is_show_panel'])
 
-    if VIEW_MODE == ASSETS.VIEW_MODE_ARCHIVE:
+    if VIEW_MODE == ASSETS.ViewMode.ARCHIVE.value:
         construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
             applicationtoday__date=current_day
         )
@@ -138,7 +138,7 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
 def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: WorkDaySheet, context: dict) -> dict:
     VIEW_MODE = context.get('VIEW_MODE')
 
-    if VIEW_MODE == ASSETS.VIEW_MODE_ARCHIVE:
+    if VIEW_MODE == ASSETS.ViewMode.ARCHIVE.value:
         construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
             foreman=foreman, applicationtoday__date=current_day)
     else:

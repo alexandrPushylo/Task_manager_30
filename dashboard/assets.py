@@ -60,6 +60,10 @@ class MessagesAssets(Enum):
     CS_SUPPLY_TITLE = 'Снабжение'
     CS_SPEC_TITLE = 'Спец. задание'
     CS_SPEC_DEFAULT_DESC = 'Дробить бетон и асфальт'
+class ViewMode(Enum):
+    FUTURE = 'view_mode_future'
+    CURRENT = 'view_mode_current'
+    ARCHIVE = 'view_mode_archive'
     '#15b03e',
     '#5a9e6c',
     '#85d633',
