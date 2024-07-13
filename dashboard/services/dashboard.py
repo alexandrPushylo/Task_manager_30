@@ -61,6 +61,10 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         construction_site__in=construction_sites
     )
 
+    status_list_application_today = U.get_status_lists_of_apps_today(
+        workday=current_day, applications_today=applications_today)
+    context['status_list_application_today'] = status_list_application_today
+
     if request.user.is_show_technic_app:
         applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
             isArchive=False,
@@ -105,7 +109,8 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
                 'description',
                 'is_cancelled',
                 'isChecked',
-                'technic_sheet_id'
+                'technic_sheet_id',
+                'technic_sheet__driver_sheet__driver__id',
             )
 
     technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
@@ -151,6 +156,10 @@ def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: Wor
         construction_site__in=construction_sites
     )
 
+    status_list_application_today = U.get_status_lists_of_apps_today(
+        workday=current_day, applications_today=applications_today)
+    context['status_list_application_today'] = status_list_application_today
+
     if request.user.is_show_technic_app:
         applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
             isArchive=False,
@@ -193,7 +202,8 @@ def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: Wor
                 'description',
                 'is_cancelled',
                 'isChecked',
-                'technic_sheet_id'
+                'technic_sheet_id',
+                'technic_sheet__driver_sheet__driver__id',
             )
     return context
 
@@ -229,10 +239,14 @@ def get_dashboard_for_mechanic(request, current_day: WorkDaySheet, context: dict
 
 def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) -> dict:
     construction_site, _created = ConstructionSite.objects.get_or_create(address=ASSETS.CS_SUPPLY_TITLE)
-    application_today = APP_TODAY_SERVICE.get_apps_today(
+    application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         date=current_day,
         construction_site=construction_site,
         isArchive=False)
+
+    status_list_application_today = U.get_status_lists_of_apps_today(
+        workday=current_day, applications_today=application_today)
+    context['status_list_application_today'] = status_list_application_today
 
     if request.method == 'POST':
         application_technic_id = request.POST.get('applicationTechnicId')
@@ -261,11 +275,11 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
 
     applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         isArchive=False,
-        application_today=application_today
+        application_today__in=application_today
     )
     applications_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
         isArchive=False,
-        application_today=application_today
+        application_today__in=application_today
     )
     supply_technic_list = TECHNIC_SERVICE.get_technics_queryset(
         isArchive=False,
@@ -288,7 +302,7 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
         if _application_technic.exists():
             context['a_m_exists'] = True
 
-    context['application_today'] = application_today
+    context['application_today'] = application_today.first()
     context['construction_site'] = construction_site
     context['applications_technic'] = applications_technic
     context['applications_material'] = applications_material
@@ -356,7 +370,15 @@ def get_dashboard_for_employee(request, current_day: WorkDaySheet, context: dict
 
 
 def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) -> dict:
-    current_driver = request.user
+    if U.is_valid_get_request(request.GET.get('driver_id')):
+        current_driver = USERS_SERVICE.get_user(
+            pk=request.GET.get('driver_id'),
+            post=ASSETS.DRIVER
+        )
+    else:
+        current_driver = request.user
+
+    context['current_driver'] = current_driver
 
     current_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
         select_related=('driver_sheet__driver', 'technic'),

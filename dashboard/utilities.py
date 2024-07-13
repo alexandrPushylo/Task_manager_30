@@ -36,6 +36,8 @@ log = getLogger(__name__)
 
 TODAY = date.today()
 NOW = datetime.now().time()
+
+
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -106,6 +108,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
     context['weekday'] = get_weekday(current_workday.date)
     context['VIEW_MODE'] = get_view_mode(current_workday.date)
+
     change_reception_apps_mode_auto(workday=current_workday)
     return context
 
@@ -400,7 +403,8 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
         application_today__in=application_today
     )
 
-    driver_sheet_list = driver_list.filter(id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
+    driver_sheet_list = driver_list.filter(
+        id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
         'id',
         'driver_sheet__driver__telegram_id_chat',
         'driver_sheet__driver__last_name',
@@ -619,7 +623,7 @@ def change_reception_apps_mode_auto(workday: WorkDaySheet):
     """ Автоматическое переключение режима приема заявок"""
 
     var_time_recept_apps = PARAMETER_SERVICE.get_parameter(
-        name=VAR.VAR_TIME_RECEPTION_OF_APPS['name']
+        name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
     )
     if var_time_recept_apps:
         if var_time_recept_apps.date != workday.date or var_time_recept_apps.flag:
@@ -703,3 +707,74 @@ def change_up_status_for_application_today(workday: WorkDaySheet, application_to
         return application_today_list.first().status
 
 
+def get_status_lists_of_apps_today(workday: WorkDaySheet, applications_today: QuerySet[ApplicationToday]) -> dict:
+    """
+    Получить сгруппированный по статусам dict с id объектами ApplicationToday
+    :param applications_today:
+    :param workday: WorkDaySheet
+    :return: {absent: [], saved: [], submitted: [], approved: [], send: []}
+    """
+    status_lists = {ASSETS.ABSENT: [],
+                    ASSETS.SAVED: [],
+                    ASSETS.SUBMITTED: [],
+                    ASSETS.APPROVED: [],
+                    ASSETS.SEND: []}
+
+    # apps_today = APP_TODAY_SERVICE.get_apps_today_queryset(date=workday, isArchive=False).values('id', 'status')
+    apps_today = applications_today.values('id', 'status')
+    for app in apps_today:
+        if app['status'] == ASSETS.ABSENT:
+            status_lists[ASSETS.ABSENT].append(app['id'])
+        elif app['status'] == ASSETS.SAVED:
+            status_lists[ASSETS.SAVED].append(app['id'])
+        elif app['status'] == ASSETS.SUBMITTED:
+            status_lists[ASSETS.SUBMITTED].append(app['id'])
+        elif app['status'] == ASSETS.APPROVED:
+            status_lists[ASSETS.APPROVED].append(app['id'])
+        elif app['status'] == ASSETS.SEND:
+            status_lists[ASSETS.SEND].append(app['id'])
+    return status_lists
+
+
+def prepare_global_parameters():
+    """
+    Авто создание переменных
+    :return:
+    """
+    parameters_list = VAR.VARIABLES_LIST
+    PARAMETER_SERVICE.create_global_parameters(global_parameters=parameters_list)
+
+
+def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
+    """
+    Разрешено ли редактировать заявки на материалы
+    :param current_workday:
+    :return:
+    """
+    is_accept = False
+    var_time_limit = PARAMETER_SERVICE.get_parameter(
+        name=VAR.VAR_TIME_RECEPTION_OF_MATERIALS['name']
+    )
+    if not var_time_limit:
+        log.warning(
+            f"Переменная {VAR.VAR_TIME_RECEPTION_OF_MATERIALS['name']} \
+            для ограничения времени подачи заявок на материалы не существует.")
+        return False
+
+    time_limit = var_time_limit.time
+    next_workday = WORK_DAY_SERVICE.get_next_workday()
+
+    if (current_workday == next_workday
+            and NOW < time_limit):
+        is_accept = True
+        log.debug(f"get_accept_to_change_materials_app(): C1")
+
+    elif TODAY.weekday() in (4, ) and current_workday.date.weekday() in (0, ) and NOW < time_limit:
+        is_accept = True
+        log.debug(f"get_accept_to_change_materials_app(): C2")
+
+    elif current_workday > next_workday:
+        is_accept = True
+        log.debug(f"get_accept_to_change_materials_app(): C3")
+
+    return is_accept

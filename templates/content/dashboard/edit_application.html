@@ -133,14 +133,20 @@
                     <div class="card-header navbar p-1">
                         <div></div>
                         <div class="btn-group">
-                            <button type="button" class="btn btn-outline-secondary p-1"
+                            <button type="button" class="btn btn-outline-primary p-1"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#modalApplicationTechnic">Добавить технику
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary  p-1"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalMaterials">Добавить материалы
-                            </button>
+                                    data-bs-target="#modalApplicationTechnic">Добавить технику</button>
+                            {% if is_changeable_material or user.post == 'supply' %}
+                                <button type="button" class="btn btn-outline-primary  p-1"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalMaterials">
+                                        <span>Добавить материалы</span>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-outline-secondary  p-1" disabled>
+                                        <span>Время приема заявок окончено</span>
+                                </button>
+                            {% endif %} 
                         </div>
                         <div></div>
                     </div>

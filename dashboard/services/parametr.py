@@ -1,6 +1,5 @@
 from dashboard.models import Parameter
 import dashboard.assets as ASSETS
-import dashboard.variables as V
 from django.db.models import QuerySet
 
 from logger import getLogger
@@ -36,7 +35,12 @@ def get_or_create_parameter(**kwargs) -> Parameter:
         return parameter
 
 
-def prepare_global_parameters(global_parameters: list[dict] = V.VARIABLES_LIST):
+def create_global_parameters(global_parameters: list[dict]):
+    """
+    Авто создание переменных
+    :param global_parameters:
+    :return:
+    """
     if global_parameters:
         for item in global_parameters:
             parameter = Parameter.objects.filter(name=item['name'])

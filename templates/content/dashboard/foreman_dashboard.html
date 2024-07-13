@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title_p %}
     {% if VIEW_MODE != 'view_mode_archive' %}
-        {% if status_list_application_today.saved and not ONLY_READ%}
+        {% if status_list_application_today.saved and not ONLY_READ %}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
                    role="button" class="btn btn-warning">Подать все заявки</a>
@@ -116,18 +116,25 @@
                                         <div class="ms-1 mt-1">
                                             {% for app_technic in construction_site.application_today.application_technic %}
                                                 <div
-                                                        {% if app_technic.is_cancelled %}
-                                                            {#                                                            class="text-decoration-line-through"#}
+                                                        {% if app_technic.is_cancelled %}                                                            
                                                             style="color: rgba(97,95,95,0.51)"
                                                         {% elif app_technic.isChecked %}
                                                             style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
                                                 >
                                                     <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
-                                                    <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
-                                                    <span>[<span>{{ app_technic.priority }}</span>/
+
+                                                    {% if app_technic.technic_sheet__driver_sheet__status %}
+                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
+                                                           style="text-decoration: none; color: inherit;">
+                                                            <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span></a>
+                                                        <span>[<span>{{ app_technic.priority }}</span>/
                                                         <span>{{ app_technic.technic_sheet__count_application }}</span>]
                                                     </span>
+                                                    {% else %}
+                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                    {% endif %}
+
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
                                                 <textarea readonly
@@ -174,15 +181,13 @@
                                     <div class="btn-group d-flex justify-content-center m-1">
 
                                         {% if construction_site.application_today %}
-{#                                            <a href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}"#}
-{#                                               class="btn btn-outline-danger" aria-current="page"><i#}
-{#                                                    class="fa-solid fa-trash"></i></a>#}
-                                            
+
                                             <button type="button" class="btn btn-outline-danger"
-                                                        onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}')"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i></button>
-                                            
+                                                    onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}')"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i>
+                                            </button>
+
                                             <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
                                                class="btn btn-outline-primary" aria-current="page"><i
                                                     class="fa-regular fa-pen-to-square"></i></a>
@@ -204,9 +209,9 @@
                                     {% if ONLY_READ %}
                                         <div style="text-align: center">
                                             <span>Подача заявок на технику ограничена
-                                            {% if ONLY_READ_time %}
-                                                <span>до {{ ONLY_READ_time }}</span>
-                                            {% endif %}
+                                                {% if ONLY_READ_time %}
+                                                    <span>до {{ ONLY_READ_time }}</span>
+                                                {% endif %}
                                             </span>
                                         </div>
                                     {% endif %}

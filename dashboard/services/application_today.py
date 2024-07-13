@@ -58,33 +58,6 @@ def get_apps_today_queryset(select_related: tuple = (),
     return apps_today
 
 
-def get_status_lists_of_apps_today(workday: WorkDaySheet) -> dict:
-    """
-    Получить сгруппированный по статусам dict с id объектами ApplicationToday
-    :param workday: WorkDaySheet
-    :return: {absent: [], saved: [], submitted: [], approved: [], send: []}
-    """
-    status_lists = {ASSETS.ABSENT: [],
-                    ASSETS.SAVED: [],
-                    ASSETS.SUBMITTED: [],
-                    ASSETS.APPROVED: [],
-                    ASSETS.SEND: []}
-
-    apps_today = get_apps_today_queryset(date=workday, isArchive=False).values('id', 'status')
-    for app in apps_today:
-        if app['status'] == ASSETS.ABSENT:
-            status_lists[ASSETS.ABSENT].append(app['id'])
-        elif app['status'] == ASSETS.SAVED:
-            status_lists[ASSETS.SAVED].append(app['id'])
-        elif app['status'] == ASSETS.SUBMITTED:
-            status_lists[ASSETS.SUBMITTED].append(app['id'])
-        elif app['status'] == ASSETS.APPROVED:
-            status_lists[ASSETS.APPROVED].append(app['id'])
-        elif app['status'] == ASSETS.SEND:
-            status_lists[ASSETS.SEND].append(app['id'])
-    return status_lists
-
-
 def get_default_status_for_apps_today(user: User) -> str:
     if USERS_SERVICE.is_administrator(user):
         return ASSETS.SUBMITTED
