@@ -1170,7 +1170,7 @@ def maintenance_view(request):
 def settings_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Параметры'}
-        PARAMETER_SERVICE.prepare_global_parameters()
+        U.prepare_global_parameters()
 
         if request.method == 'POST':
             PARAMETER_SERVICE.set_parameters(request.POST)

@@ -703,3 +703,11 @@ def change_up_status_for_application_today(workday: WorkDaySheet, application_to
         return application_today_list.first().status
 
 
+def prepare_global_parameters():
+    """
+    Авто создание переменных
+    :return:
+    """
+    parameters_list = VAR.VARIABLES_LIST
+    PARAMETER_SERVICE.create_global_parameters(global_parameters=parameters_list)
+
