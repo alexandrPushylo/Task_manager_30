@@ -387,7 +387,7 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)  # TODO: redirect to Home page
         else:
-            return render(request, 'content/login.html', {'error': ASSETS.ERROR_MESSAGES['login']})
+            return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
 
 
@@ -445,7 +445,7 @@ def register_view(request):
         elif new_user is not None and request.user.is_authenticated:
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         else:
-            context['error'] = ASSETS.ERROR_MESSAGES['register']
+            context['error'] = ASSETS.ErrorMessages.invalid_register.value
             return render(request, 'content/register.html', context)
 
     return HttpResponse(status=403)
