@@ -38,6 +38,8 @@ TODAY = date.today()
 NOW = datetime.now().time()
 
 
+
+
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -126,7 +128,9 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     :return: [{}, {}]
     """
     out = []
-    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
+    technic_sheet = technic_sheet.exclude(
+        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+    )
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
 
     for technic_title in technic_title_list:
@@ -166,7 +170,9 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     :param technic_sheet:
     :return: set(.., ...)
     """
-    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
+    technic_sheet = technic_sheet.exclude(
+        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+    )
     technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
     application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         technic_sheet__in=technic_sheet_list_id_list,
@@ -193,8 +199,8 @@ def set_color_for_list(some_list: list) -> dict:
     return out
 
 
-def sorting_application_status(item1, item2):
-    if item1 == item2 and item1 in ASSETS.APPLICATION_STATUS_set:
+def sorting_application_status(item1, item2):#TODO: !!!!!
+    if item1 == item2 and item1 in ASSETS.ApplicationTodayStatus.get_set():#!!!!!!
         return 0
     if item1 in (None, ASSETS.ABSENT, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED) and item2 in (ASSETS.SEND,):
         return -1
@@ -221,7 +227,7 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
 
         if application_technic.is_cancelled:
             application_technic.is_cancelled = False
-            application_technic.description = application_technic.description.replace(ASSETS.MESSAGES['reject'], "")
+            application_technic.description = application_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
             application_technic.technic_sheet.increment_count_application()
             application_technic.technic_sheet.save()
             application_technic.save()
@@ -332,7 +338,7 @@ def prepare_data_for_filter(context: dict) -> dict:
     :param context:
     :return:
     """
-    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN).values(
+    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title).values(
         'id',
         'last_name',
         'first_name'
@@ -393,7 +399,7 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
         application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
             isArchive=False,
             date=current_day,
-            status=ASSETS.SEND)
+            status=ASSETS.ApplicationTodayStatus.SEND.title)
 
     application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         select_related=('technic_sheet', 'application_today__construction_site__foreman'),
@@ -446,7 +452,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
     template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
     foreman_list = USERS_SERVICE.get_user_queryset(
         isArchive=False,
-        post__in=(ASSETS.FOREMAN, ASSETS.MASTER, ASSETS.SUPPLY)
+        post__in=(ASSETS.UserPosts.FOREMAN.title, ASSETS.UserPosts.MASTER.title, ASSETS.UserPosts.SUPPLY.title)
     ).values(
         'id',
         'last_name',
@@ -463,17 +469,17 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
     else:
         application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
             select_related=('construction_site__foreman',),
-            isArchive=False, date=current_day, status=ASSETS.SEND)
+            isArchive=False, date=current_day, status=ASSETS.ApplicationTodayStatus.SEND.title)
 
     for item in foreman_list:
-        if item['post'] == ASSETS.FOREMAN:
+        if item['post'] == ASSETS.UserPosts.FOREMAN.title:
             foreman_id = item['id']
         else:
             foreman_id = item['supervisor_user_id']
         if foreman_id:
             app_today = application_today.filter(construction_site__foreman_id=foreman_id)
         else:
-            app_today = application_today.filter(construction_site__address=ASSETS.CS_SUPPLY_TITLE)
+            app_today = application_today.filter(construction_site__address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value)
         item['applications'] = app_today.values(
             'construction_site__address',
             'is_application_send'
@@ -497,7 +503,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
 
 def send_application_by_telegram_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
     template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.ADMINISTRATOR)
+    administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.UserPosts.ADMINISTRATOR.title)
 
     if current_day.is_all_application_send:
         msg = f"Заявки на:\n{template_date} отправлены повторно"
@@ -540,7 +546,9 @@ def send_application_by_telegram_for_all(current_day: WorkDaySheet, messages=Non
         current_day.send_all_application()
 
 
-def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
+def copy_application_to_target_day(id_application_today,
+                                   _target_day,
+                                   default_status=ASSETS.ApplicationTodayStatus.SAVED.title):
     """
     Копирование заявки ApplicationToday(id=id_application_today) на _target_day
     :param id_application_today:
@@ -584,19 +592,21 @@ def copy_application_to_target_day(id_application_today, _target_day, default_st
 
 
 def set_spec_task(technic_sheet_id):
-    construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.CS_SPEC_TITLE)
+    construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value)
     try:
         technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
         current_day = technic_sheet.date
-        application_today, _ = ApplicationToday.objects.get_or_create(construction_site=construction_site,
-                                                                      date=current_day,
-                                                                      status=ASSETS.SUBMITTED)
+        application_today, _ = ApplicationToday.objects.get_or_create(
+            construction_site=construction_site,
+            date=current_day,
+            status=ASSETS.ApplicationTodayStatus.SUBMITTED.title)
 
-        application_technic, at_created = ApplicationTechnic.objects.get_or_create(application_today=application_today,
-                                                                                   technic_sheet=technic_sheet)
+        application_technic, at_created = ApplicationTechnic.objects.get_or_create(
+            application_today=application_today,
+            technic_sheet=technic_sheet)
         if at_created:
             technic_sheet.increment_count_application()
-        application_technic.description = ASSETS.CS_SPEC_DEFAULT_DESC
+        application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
         application_technic.save()
 
     except TechnicSheet.DoesNotExist:
@@ -610,11 +620,11 @@ def get_view_mode(_date: date) -> str:
     :return:
     """
     if _date == TODAY:
-        return ASSETS.VIEW_MODE_CURRENT
+        return ASSETS.ViewMode.CURRENT.value
     elif _date < TODAY:
-        return ASSETS.VIEW_MODE_ARCHIVE
+        return ASSETS.ViewMode.ARCHIVE.value
     elif _date > TODAY:
-        return ASSETS.VIEW_MODE_FUTURE
+        return ASSETS.ViewMode.FUTURE.value
     else:
         return 'None'
 
@@ -649,7 +659,7 @@ def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: boo
         workday.is_only_read = False
         workday.save(update_fields=['is_only_read'])
     var_recept_apps = PARAMETER_SERVICE.get_parameter(
-        name=VAR.VAR_TIME_RECEPTION_OF_APPS['name']
+        name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
     )
     if var_recept_apps:
         var_recept_apps.flag = False
@@ -668,20 +678,20 @@ def is_valid_get_request(value: str) -> bool:
         return False
 
 
-def get_current_status_set_for_apps_today(current_user: User) -> set:
-    """
-    Получить статус set() для application_today на основании user.post
-    :param current_user: User
-    :return: {.., ...}
-    """
-    if USERS_SERVICE.is_administrator(current_user):
-        return ASSETS.APPLICATION_STATUS_set
-    elif (USERS_SERVICE.is_foreman(current_user) or
-          USERS_SERVICE.is_master(current_user) or
-          USERS_SERVICE.is_supply(current_user)):
-        return {ASSETS.ABSENT, ASSETS.SAVED}
-    else:
-        return set()
+# def get_current_status_set_for_apps_today(current_user: User) -> set:
+#     """
+#     Получить статус set() для application_today на основании user.post
+#     :param current_user: User
+#     :return: {.., ...}
+#     """
+#     if USERS_SERVICE.is_administrator(current_user):
+#         return ASSETS.APPLICATION_STATUS_set
+#     elif (USERS_SERVICE.is_foreman(current_user) or
+#           USERS_SERVICE.is_master(current_user) or
+#           USERS_SERVICE.is_supply(current_user)):
+#         return {ASSETS.ABSENT, ASSETS.SAVED}
+#     else:
+#         return set()
 
 
 def change_up_status_for_application_today(workday: WorkDaySheet, application_today_id=None,
@@ -714,25 +724,25 @@ def get_status_lists_of_apps_today(workday: WorkDaySheet, applications_today: Qu
     :param workday: WorkDaySheet
     :return: {absent: [], saved: [], submitted: [], approved: [], send: []}
     """
-    status_lists = {ASSETS.ABSENT: [],
-                    ASSETS.SAVED: [],
-                    ASSETS.SUBMITTED: [],
-                    ASSETS.APPROVED: [],
-                    ASSETS.SEND: []}
+    status_lists = {ASSETS.ApplicationTodayStatus.ABSENT.title: [],
+                    ASSETS.ApplicationTodayStatus.SAVED.title: [],
+                    ASSETS.ApplicationTodayStatus.SUBMITTED.title: [],
+                    ASSETS.ApplicationTodayStatus.APPROVED.title: [],
+                    ASSETS.ApplicationTodayStatus.SEND.title: []}
 
     # apps_today = APP_TODAY_SERVICE.get_apps_today_queryset(date=workday, isArchive=False).values('id', 'status')
     apps_today = applications_today.values('id', 'status')
     for app in apps_today:
-        if app['status'] == ASSETS.ABSENT:
-            status_lists[ASSETS.ABSENT].append(app['id'])
-        elif app['status'] == ASSETS.SAVED:
-            status_lists[ASSETS.SAVED].append(app['id'])
-        elif app['status'] == ASSETS.SUBMITTED:
-            status_lists[ASSETS.SUBMITTED].append(app['id'])
-        elif app['status'] == ASSETS.APPROVED:
-            status_lists[ASSETS.APPROVED].append(app['id'])
-        elif app['status'] == ASSETS.SEND:
-            status_lists[ASSETS.SEND].append(app['id'])
+        if app['status'] == ASSETS.ApplicationTodayStatus.ABSENT.title:
+            status_lists[ASSETS.ApplicationTodayStatus.ABSENT.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.SAVED.title:
+            status_lists[ASSETS.ApplicationTodayStatus.SAVED.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.SUBMITTED.title:
+            status_lists[ASSETS.ApplicationTodayStatus.SUBMITTED.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.APPROVED.title:
+            status_lists[ASSETS.ApplicationTodayStatus.APPROVED.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.SEND.title:
+            status_lists[ASSETS.ApplicationTodayStatus.SEND.title].append(app['id'])
     return status_lists
 
 
@@ -773,7 +783,7 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C2")
 
-    elif current_workday > next_workday:
+    elif current_workday.date > next_workday.date:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C3")
 

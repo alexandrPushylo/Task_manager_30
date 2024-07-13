@@ -48,8 +48,8 @@ def dashboard_view(request):
     context = {
         'title': request.user,
         'current_day': current_day,
-        'ONLY_READ': current_day.is_only_read,
-        'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
+        'ONLY_READ': current_day.is_only_read
+        # 'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
     context = U.get_prepared_data(context, current_day)
     context = U.prepare_data_for_filter(context)
@@ -387,7 +387,7 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)  # TODO: redirect to Home page
         else:
-            return render(request, 'content/login.html', {'error': ASSETS.ERROR_MESSAGES['login']})
+            return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
 
 
@@ -430,8 +430,8 @@ def logout_view(request):
 def register_view(request):
     context = {
         'user_posts': {
-            ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE],
-            ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER],
+            **ASSETS.UserPosts.EMPLOYEE.get_dict(),
+            **ASSETS.UserPosts.DRIVER.get_dict(),
         }
     }
 
@@ -445,7 +445,7 @@ def register_view(request):
         elif new_user is not None and request.user.is_authenticated:
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         else:
-            context['error'] = ASSETS.ERROR_MESSAGES['register']
+            context['error'] = ASSETS.ErrorMessages.invalid_register.value
             return render(request, 'content/register.html', context)
 
     return HttpResponse(status=403)
@@ -563,9 +563,16 @@ def edit_technic_view(request):
         context = {'title': 'Добавить технику'}
 
         technic_id = request.GET.get('tech_id')
-        context['drivers'] = USERS_SERVICE.get_user_queryset(post=ASSETS.DRIVER)
-        context['supervisors'] = dict(
-            [(key, value) for key, value in ASSETS.USER_POSTS_dict.items() if key in (ASSETS.MECHANIC, ASSETS.SUPPLY)])
+        context['drivers'] = USERS_SERVICE.get_user_queryset(
+            isArchive=False,
+            post=ASSETS.UserPosts.DRIVER.title
+        )
+
+        context['supervisors'] = {
+            **ASSETS.UserPosts.SUPPLY.get_dict(),
+            **ASSETS.UserPosts.MECHANIC.get_dict()
+        }
+
         technic_type_list = set(Technic.objects.filter().values_list('type', flat=True))
         context['technic_type_list'] = sorted(technic_type_list)
 
@@ -624,14 +631,15 @@ def users_view(request):
         context = {
             'title': 'Все пользователи',
             'users_list': [],
-            'user_post': ASSETS.USER_POSTS_dict
+            'user_post': ASSETS.UserPosts.get_dict()
         }
         if USERS_SERVICE.is_administrator(request.user):
             users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',))
         elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',)).exclude(post=ASSETS.ADMINISTRATOR)
+            users_list = (USERS_SERVICE.get_user_queryset(order_by=('last_name',))
+                          .exclude(post=ASSETS.UserPosts.ADMINISTRATOR.title))
         elif USERS_SERVICE.is_mechanic(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.DRIVER, order_by=('last_name',))
+            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title, order_by=('last_name',))
         else:
             users_list = []
         context['users_list'] = users_list
@@ -643,13 +651,13 @@ def users_view(request):
 def edit_user_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Добавить пользователя',
-                   'posts': ASSETS.USER_POSTS_dict,
-                   'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
+                   'posts': ASSETS.UserPosts.get_dict(),
+                   'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title)
                    }
         if USERS_SERVICE.is_mechanic(request.user):
-            context['posts'] = {ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER]}
+            context['posts'] = ASSETS.UserPosts.DRIVER.get_dict()
         if USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
-            context['posts'] = {ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE]}
+            context['posts'] = ASSETS.UserPosts.EMPLOYEE.get_dict()
 
         user_id = request.GET.get('user_id')
         if U.is_valid_get_request(user_id):
@@ -739,7 +747,7 @@ def edit_construction_sites(request):
     if request.user.is_authenticated:
         context = {
             'title': 'Изменить объект',
-            'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN, order_by=('last_name',))
+            'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title, order_by=('last_name',))
         }
 
         if request.method == 'POST':
@@ -772,13 +780,13 @@ def change_status_application_today(request):
             up_level_status = U.change_up_status_for_application_today(
                 workday=workday,
                 application_today_id=application_today_id)
-            if up_level_status == ASSETS.SEND:
+            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
                 U.send_application_by_telegram_for_all(current_day=workday, application_today_id=application_today_id)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
             up_level_status = U.change_up_status_for_application_today(workday=workday, current_status=current_status)
-            if up_level_status == ASSETS.SEND:
+            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
                 U.send_application_by_telegram_for_all(workday)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -981,10 +989,11 @@ def show_technic_application(request):
             isArchive=False,
             is_cancelled=False,
             isChecked=False
-        ).exclude(application_today__status=ASSETS.SAVED)
+        ).exclude(application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title)
 
         if not USERS_SERVICE.is_administrator(request.user):
-            application_technic_list = application_technic_list.filter(application_today__status=ASSETS.SEND)
+            application_technic_list = application_technic_list.filter(
+                application_today__status=ASSETS.ApplicationTodayStatus.SEND.title)
 
         if request.user.filter_technic:
             application_technic_list = application_technic_list.filter(
@@ -1044,7 +1053,7 @@ def show_material_application(request):
         application_today_id_list = APP_TODAY_SERVICE.get_apps_today_queryset(
             isArchive=False,
             date=current_day,
-        ).exclude(status=ASSETS.SAVED).values_list('pk', flat=True)
+        ).exclude(status=ASSETS.ApplicationTodayStatus.SAVED.title).values_list('pk', flat=True)
 
         if request.user.filter_foreman != 0:
             application_today_id_list = application_today_id_list.filter(

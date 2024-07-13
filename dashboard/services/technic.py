@@ -52,8 +52,8 @@ def check_technic_data(data: dict) -> dict | None:
     attached_driver = data.get('attached_driver')
     supervisor = data.get('supervisor')
 
-    if supervisor not in (ASSETS.MECHANIC, ASSETS.SUPPLY):
-        out['supervisor'] = ASSETS.MECHANIC
+    if supervisor not in (ASSETS.UserPosts.MECHANIC.title, ASSETS.UserPosts.SUPPLY.title):
+        out['supervisor'] = ASSETS.UserPosts.MECHANIC.title
 
     if attached_driver:
         try:
@@ -137,7 +137,7 @@ def get_supply_technic_list() -> Technic.objects:
     Получить список техники для supply
     :return: Technic.objects.filter()
     """
-    technic_list = get_technics_queryset(isArchive=False, supervisor_technic=ASSETS.SUPPLY)
+    technic_list = get_technics_queryset(isArchive=False, supervisor_technic=ASSETS.UserPosts.SUPPLY.title)
     return technic_list
 
 

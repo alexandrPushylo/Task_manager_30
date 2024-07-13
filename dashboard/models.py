@@ -1,14 +1,14 @@
 from django.db import models
 # from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
-from dashboard.assets import EMPLOYEE, ADMINISTRATOR, MECHANIC
-# from dashboard.assets import ABSENT, SAVED
+from .assets import UserPosts
 
 
 class User(AbstractUser):
     telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name="Телефон")
     telegram_id_chat = models.CharField(max_length=128, null=True, blank=True, verbose_name='Telegram id chat')
-    post = models.CharField(max_length=50, null=False, blank=False, verbose_name="Должность", default=EMPLOYEE)
+    post = models.CharField(max_length=50, null=False, blank=False, verbose_name="Должность",
+                            default=UserPosts.EMPLOYEE.title)
     supervisor_user_id = models.IntegerField(null=True, blank=True, verbose_name='Ид руководителя', default=None)
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
@@ -35,7 +35,8 @@ class Technic(models.Model):
     attached_driver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='attached_driver',
                                         verbose_name='Прикрепленный водитель')
-    supervisor_technic = models.CharField(max_length=100, verbose_name='Руководитель', default=MECHANIC)
+    supervisor_technic = models.CharField(max_length=100, verbose_name='Руководитель',
+                                          default=UserPosts.MECHANIC.title)
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
     def __str__(self):
