@@ -36,6 +36,8 @@ log = getLogger(__name__)
 
 TODAY = date.today()
 NOW = datetime.now().time()
+
+
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -106,6 +108,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
     context['weekday'] = get_weekday(current_workday.date)
     context['VIEW_MODE'] = get_view_mode(current_workday.date)
+
     change_reception_apps_mode_auto(workday=current_workday)
     return context
 
@@ -400,7 +403,8 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
         application_today__in=application_today
     )
 
-    driver_sheet_list = driver_list.filter(id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
+    driver_sheet_list = driver_list.filter(
+        id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
         'id',
         'driver_sheet__driver__telegram_id_chat',
         'driver_sheet__driver__last_name',
