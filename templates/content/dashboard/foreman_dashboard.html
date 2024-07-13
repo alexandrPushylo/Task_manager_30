@@ -123,10 +123,18 @@
                                                         {% endif %}
                                                 >
                                                     <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
-                                                    <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
-                                                    <span>[<span>{{ app_technic.priority }}</span>/
+
+                                                    {% if app_technic.technic_sheet__driver_sheet__status %}
+                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
+                                                           style="text-decoration: none; color: inherit;">
+                                                            <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span></a>
+                                                        <span>[<span>{{ app_technic.priority }}</span>/
                                                         <span>{{ app_technic.technic_sheet__count_application }}</span>]
                                                     </span>
+                                                    {% else %}
+                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                    {% endif %}
+
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
                                                 <textarea readonly

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div id="technic_application_list" class="container">
+        {% include 'includes/weekday_current_day.html' %}
+        <div>
+            <p style="text-align: center" class="fs-5">
+                <span>{{ current_driver.last_name }}</span>
+                <span>{{ current_driver.first_name }}</span>
+                {% if current_driver.telephone %}
+                    <br>
+                    <span>{{ current_driver.telephone }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="mt-2">
+            {% for application_technic in technic_application_list %}
+                <div class="card mb-3">
+                {% ifchanged %}
+                    <div class="card-header">
+                        <span class="fw-bolder">{{ application_technic.technic_sheet.technic.title }}</span>
+                    </div>
+                {% endifchanged %}
+                    <div class="card-title">
+                    {% if application_technic.applications_technic %}
+                        {% for application in application_technic.applications_technic %}
+                            <div class="card-body input-group p-1">
+                                <div class="col-auto input-group-text p-2">
+                                    <span class="fw-bolder">{{ application.priority }}</span>
+                                </div>
+
+                                <div class="col ms-1">
+                                    <span class="fw-bolder small ms-2">{{ application.application_today.construction_site.address }}</span>
+                                    {% if application.application_today.construction_site.foreman %}
+                                    <span class="small">({{ application.application_today.construction_site.foreman.last_name }})</span>
+                                    {% endif %}
+                                    {% if application.application_today.description %}
+                                        <p class="m-0 mb-1 ms-2">
+                                            <span class="small form-text">Примечание к объекту:</span>
+                                            <span>{{ application.application_today.description }}</span>
+                                        </p>
+                                        <hr class="m-1">
+                                    {% endif %}
+
+                                    <textarea class="form-control p-1 text_area_description" readonly
+                                              aria-label="">{{ application.description }}</textarea>
+                                </div>
+                            </div>  <hr class="m-1">                      
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-1">
+                            <p class="ms-2">
+                                <span>На данный момент задание отсутствует</span>
+                            </p>
+                        </div>
+                    {% endif %}
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a class="btn btn-primary" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}">Назад</a>
+    </div>
+    <div></div>
+{% endblock %}

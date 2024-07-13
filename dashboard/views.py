@@ -76,8 +76,15 @@ def dashboard_view(request):
                 U.copy_application_to_target_day(application_id, target_day, default_app_status)
     #   POST    ===================================================================================================
 
+    #   show info about dashboard for driver ------------------------------------------------------------------
+    if U.is_valid_get_request(request.GET.get('driver_id')):
+        context = DASHBOARD_SERVICE.get_dashboard_for_driver(request=request, current_day=current_day, context=context)
+        return render(request, 'content/spec/info_about_drivers_dashboard.html', context)
+
+    #   -------------------------------------------------------------------------------------------------------
+
     #   get dashboard for administrator -----------------------------------------------------------------------
-    if USERS_SERVICE.is_administrator(request.user):
+    elif USERS_SERVICE.is_administrator(request.user):
         context = DASHBOARD_SERVICE.get_dashboard_for_admin(request=request, current_day=current_day, context=context)
         return render(request, 'content/dashboard/admin_dashboard.html', context)
     #   -------------------------------------------------------------------------------------------------------
@@ -117,6 +124,8 @@ def dashboard_view(request):
     #   get dashboard for driver ------------------------------------------------------------------------------
     elif USERS_SERVICE.is_driver(request.user):
         context = DASHBOARD_SERVICE.get_dashboard_for_driver(request=request, current_day=current_day, context=context)
+        if U.is_valid_get_request(request.GET.get('driver_id')):
+            return render(request, 'content/spec/info_about_drivers_dashboard.html', context)
         return render(request, 'content/dashboard/driver_dashboard.html', context)
     #   -------------------------------------------------------------------------------------------------------
 

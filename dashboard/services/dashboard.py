@@ -109,7 +109,8 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
                 'description',
                 'is_cancelled',
                 'isChecked',
-                'technic_sheet_id'
+                'technic_sheet_id',
+                'technic_sheet__driver_sheet__driver__id',
             )
 
     technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
@@ -201,7 +202,8 @@ def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: Wor
                 'description',
                 'is_cancelled',
                 'isChecked',
-                'technic_sheet_id'
+                'technic_sheet_id',
+                'technic_sheet__driver_sheet__driver__id',
             )
     return context
 
@@ -368,7 +370,15 @@ def get_dashboard_for_employee(request, current_day: WorkDaySheet, context: dict
 
 
 def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) -> dict:
-    current_driver = request.user
+    if U.is_valid_get_request(request.GET.get('driver_id')):
+        current_driver = USERS_SERVICE.get_user(
+            pk=request.GET.get('driver_id'),
+            post=ASSETS.DRIVER
+        )
+    else:
+        current_driver = request.user
+
+    context['current_driver'] = current_driver
 
     current_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
         select_related=('driver_sheet__driver', 'technic'),

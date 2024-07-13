@@ -152,20 +152,23 @@
 
                                                     >{{ app_technic.technic_sheet__technic__title }}</span>
                                                     {% if app_technic.technic_sheet__driver_sheet__status %}
-                                                        <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
+                                                           style="text-decoration: none; color: inherit;">
+                                                            <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span></a>
+
+
+                                                        <span {% if app_technic.is_cancelled or app_technic.isChecked %}
+                                                            style="color: rgba(97,95,95,0.51)"
+                                                        {% elif app_technic.technic_sheet_id in priority_id_list %}
+                                                            class="text-primary"
+                                                        {% else %}
+                                                            class="text-dark"
+                                                        {% endif %}>[<span>{{ app_technic.priority }}</span>/
+                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
+                                                    </span>
                                                     {% else %}
                                                         <span class="text-warning">(Водитель не назначен)</span>
                                                     {% endif %}
-
-                                                    <span {% if app_technic.is_cancelled or app_technic.isChecked %}
-                                                        style="color: rgba(97,95,95,0.51)"
-                                                    {% elif app_technic.technic_sheet_id in priority_id_list %}
-                                                        class="text-primary"
-                                                    {% else %}
-                                                        class="text-dark"
-                                                    {% endif %}>[<span>{{ app_technic.priority }}</span>/
-                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
-                                                    </span>
 
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
