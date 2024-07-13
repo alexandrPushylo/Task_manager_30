@@ -48,19 +48,18 @@ WEEKDAY = ("Понедельник", "Вторник", "Среда", "Четве
 MONTHS = (
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь')
 
-MESSAGES = {
-    'reject': 'ОТКЛОНЕНА\n'
-}
 
-CS_SUPPLY_TITLE = 'Снабжение'
-CS_SPEC_TITLE = 'Спец. задание'
-CS_SPEC_DEFAULT_DESC = 'Дробить бетон и асфальт'
 class ErrorMessages(Enum):
     invalid_signin = 'Неверный логин или пароль'
     invalid_register = 'Введены не все данные'
 
 
 COLORS = [
+class MessagesAssets(Enum):
+    reject = 'ОТКЛОНЕНА\n'
+    CS_SUPPLY_TITLE = 'Снабжение'
+    CS_SPEC_TITLE = 'Спец. задание'
+    CS_SPEC_DEFAULT_DESC = 'Дробить бетон и асфальт'
     '#15b03e',
     '#5a9e6c',
     '#85d633',

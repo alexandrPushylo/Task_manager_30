@@ -58,14 +58,14 @@ def reject_or_accept_apps_technic(app_tech_id) -> str:
         if apps_technic.is_cancelled:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = False
-            apps_technic.description = apps_technic.description.replace(ASSETS.MESSAGES['reject'], "")
+            apps_technic.description = apps_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
             apps_technic.technic_sheet.increment_count_application()
             apps_technic.save()
             return 'accept'
         else:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = True
-            apps_technic.description = ASSETS.MESSAGES['reject'] + apps_technic.description
+            apps_technic.description = ASSETS.MessagesAssets.reject.value + apps_technic.description
             apps_technic.technic_sheet.decrement_count_application()
             apps_technic.save()
             return 'reject'

@@ -225,7 +225,7 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
 
         if application_technic.is_cancelled:
             application_technic.is_cancelled = False
-            application_technic.description = application_technic.description.replace(ASSETS.MESSAGES['reject'], "")
+            application_technic.description = application_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
             application_technic.technic_sheet.increment_count_application()
             application_technic.technic_sheet.save()
             application_technic.save()
@@ -477,7 +477,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
         if foreman_id:
             app_today = application_today.filter(construction_site__foreman_id=foreman_id)
         else:
-            app_today = application_today.filter(construction_site__address=ASSETS.CS_SUPPLY_TITLE)
+            app_today = application_today.filter(construction_site__address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value)
         item['applications'] = app_today.values(
             'construction_site__address',
             'is_application_send'
@@ -590,7 +590,7 @@ def copy_application_to_target_day(id_application_today,
 
 
 def set_spec_task(technic_sheet_id):
-    construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.CS_SPEC_TITLE)
+    construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value)
     try:
         technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
         current_day = technic_sheet.date
@@ -603,7 +603,7 @@ def set_spec_task(technic_sheet_id):
                                                                                    technic_sheet=technic_sheet)
         if at_created:
             technic_sheet.increment_count_application()
-        application_technic.description = ASSETS.CS_SPEC_DEFAULT_DESC
+        application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
         application_technic.save()
 
     except TechnicSheet.DoesNotExist:
