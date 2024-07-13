@@ -258,7 +258,7 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
 
         #   Отвергнуть заявку
         if application_technic_id and operation == 'reject':
-            APP_TECHNIC_SERVICE.toggle_reject_apps_technic(app_tech_id=application_technic_id)
+            APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=application_technic_id)
 
         elif application_technic_id and operation == 'accept':
             if not application_today_id:

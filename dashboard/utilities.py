@@ -38,6 +38,8 @@ TODAY = date.today()
 NOW = datetime.now().time()
 
 
+
+
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -197,8 +199,8 @@ def set_color_for_list(some_list: list) -> dict:
     return out
 
 
-def sorting_application_status(item1, item2):
-    if item1 == item2 and item1 in ASSETS.APPLICATION_STATUS_set:
+def sorting_application_status(item1, item2):#TODO: !!!!!
+    if item1 == item2 and item1 in ASSETS.ApplicationTodayStatus.get_set():#!!!!!!
         return 0
     if item1 in (None, ASSETS.ABSENT, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED) and item2 in (ASSETS.SEND,):
         return -1
@@ -599,8 +601,9 @@ def set_spec_task(technic_sheet_id):
             date=current_day,
             status=ASSETS.ApplicationTodayStatus.SUBMITTED.title)
 
-        application_technic, at_created = ApplicationTechnic.objects.get_or_create(application_today=application_today,
-                                                                                   technic_sheet=technic_sheet)
+        application_technic, at_created = ApplicationTechnic.objects.get_or_create(
+            application_today=application_today,
+            technic_sheet=technic_sheet)
         if at_created:
             technic_sheet.increment_count_application()
         application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value

@@ -29,6 +29,18 @@ ApplicationTodayStatus = ApplicationTodayType(
     TitleDescriptionType('approved', 'Одобрена'),
     TitleDescriptionType('send', 'Отправлена')
 )
+
+# USER_POSTS_set = (ADMINISTRATOR, FOREMAN, MASTER, DRIVER, MECHANIC, SUPPLY, EMPLOYEE)
+# USER_POSTS_dict = {
+#     ADMINISTRATOR: 'Администратор',
+#     FOREMAN: 'Прораб',
+#     MASTER: 'Мастер',
+#     DRIVER: 'Водитель',
+#     MECHANIC: 'Механик',
+#     SUPPLY: 'Снабжение',
+#     EMPLOYEE: 'Работник'
+# }
+
 # ABSENT = 'absent'
 # SAVED = 'saved'
 # SUBMITTED = 'submitted'
@@ -42,6 +54,7 @@ ApplicationTodayStatus = ApplicationTodayType(
 #     SUBMITTED: 'Подана',
 #     APPROVED: 'Одобрена',
 #     SEND: 'Отправлена'}
+
 SORT_BY = {'driver': 'Водителю', 'technic': 'Технике'}
 
 WEEKDAY = ("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье")
@@ -54,16 +67,20 @@ class ErrorMessages(Enum):
     invalid_register = 'Введены не все данные'
 
 
-COLORS = [
 class MessagesAssets(Enum):
     reject = 'ОТКЛОНЕНА\n'
     CS_SUPPLY_TITLE = 'Снабжение'
     CS_SPEC_TITLE = 'Спец. задание'
     CS_SPEC_DEFAULT_DESC = 'Дробить бетон и асфальт'
+
+
 class ViewMode(Enum):
     FUTURE = 'view_mode_future'
     CURRENT = 'view_mode_current'
     ARCHIVE = 'view_mode_archive'
+
+
+COLORS = (
     '#15b03e',
     '#5a9e6c',
     '#85d633',
@@ -77,10 +94,4 @@ class ViewMode(Enum):
     '#001dfa',
     '#9600fa',
     '#fa00ed',
-]
-
-#   -------------------------------------------------------------
-VIEW_MODE_FUTURE = 'view_mode_future'
-VIEW_MODE_CURRENT = 'view_mode_current'
-VIEW_MODE_ARCHIVE = 'view_mode_archive'
-#   -------------------------------------------------------------
+)
