@@ -780,13 +780,13 @@ def change_status_application_today(request):
             up_level_status = U.change_up_status_for_application_today(
                 workday=workday,
                 application_today_id=application_today_id)
-            if up_level_status == ASSETS.SEND:
+            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
                 U.send_application_by_telegram_for_all(current_day=workday, application_today_id=application_today_id)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         elif U.is_valid_get_request(current_day) and U.is_valid_get_request(current_status):
             up_level_status = U.change_up_status_for_application_today(workday=workday, current_status=current_status)
-            if up_level_status == ASSETS.SEND:
+            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
                 U.send_application_by_telegram_for_all(workday)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -989,10 +989,11 @@ def show_technic_application(request):
             isArchive=False,
             is_cancelled=False,
             isChecked=False
-        ).exclude(application_today__status=ASSETS.SAVED)
+        ).exclude(application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title)
 
         if not USERS_SERVICE.is_administrator(request.user):
-            application_technic_list = application_technic_list.filter(application_today__status=ASSETS.SEND)
+            application_technic_list = application_technic_list.filter(
+                application_today__status=ASSETS.ApplicationTodayStatus.SEND.title)
 
         if request.user.filter_technic:
             application_technic_list = application_technic_list.filter(
@@ -1052,7 +1053,7 @@ def show_material_application(request):
         application_today_id_list = APP_TODAY_SERVICE.get_apps_today_queryset(
             isArchive=False,
             date=current_day,
-        ).exclude(status=ASSETS.SAVED).values_list('pk', flat=True)
+        ).exclude(status=ASSETS.ApplicationTodayStatus.SAVED.title).values_list('pk', flat=True)
 
         if request.user.filter_foreman != 0:
             application_today_id_list = application_today_id_list.filter(

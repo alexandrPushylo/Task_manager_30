@@ -1,6 +1,7 @@
 from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet
 from django.db.models import QuerySet
 import dashboard.assets as ASSETS
+from ..types import ApplicationTodayType, TitleDescriptionType
 import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
 import dashboard.services.construction_site as CONSTR_SITE_SERVICE
@@ -60,9 +61,9 @@ def get_apps_today_queryset(select_related: tuple = (),
 
 def get_default_status_for_apps_today(user: User) -> str:
     if USERS_SERVICE.is_administrator(user):
-        return ASSETS.SUBMITTED
+        return ASSETS.ApplicationTodayStatus.SUBMITTED.title
     else:
-        return ASSETS.SAVED
+        return ASSETS.ApplicationTodayStatus.SAVED.title
 
 
 def delete_application_today(application_today: ApplicationToday):

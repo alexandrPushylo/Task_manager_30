@@ -22,6 +22,26 @@ UserPosts = UserPostType(
     TitleDescriptionType('employee', 'Работник')
 )
 
+ApplicationTodayStatus = ApplicationTodayType(
+    TitleDescriptionType('absent', 'Отсутствует'),
+    TitleDescriptionType('saved', 'Сохранена'),
+    TitleDescriptionType('submitted', 'Подана'),
+    TitleDescriptionType('approved', 'Одобрена'),
+    TitleDescriptionType('send', 'Отправлена')
+)
+# ABSENT = 'absent'
+# SAVED = 'saved'
+# SUBMITTED = 'submitted'
+# APPROVED = 'approved'
+# SEND = 'send'
+
+# APPLICATION_STATUS_set = (ABSENT, SAVED, SUBMITTED, APPROVED, SEND)
+# APPLICATION_STATUS_dict = {
+#     ABSENT: 'Отсутствует',
+#     SAVED: 'Сохранена',
+#     SUBMITTED: 'Подана',
+#     APPROVED: 'Одобрена',
+#     SEND: 'Отправлена'}
 SORT_BY = {'driver': 'Водителю', 'technic': 'Технике'}
 
 WEEKDAY = ("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье")

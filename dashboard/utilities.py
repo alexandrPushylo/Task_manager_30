@@ -126,7 +126,9 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     :return: [{}, {}]
     """
     out = []
-    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
+    technic_sheet = technic_sheet.exclude(
+        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+    )
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
 
     for technic_title in technic_title_list:
@@ -166,7 +168,9 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     :param technic_sheet:
     :return: set(.., ...)
     """
-    technic_sheet = technic_sheet.exclude(applicationtechnic__application_today__status=ASSETS.SAVED)
+    technic_sheet = technic_sheet.exclude(
+        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+    )
     technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
     application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         technic_sheet__in=technic_sheet_list_id_list,
@@ -393,7 +397,7 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
         application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
             isArchive=False,
             date=current_day,
-            status=ASSETS.SEND)
+            status=ASSETS.ApplicationTodayStatus.SEND.title)
 
     application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         select_related=('technic_sheet', 'application_today__construction_site__foreman'),
@@ -463,7 +467,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
     else:
         application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
             select_related=('construction_site__foreman',),
-            isArchive=False, date=current_day, status=ASSETS.SEND)
+            isArchive=False, date=current_day, status=ASSETS.ApplicationTodayStatus.SEND.title)
 
     for item in foreman_list:
         if item['post'] == ASSETS.UserPosts.FOREMAN.title:
@@ -540,7 +544,9 @@ def send_application_by_telegram_for_all(current_day: WorkDaySheet, messages=Non
         current_day.send_all_application()
 
 
-def copy_application_to_target_day(id_application_today, _target_day, default_status=ASSETS.SAVED):
+def copy_application_to_target_day(id_application_today,
+                                   _target_day,
+                                   default_status=ASSETS.ApplicationTodayStatus.SAVED.title):
     """
     Копирование заявки ApplicationToday(id=id_application_today) на _target_day
     :param id_application_today:
@@ -588,9 +594,10 @@ def set_spec_task(technic_sheet_id):
     try:
         technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
         current_day = technic_sheet.date
-        application_today, _ = ApplicationToday.objects.get_or_create(construction_site=construction_site,
-                                                                      date=current_day,
-                                                                      status=ASSETS.SUBMITTED)
+        application_today, _ = ApplicationToday.objects.get_or_create(
+            construction_site=construction_site,
+            date=current_day,
+            status=ASSETS.ApplicationTodayStatus.SUBMITTED.title)
 
         application_technic, at_created = ApplicationTechnic.objects.get_or_create(application_today=application_today,
                                                                                    technic_sheet=technic_sheet)
@@ -714,25 +721,25 @@ def get_status_lists_of_apps_today(workday: WorkDaySheet, applications_today: Qu
     :param workday: WorkDaySheet
     :return: {absent: [], saved: [], submitted: [], approved: [], send: []}
     """
-    status_lists = {ASSETS.ABSENT: [],
-                    ASSETS.SAVED: [],
-                    ASSETS.SUBMITTED: [],
-                    ASSETS.APPROVED: [],
-                    ASSETS.SEND: []}
+    status_lists = {ASSETS.ApplicationTodayStatus.ABSENT.title: [],
+                    ASSETS.ApplicationTodayStatus.SAVED.title: [],
+                    ASSETS.ApplicationTodayStatus.SUBMITTED.title: [],
+                    ASSETS.ApplicationTodayStatus.APPROVED.title: [],
+                    ASSETS.ApplicationTodayStatus.SEND.title: []}
 
     # apps_today = APP_TODAY_SERVICE.get_apps_today_queryset(date=workday, isArchive=False).values('id', 'status')
     apps_today = applications_today.values('id', 'status')
     for app in apps_today:
-        if app['status'] == ASSETS.ABSENT:
-            status_lists[ASSETS.ABSENT].append(app['id'])
-        elif app['status'] == ASSETS.SAVED:
-            status_lists[ASSETS.SAVED].append(app['id'])
-        elif app['status'] == ASSETS.SUBMITTED:
-            status_lists[ASSETS.SUBMITTED].append(app['id'])
-        elif app['status'] == ASSETS.APPROVED:
-            status_lists[ASSETS.APPROVED].append(app['id'])
-        elif app['status'] == ASSETS.SEND:
-            status_lists[ASSETS.SEND].append(app['id'])
+        if app['status'] == ASSETS.ApplicationTodayStatus.ABSENT.title:
+            status_lists[ASSETS.ApplicationTodayStatus.ABSENT.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.SAVED.title:
+            status_lists[ASSETS.ApplicationTodayStatus.SAVED.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.SUBMITTED.title:
+            status_lists[ASSETS.ApplicationTodayStatus.SUBMITTED.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.APPROVED.title:
+            status_lists[ASSETS.ApplicationTodayStatus.APPROVED.title].append(app['id'])
+        elif app['status'] == ASSETS.ApplicationTodayStatus.SEND.title:
+            status_lists[ASSETS.ApplicationTodayStatus.SEND.title].append(app['id'])
     return status_lists
 
 
