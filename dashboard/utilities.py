@@ -715,3 +715,37 @@ def prepare_global_parameters():
     parameters_list = VAR.VARIABLES_LIST
     PARAMETER_SERVICE.create_global_parameters(global_parameters=parameters_list)
 
+
+def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
+    """
+    Разрешено ли редактировать заявки на материалы
+    :param current_workday:
+    :return:
+    """
+    is_accept = False
+    var_time_limit = PARAMETER_SERVICE.get_parameter(
+        name=VAR.VAR_TIME_RECEPTION_OF_MATERIALS['name']
+    )
+    if not var_time_limit:
+        log.warning(
+            f"Переменная {VAR.VAR_TIME_RECEPTION_OF_MATERIALS['name']} \
+            для ограничения времени подачи заявок на материалы не существует.")
+        return False
+
+    time_limit = var_time_limit.time
+    next_workday = WORK_DAY_SERVICE.get_next_workday()
+
+    if (current_workday == next_workday
+            and NOW < time_limit):
+        is_accept = True
+        log.debug(f"get_accept_to_change_materials_app(): C1")
+
+    elif TODAY.weekday() in (4, ) and current_workday.date.weekday() in (0, ) and NOW < time_limit:
+        is_accept = True
+        log.debug(f"get_accept_to_change_materials_app(): C2")
+
+    elif current_workday > next_workday:
+        is_accept = True
+        log.debug(f"get_accept_to_change_materials_app(): C3")
+
+    return is_accept

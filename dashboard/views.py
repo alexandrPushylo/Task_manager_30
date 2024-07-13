@@ -185,6 +185,8 @@ def edit_application_view(request):
         context['current_day'] = current_day
         context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
 
+        context['is_changeable_material'] = U.get_accept_to_change_materials_app(current_workday=current_day)
+
         if not current_day.status:
             return render(request, 'content/spec/weekend.html', context)
 
