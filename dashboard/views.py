@@ -62,9 +62,6 @@ def dashboard_view(request):
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD + f'?current_day={next_workday.date}')
         return render(request, 'content/spec/weekend.html', context)
 
-    status_list_application_today = APP_TODAY_SERVICE.get_status_lists_of_apps_today(workday=current_day)
-    context['status_list_application_today'] = status_list_application_today
-
     #   POST    ===================================================================================================
     if request.method == 'POST':
         operation = request.POST.get('operation')
