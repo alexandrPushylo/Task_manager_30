@@ -1,10 +1,8 @@
 # template = {'title': '', 'name': ''}
-from datetime import datetime
+import datetime
 
-# VAR_APPLICATION_SEND = {
-#     'title': 'Отметка отправки приложений',
-#     'name': 'apps_status_send'
-# }
+#   ===========================================================================================================
+
 VAR_DEFAULT_PASSWORD = {
     'title': 'Пароль по умолчанию',
     'name': 'default_password',
@@ -25,9 +23,11 @@ VAR_TIME_RECEPTION_OF_MATERIALS = {
     'flag': True,
 }
 
+
+#   ===========================================================================================================
+
 # Для prepare_variables() - automatic creation of variables
 VARIABLES_LIST = (
-    # VAR_APPLICATION_SEND,
     VAR_DEFAULT_PASSWORD,
     VAR_TIME_RECEPTION_OF_TECHNICS,
     VAR_TIME_RECEPTION_OF_MATERIALS,
