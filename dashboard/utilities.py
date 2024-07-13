@@ -783,7 +783,7 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C2")
 
-    elif current_workday > next_workday:
+    elif current_workday.date > next_workday.date:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C3")
 
