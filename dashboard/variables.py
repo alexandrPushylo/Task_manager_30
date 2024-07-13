@@ -10,10 +10,13 @@ VAR_DEFAULT_PASSWORD = {
     'name': 'default_password',
     'value': '1234',
 }
-VAR_TIME_RECEPTION_OF_APPS = {
-    'title': 'Время приема заявок',
-    'name': 'time_reception_of_applications',
-    'time': datetime.now().time().replace(hour=16, minute=0, second=0, microsecond=0),
+VAR_TIME_RECEPTION_OF_TECHNICS = {
+    'title': 'Время приема заявок на технику',
+    'name': 'time_reception_of_technics',
+    # 'time': datetime.now().time().replace(hour=16, minute=0, second=0, microsecond=0),
+    'time': datetime.time(hour=16, minute=0),
+    'flag': True,
+}
     'flag': True,
 }
 
@@ -21,6 +24,6 @@ VAR_TIME_RECEPTION_OF_APPS = {
 VARIABLES_LIST = (
     # VAR_APPLICATION_SEND,
     VAR_DEFAULT_PASSWORD,
-    VAR_TIME_RECEPTION_OF_APPS,
+    VAR_TIME_RECEPTION_OF_TECHNICS,
 )
 

@@ -619,7 +619,7 @@ def change_reception_apps_mode_auto(workday: WorkDaySheet):
     """ Автоматическое переключение режима приема заявок"""
 
     var_time_recept_apps = PARAMETER_SERVICE.get_parameter(
-        name=VAR.VAR_TIME_RECEPTION_OF_APPS['name']
+        name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
     )
     if var_time_recept_apps:
         if var_time_recept_apps.date != workday.date or var_time_recept_apps.flag:
