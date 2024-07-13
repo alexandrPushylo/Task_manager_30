@@ -332,7 +332,7 @@ def prepare_data_for_filter(context: dict) -> dict:
     :param context:
     :return:
     """
-    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN).values(
+    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title).values(
         'id',
         'last_name',
         'first_name'
@@ -446,7 +446,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
     template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
     foreman_list = USERS_SERVICE.get_user_queryset(
         isArchive=False,
-        post__in=(ASSETS.FOREMAN, ASSETS.MASTER, ASSETS.SUPPLY)
+        post__in=(ASSETS.UserPosts.FOREMAN.title, ASSETS.UserPosts.MASTER.title, ASSETS.UserPosts.SUPPLY.title)
     ).values(
         'id',
         'last_name',
@@ -466,7 +466,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
             isArchive=False, date=current_day, status=ASSETS.SEND)
 
     for item in foreman_list:
-        if item['post'] == ASSETS.FOREMAN:
+        if item['post'] == ASSETS.UserPosts.FOREMAN.title:
             foreman_id = item['id']
         else:
             foreman_id = item['supervisor_user_id']
@@ -497,7 +497,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
 
 def send_application_by_telegram_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
     template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
-    administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.ADMINISTRATOR)
+    administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.UserPosts.ADMINISTRATOR.title)
 
     if current_day.is_all_application_send:
         msg = f"Заявки на:\n{template_date} отправлены повторно"

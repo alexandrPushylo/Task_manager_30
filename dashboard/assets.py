@@ -1,39 +1,26 @@
+from .types import Enum, TitleDescriptionType, UserPostType, ApplicationTodayType
+
 #   const---------------------------------------------------------------------------------------------------------------
-ADMINISTRATOR = 'administrator'
-FOREMAN = 'foreman'
-MASTER = 'master'
-DRIVER = 'driver'
-MECHANIC = 'mechanic'
-SUPPLY = 'supply'
-EMPLOYEE = 'employee'
+# ADMINISTRATOR = 'administrator'
+# FOREMAN = 'foreman'
+# MASTER = 'master'
+# DRIVER = 'driver'
+# MECHANIC = 'mechanic'
+# SUPPLY = 'supply'
+# EMPLOYEE = 'employee'
 
 # VAR_APPS_SEND = 'var_apps_send'
 # VAR_DEFAULT_PASSWORD = '1234'
 
-USER_POSTS_set = (ADMINISTRATOR, FOREMAN, MASTER, DRIVER, MECHANIC, SUPPLY, EMPLOYEE)
-USER_POSTS_dict = {
-    ADMINISTRATOR: 'Администратор',
-    FOREMAN: 'Прораб',
-    MASTER: 'Мастер',
-    DRIVER: 'Водитель',
-    MECHANIC: 'Механик',
-    SUPPLY: 'Снабжение',
-    EMPLOYEE: 'Работник'
-}
-
-ABSENT = 'absent'
-SAVED = 'saved'
-SUBMITTED = 'submitted'
-APPROVED = 'approved'
-SEND = 'send'
-
-APPLICATION_STATUS_set = (ABSENT, SAVED, SUBMITTED, APPROVED, SEND)
-APPLICATION_STATUS_dict = {
-    ABSENT: 'Отсутствует',
-    SAVED: 'Сохранена',
-    SUBMITTED: 'Подана',
-    APPROVED: 'Одобрена',
-    SEND: 'Отправлена'}
+UserPosts = UserPostType(
+    TitleDescriptionType('administrator', 'Администратор'),
+    TitleDescriptionType('foreman', 'Прораб'),
+    TitleDescriptionType('master', 'Мастер'),
+    TitleDescriptionType('driver', 'Водитель'),
+    TitleDescriptionType('mechanic', 'Механик'),
+    TitleDescriptionType('supply', 'Снабжение'),
+    TitleDescriptionType('employee', 'Работник')
+)
 
 SORT_BY = {'driver': 'Водителю', 'technic': 'Технике'}
 

@@ -1,7 +1,6 @@
 from dashboard.models import User
 import dashboard.assets as ASSETS
 from django.db.models import QuerySet
-from django.contrib.auth import login, logout, authenticate
 
 from logger import getLogger
 
@@ -9,31 +8,31 @@ log = getLogger(__name__)
 
 
 def is_administrator(user: User) -> bool:
-    return True if user.post == ASSETS.ADMINISTRATOR else False
+    return True if user.post == ASSETS.UserPosts.ADMINISTRATOR.title else False
 
 
 def is_foreman(user: User) -> bool:
-    return True if user.post == ASSETS.FOREMAN else False
+    return True if user.post == ASSETS.UserPosts.FOREMAN.title else False
 
 
 def is_master(user: User) -> bool:
-    return True if user.post == ASSETS.MASTER else False
+    return True if user.post == ASSETS.UserPosts.MASTER.title else False
 
 
 def is_driver(user: User) -> bool:
-    return True if user.post == ASSETS.DRIVER else False
+    return True if user.post == ASSETS.UserPosts.DRIVER.title else False
 
 
 def is_mechanic(user: User) -> bool:
-    return True if user.post == ASSETS.MECHANIC else False
+    return True if user.post == ASSETS.UserPosts.MECHANIC.title else False
 
 
 def is_supply(user: User) -> bool:
-    return True if user.post == ASSETS.SUPPLY else False
+    return True if user.post == ASSETS.UserPosts.SUPPLY.title else False
 
 
 def is_employee(user: User) -> bool:
-    return True if user.post == ASSETS.EMPLOYEE else False
+    return True if user.post == ASSETS.UserPosts.EMPLOYEE.title else False
 
 
 def get_foreman(user: User) -> User | None:

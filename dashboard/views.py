@@ -430,8 +430,8 @@ def logout_view(request):
 def register_view(request):
     context = {
         'user_posts': {
-            ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE],
-            ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER],
+            **ASSETS.UserPosts.EMPLOYEE.get_dict(),
+            **ASSETS.UserPosts.DRIVER.get_dict(),
         }
     }
 
@@ -563,9 +563,16 @@ def edit_technic_view(request):
         context = {'title': 'Добавить технику'}
 
         technic_id = request.GET.get('tech_id')
-        context['drivers'] = USERS_SERVICE.get_user_queryset(post=ASSETS.DRIVER)
-        context['supervisors'] = dict(
-            [(key, value) for key, value in ASSETS.USER_POSTS_dict.items() if key in (ASSETS.MECHANIC, ASSETS.SUPPLY)])
+        context['drivers'] = USERS_SERVICE.get_user_queryset(
+            isArchive=False,
+            post=ASSETS.UserPosts.DRIVER.title
+        )
+
+        context['supervisors'] = {
+            **ASSETS.UserPosts.SUPPLY.get_dict(),
+            **ASSETS.UserPosts.MECHANIC.get_dict()
+        }
+
         technic_type_list = set(Technic.objects.filter().values_list('type', flat=True))
         context['technic_type_list'] = sorted(technic_type_list)
 
@@ -624,14 +631,15 @@ def users_view(request):
         context = {
             'title': 'Все пользователи',
             'users_list': [],
-            'user_post': ASSETS.USER_POSTS_dict
+            'user_post': ASSETS.UserPosts.get_dict()
         }
         if USERS_SERVICE.is_administrator(request.user):
             users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',))
         elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',)).exclude(post=ASSETS.ADMINISTRATOR)
+            users_list = (USERS_SERVICE.get_user_queryset(order_by=('last_name',))
+                          .exclude(post=ASSETS.UserPosts.ADMINISTRATOR.title))
         elif USERS_SERVICE.is_mechanic(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.DRIVER, order_by=('last_name',))
+            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title, order_by=('last_name',))
         else:
             users_list = []
         context['users_list'] = users_list
@@ -643,13 +651,13 @@ def users_view(request):
 def edit_user_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Добавить пользователя',
-                   'posts': ASSETS.USER_POSTS_dict,
-                   'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN)
+                   'posts': ASSETS.UserPosts.get_dict(),
+                   'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title)
                    }
         if USERS_SERVICE.is_mechanic(request.user):
-            context['posts'] = {ASSETS.DRIVER: ASSETS.USER_POSTS_dict[ASSETS.DRIVER]}
+            context['posts'] = ASSETS.UserPosts.DRIVER.get_dict()
         if USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
-            context['posts'] = {ASSETS.EMPLOYEE: ASSETS.USER_POSTS_dict[ASSETS.EMPLOYEE]}
+            context['posts'] = ASSETS.UserPosts.EMPLOYEE.get_dict()
 
         user_id = request.GET.get('user_id')
         if U.is_valid_get_request(user_id):
@@ -739,7 +747,7 @@ def edit_construction_sites(request):
     if request.user.is_authenticated:
         context = {
             'title': 'Изменить объект',
-            'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.FOREMAN, order_by=('last_name',))
+            'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title, order_by=('last_name',))
         }
 
         if request.method == 'POST':

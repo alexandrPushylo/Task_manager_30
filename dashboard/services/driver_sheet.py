@@ -37,7 +37,7 @@ def prepare_driver_sheet(workday: WorkDaySheet):
     driver_sheets = DriverSheet.objects.filter(date=workday, isArchive=False)
     count_driver_sheets = driver_sheets.count()
 
-    drivers_list = User.objects.filter(isArchive=False, post=ASSETS.DRIVER)
+    drivers_list = User.objects.filter(isArchive=False, post=ASSETS.UserPosts.DRIVER.title)
     count_driver = drivers_list.count()
 
     if count_driver != count_driver_sheets:
