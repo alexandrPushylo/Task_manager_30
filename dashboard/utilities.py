@@ -624,7 +624,7 @@ def get_view_mode(_date: date) -> str:
     elif _date < TODAY:
         return ASSETS.ViewMode.ARCHIVE.value
     elif _date > TODAY:
-        return ASSETS.VIEW_MODE_FUTURE
+        return ASSETS.ViewMode.FUTURE.value
     else:
         return 'None'
 
@@ -659,7 +659,7 @@ def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: boo
         workday.is_only_read = False
         workday.save(update_fields=['is_only_read'])
     var_recept_apps = PARAMETER_SERVICE.get_parameter(
-        name=VAR.VAR_TIME_RECEPTION_OF_APPS['name']
+        name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
     )
     if var_recept_apps:
         var_recept_apps.flag = False
@@ -678,20 +678,20 @@ def is_valid_get_request(value: str) -> bool:
         return False
 
 
-def get_current_status_set_for_apps_today(current_user: User) -> set:
-    """
-    Получить статус set() для application_today на основании user.post
-    :param current_user: User
-    :return: {.., ...}
-    """
-    if USERS_SERVICE.is_administrator(current_user):
-        return ASSETS.APPLICATION_STATUS_set
-    elif (USERS_SERVICE.is_foreman(current_user) or
-          USERS_SERVICE.is_master(current_user) or
-          USERS_SERVICE.is_supply(current_user)):
-        return {ASSETS.ABSENT, ASSETS.SAVED}
-    else:
-        return set()
+# def get_current_status_set_for_apps_today(current_user: User) -> set:
+#     """
+#     Получить статус set() для application_today на основании user.post
+#     :param current_user: User
+#     :return: {.., ...}
+#     """
+#     if USERS_SERVICE.is_administrator(current_user):
+#         return ASSETS.APPLICATION_STATUS_set
+#     elif (USERS_SERVICE.is_foreman(current_user) or
+#           USERS_SERVICE.is_master(current_user) or
+#           USERS_SERVICE.is_supply(current_user)):
+#         return {ASSETS.ABSENT, ASSETS.SAVED}
+#     else:
+#         return set()
 
 
 def change_up_status_for_application_today(workday: WorkDaySheet, application_today_id=None,
