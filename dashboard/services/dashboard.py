@@ -287,7 +287,7 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
     )
     supply_technic_list = TECHNIC_SERVICE.get_technics_queryset(
         isArchive=False,
-        supervisor_technic=ASSETS.SUPPLY)
+        supervisor_technic=ASSETS.UserPosts.SUPPLY.title)
 
     applications_technic_for_supply = []
     _app_tech = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
@@ -377,7 +377,7 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
     if U.is_valid_get_request(request.GET.get('driver_id')):
         current_driver = USERS_SERVICE.get_user(
             pk=request.GET.get('driver_id'),
-            post=ASSETS.DRIVER
+            post=ASSETS.UserPosts.DRIVER.title
         )
     else:
         current_driver = request.user

@@ -12,6 +12,7 @@ from .types import Enum, TitleDescriptionType, UserPostType, ApplicationTodayTyp
 # VAR_APPS_SEND = 'var_apps_send'
 # VAR_DEFAULT_PASSWORD = '1234'
 
+
 UserPosts = UserPostType(
     TitleDescriptionType('administrator', 'Администратор'),
     TitleDescriptionType('foreman', 'Прораб'),
@@ -82,7 +83,7 @@ class ViewMode(Enum):
     ARCHIVE = 'view_mode_archive'
 
 
-COLORS = (
+COLORS = [
     '#15b03e',
     '#5a9e6c',
     '#85d633',
@@ -96,4 +97,4 @@ COLORS = (
     '#001dfa',
     '#9600fa',
     '#fa00ed',
-)
+]

@@ -385,7 +385,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)  # TODO: redirect to Home page
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         else:
             return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
