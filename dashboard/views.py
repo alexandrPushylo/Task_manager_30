@@ -385,7 +385,7 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)  # TODO: redirect to Home page
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         else:
             return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
@@ -993,7 +993,7 @@ def show_technic_application(request):
 
         if not USERS_SERVICE.is_administrator(request.user):
             application_technic_list = application_technic_list.filter(
-                application_today__status=ASSETS.ApplicationTodayStatus.SEND.title)
+                application_today__status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES)
 
         if request.user.filter_technic:
             application_technic_list = application_technic_list.filter(

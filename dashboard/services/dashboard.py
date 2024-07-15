@@ -220,7 +220,7 @@ def get_dashboard_for_mechanic(request, current_day: WorkDaySheet, context: dict
     application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         select_related=('application_today__construction_site__foreman',),
         application_today__date=current_day,
-        application_today__status=ASSETS.ApplicationTodayStatus.SEND.title,
+        application_today__status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
         isArchive=False,
         is_cancelled=False)
     applications_technic = []
@@ -287,7 +287,7 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
     )
     supply_technic_list = TECHNIC_SERVICE.get_technics_queryset(
         isArchive=False,
-        supervisor_technic=ASSETS.SUPPLY)
+        supervisor_technic=ASSETS.UserPosts.SUPPLY.title)
 
     applications_technic_for_supply = []
     _app_tech = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
@@ -319,7 +319,7 @@ def get_dashboard_for_employee(request, current_day: WorkDaySheet, context: dict
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=('status',),
         isArchive=False,
-        status=ASSETS.ApplicationTodayStatus.SEND.title,
+        status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
         date=current_day
     )
     construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
@@ -377,7 +377,7 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
     if U.is_valid_get_request(request.GET.get('driver_id')):
         current_driver = USERS_SERVICE.get_user(
             pk=request.GET.get('driver_id'),
-            post=ASSETS.DRIVER
+            post=ASSETS.UserPosts.DRIVER.title
         )
     else:
         current_driver = request.user
@@ -397,7 +397,7 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         isChecked=False,
         is_cancelled=False,
         application_today__date=current_day,
-        application_today__status=ASSETS.ApplicationTodayStatus.SEND.title
+        application_today__status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES
     )
 
     technic_application_list = []
