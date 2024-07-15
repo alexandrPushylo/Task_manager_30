@@ -29,6 +29,8 @@ ApplicationTodayStatus = ApplicationTodayType(
     TitleDescriptionType('approved', 'Одобрена'),
     TitleDescriptionType('send', 'Отправлена')
 )
+SHOW_APPLICATIONS_WITH_STATUSES = (ApplicationTodayStatus.APPROVED.title, ApplicationTodayStatus.SEND.title)
+
 
 # USER_POSTS_set = (ADMINISTRATOR, FOREMAN, MASTER, DRIVER, MECHANIC, SUPPLY, EMPLOYEE)
 # USER_POSTS_dict = {
