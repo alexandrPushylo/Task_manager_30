@@ -36,8 +36,25 @@ def get_technic_sheet_queryset(select_related: tuple = (),
     return technic_sheet
 
 
+def get_technic_sheet(**kwargs) -> TechnicSheet:
+    """
+    :param kwargs:
+    :return:
+    """
     try:
-        technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
+        technic_sheet = TechnicSheet.objects.get(**kwargs)
+        return technic_sheet
+    except TechnicSheet.DoesNotExist:
+        log.error('get_technic_sheet(): TechnicSheet.DoesNotExist')
+        return TechnicSheet.objects.none()
+    except TechnicSheet.MultipleObjectsReturned:
+        log.error('get_technic_sheet(): TechnicSheet.MultipleObjectsReturned')
+        return TechnicSheet.objects.none()
+    except ValueError:
+        log.error("get_technic_sheet() - ValueError ")
+        return TechnicSheet.objects.none()
+
+
 def change_status(technic_sheet_id):
     technic_sheet = get_technic_sheet(pk=technic_sheet_id)
     if technic_sheet:
