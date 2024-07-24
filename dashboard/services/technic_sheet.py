@@ -68,21 +68,15 @@ def change_status(technic_sheet_id):
 
 
 def change_driver(technic_sheet_id, driver_sheet_id):
-    try:
-        if not driver_sheet_id or driver_sheet_id == '':
-            driver_sheet = None
-        else:
-            driver_sheet = DriverSheet.objects.get(id=driver_sheet_id)
-        technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
-        technic_sheet.driver_sheet = driver_sheet
-        technic_sheet.save(update_fields=['driver_sheet'])
-        log.info(f"Для technic_sheet изменен водитель")
-    except TechnicSheet.DoesNotExist:
-        log.error(f"TechnicSheet с id {technic_sheet_id} не существует")
-    except DriverSheet.DoesNotExist:
-        log.error(f"Driver_sheet с id {driver_sheet_id} не существует")
-    except ValueError:
-        log.error("change_driver() - ValueError ")
+
+    if not driver_sheet_id or driver_sheet_id == '':
+        driver_sheet = None
+    else:
+        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet(id=driver_sheet_id)
+    technic_sheet = get_technic_sheet(id=technic_sheet_id)
+    technic_sheet.driver_sheet = driver_sheet
+    technic_sheet.save(update_fields=['driver_sheet'])
+    log.info(f"Для technic_sheet изменен водитель")
 
 
 def prepare_technic_sheets(workday: WorkDaySheet):
