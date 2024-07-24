@@ -11,6 +11,24 @@ TODAY = date.today()
 NOW = datetime.now().time()
 
 
+def get_workday_queryset(select_related: tuple = (),
+                         order_by: tuple = (),
+                         **kwargs) -> QuerySet[WorkDaySheet]:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+    workday = WorkDaySheet.objects.filter(**kwargs)
+    if select_related:
+        workday = workday.select_related(*select_related)
+    if order_by:
+        workday = workday.order_by(*order_by)
+    return workday
+
+
+
 def prepare_workday(_date: date) -> WorkDaySheet | None:
     if WorkDaySheet.objects.filter(date__gte=_date).count() < 14:
         for n in range(21):
