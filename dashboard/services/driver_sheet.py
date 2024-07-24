@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet
 import dashboard.assets as ASSETS
 import dashboard.utilities as U
@@ -25,6 +25,27 @@ def get_driver_sheet_queryset(select_related: tuple = (),
     if order_by:
         driver_sheet = driver_sheet.order_by(*order_by)
     return driver_sheet
+
+
+def get_driver_sheet(**kwargs) -> DriverSheet:
+    """
+    :param kwargs:
+    :return:
+    """
+    try:
+        driver_sheet = DriverSheet.objects.get(**kwargs)
+        return driver_sheet
+    except DriverSheet.DoesNotExist:
+        log.error('get_driver_sheet(): DriverSheet.DoesNotExist')
+        return DriverSheet.objects.none()
+    except DriverSheet.MultipleObjectsReturned:
+        log.error('get_driver_sheet(): DriverSheet.MultipleObjectsReturned')
+        return DriverSheet.objects.none()
+    except ValueError:
+        log.error("get_driver_sheet() - ValueError ")
+        return DriverSheet.objects.none()
+
+
 def change_status(driver_sheet_id):
     try:
         driver_sheet = DriverSheet.objects.get(id=driver_sheet_id)
