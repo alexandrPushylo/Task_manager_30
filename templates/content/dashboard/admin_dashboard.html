@@ -71,8 +71,8 @@
             {% include 'includes/btn_modal_option.html' %}
         </div>
 
-
-        <div id="applications_container" class="mt-3 position-relative translate-middle-x start-50">
+        <div>
+        <div id="applications_container" class="mt-3">
             {% for construction_site in construction_sites %}
                 <div class="application_items bg-transparent">
                     {#                {% if construction_site.application_today %}#}
@@ -261,8 +261,10 @@
             {% endfor %}
         </div>
 
-        {% if user.is_show_panel %}
-            <div id="spec_panel" class="container position-fixed translate-middle-y end-0 top-50 col-auto">
+{#        {% if user.is_show_panel %}#}
+            <div id="spec_panel" class="container position-fixed translate-middle-y end-0 top-50 rounded-1"
+                 {% if not user.is_show_panel %} style="display: none;"{% endif %}
+            >
                 <div class="overflow-auto" style="height: 100%;">
                     {% for w_ts in table_working_technic_sheet %}
                         <div class="m-0 p-0"
@@ -300,7 +302,8 @@
 
                     {% endfor %}</div>
             </div>
-        {% endif %}
+{#        {% endif %}#}
+        </div>
 
 
     </div>
@@ -325,7 +328,6 @@
                                class="btn btn-outline-secondary"
             {% else %}
                                class="btn btn-secondary"
-            {% endif %}
-    ><i class="fa-solid fa-eye-slash"></i></button></span>
+            {% endif %}><i class="fa-solid fa-list"></i></button></span>
 {% endblock %}
 

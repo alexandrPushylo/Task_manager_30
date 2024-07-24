@@ -17,20 +17,24 @@
         </div>
     </div>
 
-    <div id="main_content_box" class="container-fluid">
+{#    <div id="main_content_box" class="container-fluid">#}
 {#        <div id="main_left_nav" ></div>#}
-        <div id="main_content" class="overflow-auto">{% block content %}{% endblock %}</div>
+        <div id="main_content" 
+             class="mb-5"
+        >{% block content %}{% endblock %}</div>
 {#        <div id="main_right_nav" class="overflow-auto col-auto">{% block right_nav %}{% endblock %}</div>#}
-    </div>
+{#    </div>#}
     
-    <div id="main_footer" class="navbar position-sticky bottom-0">
+    <div id="main_footer" 
+         class="navbar translate-middle-x position-fixed bottom-0 start-50" 
+         style="border: solid 1px red;">
     {% block footer %}
 {#        <div></div>#}
 {#        <div></div>#}
 {#        <div></div>#}
         {% endblock %}
     </div>
-
+ 
 
 
 
