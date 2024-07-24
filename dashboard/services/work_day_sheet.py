@@ -1,5 +1,7 @@
 from datetime import date, timedelta, datetime
 
+from django.db.models import QuerySet  # type: ignore
+
 from dashboard.models import WorkDaySheet
 import dashboard.assets as ASSETS
 import dashboard.utilities as U
@@ -9,6 +11,39 @@ from logger import getLogger
 log = getLogger(__name__)
 TODAY = date.today()
 NOW = datetime.now().time()
+
+
+def get_workday(_date: date) -> WorkDaySheet:
+    """
+    :param _date:
+    :return:
+    """
+    try:
+        workday = WorkDaySheet.objects.get(date=_date)
+        return workday
+    except WorkDaySheet.DoesNotExist:
+        log.error(f"Workday: {_date} не существует")
+        prepare_workday(_date)
+        work_day = get_workday(_date)
+        return work_day
+
+
+def get_workday_queryset(select_related: tuple = (),
+                         order_by: tuple = (),
+                         **kwargs) -> QuerySet[WorkDaySheet]:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+    workday = WorkDaySheet.objects.filter(**kwargs)
+    if select_related:
+        workday = workday.select_related(*select_related)
+    if order_by:
+        workday = workday.order_by(*order_by)
+    return workday
+
 
 
 def prepare_workday(_date: date) -> WorkDaySheet | None:
@@ -71,21 +106,6 @@ def get_current_day(request) -> WorkDaySheet:
         return get_workday(U.TODAY)
     else:
         return get_workday(current_day)
-
-
-def get_workday(_date: date) -> WorkDaySheet:
-    """
-    :param _date:
-    :return:
-    """
-    try:
-        workday = WorkDaySheet.objects.get(date=_date)
-        return workday
-    except WorkDaySheet.DoesNotExist:
-        log.error(f"Workday: {_date} не существует")
-        prepare_workday(_date)
-        work_day = get_workday(_date)
-        return work_day
 
 
 def change_status(work_day_id):

@@ -1,7 +1,7 @@
 import random
 
 from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet, Technic
-from django.db.models import F, QuerySet
+from django.db.models import F, QuerySet  # type: ignore
 import dashboard.assets as ASSETS
 import dashboard.utilities as U
 import dashboard.services.user as USERS_SERVICE
@@ -15,12 +15,50 @@ import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
 from logger import getLogger
 
+
 log = getLogger(__name__)
 
 
-def change_status(technic_sheet_id):
+def get_technic_sheet_queryset(select_related: tuple = (),
+                               order_by: tuple = (),
+                               **kwargs) -> QuerySet[TechnicSheet]:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+
+    technic_sheet = TechnicSheet.objects.filter(**kwargs)
+    if select_related:
+        technic_sheet = technic_sheet.select_related(*select_related)
+    if order_by:
+        technic_sheet = technic_sheet.order_by(*order_by)
+    return technic_sheet
+
+
+def get_technic_sheet(**kwargs) -> TechnicSheet:
+    """
+    :param kwargs:
+    :return:
+    """
     try:
-        technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
+        technic_sheet = TechnicSheet.objects.get(**kwargs)
+        return technic_sheet
+    except TechnicSheet.DoesNotExist:
+        log.error('get_technic_sheet(): TechnicSheet.DoesNotExist')
+        return TechnicSheet.objects.none()
+    except TechnicSheet.MultipleObjectsReturned:
+        log.error('get_technic_sheet(): TechnicSheet.MultipleObjectsReturned')
+        return TechnicSheet.objects.none()
+    except ValueError:
+        log.error("get_technic_sheet() - ValueError ")
+        return TechnicSheet.objects.none()
+
+
+def change_status(technic_sheet_id):
+    technic_sheet = get_technic_sheet(pk=technic_sheet_id)
+    if technic_sheet:
         if technic_sheet.status:
             technic_sheet.status = False
             log.info(f"technic_sheet с id {technic_sheet_id} установлен статус False")
@@ -28,28 +66,18 @@ def change_status(technic_sheet_id):
             technic_sheet.status = True
             log.info(f"technic_sheet с id {technic_sheet_id} установлен статус True")
         technic_sheet.save(update_fields=['status'])
-    except TechnicSheet.DoesNotExist:
-        log.error(f"TechnicSheet с id {technic_sheet_id} не существует")
-    except ValueError:
-        log.error("change_status() - ValueError ")
 
 
 def change_driver(technic_sheet_id, driver_sheet_id):
-    try:
-        if not driver_sheet_id or driver_sheet_id == '':
-            driver_sheet = None
-        else:
-            driver_sheet = DriverSheet.objects.get(id=driver_sheet_id)
-        technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
-        technic_sheet.driver_sheet = driver_sheet
-        technic_sheet.save(update_fields=['driver_sheet'])
-        log.info(f"Для technic_sheet изменен водитель")
-    except TechnicSheet.DoesNotExist:
-        log.error(f"TechnicSheet с id {technic_sheet_id} не существует")
-    except DriverSheet.DoesNotExist:
-        log.error(f"Driver_sheet с id {driver_sheet_id} не существует")
-    except ValueError:
-        log.error("change_driver() - ValueError ")
+
+    if not driver_sheet_id or driver_sheet_id == '':
+        driver_sheet = None
+    else:
+        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet(id=driver_sheet_id)
+    technic_sheet = get_technic_sheet(id=technic_sheet_id)
+    technic_sheet.driver_sheet = driver_sheet
+    technic_sheet.save(update_fields=['driver_sheet'])
+    log.info(f"Для technic_sheet изменен водитель")
 
 
 def prepare_technic_sheets(workday: WorkDaySheet):
@@ -59,10 +87,11 @@ def prepare_technic_sheets(workday: WorkDaySheet):
     :param workday: WorkDaySheet
     :return:
     """
-    technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=workday)
+    # technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=workday)
+    technic_sheet_list = get_technic_sheet_queryset(isArchive=False, date=workday)
     count_technic_sheet = technic_sheet_list.count()
 
-    technics_list = Technic.objects.filter(isArchive=False).select_related('attached_driver')
+    technics_list = TECHNIC_SERVICE.get_technics_queryset(isArchive=False).select_related('attached_driver')
     count_technics = technics_list.count()
 
     autocomplete_driver_to_technic_sheet(workday=workday)
@@ -70,15 +99,14 @@ def prepare_technic_sheets(workday: WorkDaySheet):
     if count_technics != count_technic_sheet:
         log.info(f"TechnicSheet на {workday.date} не готов")
 
-        driver_sheet_list = DriverSheet.objects.filter(isArchive=False, date=workday, status=True)
+        driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(isArchive=False, date=workday, status=True)
 
-        last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
-        last_technic_sheet = TechnicSheet.objects.filter(date=last_workday, isArchive=False)
+        last_workday = WORK_DAY_SERVICE.get_workday_queryset(date__lt=workday.date, status=True).first()
+        last_technic_sheet = get_technic_sheet_queryset(date=last_workday, isArchive=False)
 
         if count_technics > count_technic_sheet:
             log.info(f"count_technics > count_technic_sheet {count_technics} > {count_technic_sheet}")
 
-            # if last_technic_sheet.exists():  # COPY
             if last_technic_sheet.count() == count_technics:  # COPY
                 log.info(f"last_technic_sheet.exists() is {last_technic_sheet.exists()} - Копирование")
 
@@ -126,7 +154,7 @@ def prepare_technic_sheets(workday: WorkDaySheet):
 
 
 def is_technic_sheet_exists(workday: WorkDaySheet) -> bool:
-    technic_sheet = TechnicSheet.objects.filter(date=workday, isArchive=False)
+    technic_sheet = get_technic_sheet_queryset(date=workday, isArchive=False)
     if technic_sheet.exists():
         return True
     else:
@@ -134,17 +162,19 @@ def is_technic_sheet_exists(workday: WorkDaySheet) -> bool:
 
 
 def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
-    empty_technic_sheet = TechnicSheet.objects.filter(
+    empty_technic_sheet = get_technic_sheet_queryset(
+        select_related=('driver_sheet', 'technic__attached_driver'),
         date=workday,
         isArchive=False,
         driver_sheet__isnull=True,
-        technic__attached_driver__isnull=False).select_related('driver_sheet', 'technic__attached_driver')
+        technic__attached_driver__isnull=False)
 
     if empty_technic_sheet.exists():
-        driver_sheet_list = DriverSheet.objects.filter(
+        driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
+            select_related=('driver',),
             isArchive=False,
             status=True,
-            date=workday).select_related('driver')
+            date=workday)
 
         for technic_sheet in empty_technic_sheet:
             driver_sheet = driver_sheet_list.filter(driver=technic_sheet.technic.attached_driver
@@ -153,42 +183,6 @@ def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
             if driver_sheet.count() == 1:
                 technic_sheet.driver_sheet = driver_sheet.first()
                 technic_sheet.save()
-
-
-def get_technic_sheet_queryset(select_related: tuple = (),
-                               order_by: tuple = (),
-                               **kwargs) -> QuerySet[TechnicSheet]:
-    """
-    :param select_related:
-    :param order_by:
-    :param kwargs:
-    :return:
-    """
-
-    technic_sheet = TechnicSheet.objects.filter(**kwargs)
-
-    if select_related:
-        technic_sheet = technic_sheet.select_related(*select_related)
-    if order_by:
-        technic_sheet = technic_sheet.order_by(*order_by)
-
-    return technic_sheet
-
-
-def get_technic_sheet(**kwargs) -> TechnicSheet | None:
-    """
-    :param kwargs:
-    :return:
-    """
-    try:
-        technic_sheet = TechnicSheet.objects.get(**kwargs)
-        return technic_sheet
-    except TechnicSheet.DoesNotExist:
-        log.error('get_technic_sheet(): TechnicSheet.DoesNotExist')
-        return None
-    except TechnicSheet.MultipleObjectsReturned:
-        log.error('get_technic_sheet(): TechnicSheet.MultipleObjectsReturned')
-        return None
 
 
 def decrement_technic_sheet_list(technic_sheet_id_list):
@@ -229,7 +223,7 @@ def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
     return technic_sheet
 
 
-def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list:
+def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list[dict]:
     """
     Получить список незанятых (get_only_free=True)
     или любых (get_only_free=False) данных technic_sheet для technic_title
@@ -249,9 +243,10 @@ def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_
             data_technic_sheet_list = [_item for _item in workload_dict if
                                        _item['technic__title'] == technic_title]
         return data_technic_sheet_list
+    return []
 
 
-def get_least_busy_technic_sheet(free_technic_sheet_list: list) -> dict:
+def get_least_busy_technic_sheet(free_technic_sheet_list: list[dict]) -> dict:
     """
     Получить наименее занятого dict(technic_sheet)
     :param free_technic_sheet_list:
@@ -263,6 +258,8 @@ def get_least_busy_technic_sheet(free_technic_sheet_list: list) -> dict:
     if free_technic_sheet_list:
         least_busy_technic_sheet = sorted(free_technic_sheet_list, key=lambda item: item['count_application'])[0]
         return least_busy_technic_sheet
+    log.error("get_least_busy_technic_sheet(): free_technic_sheet_list is empty")
+    return {}
 
 
 def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet:

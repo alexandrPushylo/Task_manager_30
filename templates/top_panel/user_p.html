@@ -137,95 +137,20 @@
             <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
         </ul>
     {% elif user.post == 'employee' %}
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'profile' %}?user_id={{ user.id }}">
+            <span class="ms-2 small fw-bolder text-decoration-underline"
+            >{% if user.last_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                {{ user.username }}{% endif %}</span></a></li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}">Заявки</a>
+            </li>
+            <li>
+                <hr class="m-0">
+            </li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
+        </ul>
     {% endif %}
 </div>
-
-{#        {% if post == 'admin' %}#}
-{#            <li class="btn-group w-100">#}
-{#                <a class="dropdown-item" href="/edit_staff/{{ user.id }}">Профиль</a>#}
-{#                <a class="btn" href="{% url 'settings_page' %}"><i class="fas fa-cogs"></i></a>#}
-{#            </li>#}
-{#            <li><a class="dropdown-item small m-0" href="{% url 'list_backup' %}">Резервные копии</a></li>#}
-{#            <hr>#}
-{#            <ul class="small m-0">#}
-{#                База данных#}
-{#            </ul>#}
-{#                <li class="btn-group ms-1">#}
-{#                    <a class="btn dropdown-item border border-2" href="{% url 'add_technic' %}"><i class="fa-solid fa-plus small"></i> <i class="fa-solid fa-truck"></i></a>#}
-{#                    <a class="dropdown-item fw-bolder" href="{% url 'technic_list' %}">Техника</a></li>#}
-{#                <li class="btn-group ms-1">#}
-{#                    <a class="btn dropdown-item border border-2" href="/signup/"><i class="fa-solid fa-plus small"></i> <i class="fa-solid fa-person"></i></a>#}
-{#                    <a class="dropdown-item fw-bolder" href="{% url 'show_staff' %}">Персонал</a></li>#}
-{#            <hr>#}
-{#            <ul class="small">Табели#}
-{#                <li><a class="dropdown-item fw-bolder" href="{% url 'tabel_workday' 'currweek' %}">Табель (Рабочие дни)</a></li>#}
-{#                <li><a class="dropdown-item fw-bolder" href="{% url 'tabel_driver' cw_day %}">Табель (Водители)</a></li>#}
-{#                <li><a class="dropdown-item fw-bolder" href="{% url 'technic_driver' cw_day %}">Табель (Техника)</a></li>#}
-{#            </ul>#}
-
-
-{#            <hr>#}
-{#            <li><a class="dropdown-item fw-bolder" href="{% url 'construction_sites' %}">Объекты</a></li>#}
-{#            <li><a class="dropdown-item fw-bolder" href="{% url 'driver_app_list' cw_day %}">Водители</a></li>#}
-{#            <li><a class="dropdown-item fw-bolder" href="{% url 'foreman_app_list' cw_day %}">Статус заявок</a></li>#}
-
-
-{#        {% elif post == 'foreman' or post == 'master' %}#}
-{#            <li class="btn-group w-100">#}
-{#                <a class="dropdown-item" href="/edit_staff/{{ user.id }}">Профиль</a>#}
-{#                <a class="btn" href="{% url 'settings_page' %}"><i class="fas fa-cogs"></i></a>#}
-{#            </li>#}
-{#            <hr>#}
-{#            <li><a class="dropdown-item fw-bolder" href="{% url 'construction_sites' %}">Объекты</a></li>#}
-{##}
-{#        {% elif post == 'mechanic' %}#}
-{#            <li class="btn-group w-100">#}
-{#                <a class="dropdown-item" href="/edit_staff/{{ user.id }}">Профиль</a>#}
-{#                <a class="btn" href="{% url 'settings_page' %}"><i class="fas fa-cogs"></i></a>#}
-{#            </li>#}
-{#            <hr>#}
-{#            <ul class="small m-0">#}
-{#                База данных#}
-{#            </ul>#}
-{#                <li class="btn-group ms-1">#}
-{#                    <a class="btn dropdown-item border border-2" href="{% url 'add_technic' %}"><i class="fa-solid fa-plus small"></i> <i class="fa-solid fa-truck"></i></a>#}
-{#                    <a class="dropdown-item fw-bolder" href="{% url 'technic_list' %}">Техника</a></li>#}
-{#                <li class="btn-group ms-1">#}
-{#                    <a class="btn dropdown-item border border-2" href="/signup/"><i class="fa-solid fa-plus small"></i> <i class="fa-solid fa-person"></i></a>#}
-{#                    <a class="dropdown-item fw-bolder" href="{% url 'show_staff' %}">Персонал</a></li>#}
-{#            <hr>#}
-{#            <ul class="small">Табели#}
-{#                <li><a class="dropdown-item fw-bolder" href="{% url 'tabel_workday' 'currweek' %}">Табель (Рабочие дни)</a></li>#}
-{#                <li><a class="dropdown-item fw-bolder" href="{% url 'tabel_driver' nw_day %}">Табель (Водители)</a></li>#}
-{#                <li><a class="dropdown-item fw-bolder" href="{% url 'technic_driver' nw_day %}">Табель (Техника)</a></li>#}
-{#            </ul>#}
-{##}
-{##}
-{#        {% elif post == 'employee_supply' %}#}
-{#            <li class="btn-group w-100">#}
-{#                <a class="dropdown-item" href="/edit_staff/{{ user.id }}">Профиль</a>#}
-{#                <a class="btn" href="{% url 'settings_page' %}"><i class="fas fa-cogs"></i></a>#}
-{#            </li>#}
-{##}
-{##}
-{#        {% elif post == 'driver' %}#}
-{#            <li class="btn-group w-100">#}
-{#                <a class="dropdown-item" href="/edit_staff/{{ user.id }}">Профиль</a>#}
-{#                <a class="btn" href="{% url 'settings_page' %}"><i class="fas fa-cogs"></i></a>#}
-{#            </li>#}
-{#        {% else %}#}
-{#            <li class="btn-group w-100">#}
-{#                <a class="dropdown-item" href="/edit_staff/{{ user.id }}">Профиль</a>#}
-{#                <a class="btn" href="{% url 'settings_page' %}"><i class="fas fa-cogs"></i></a>#}
-{#            </li>#}
-{##}
-{#        {% endif %}#}
-
-{#        <hr>#}
-{#        {% if user.username == 'admin' %}#}
-{#            <li><a class="dropdown-item" href="#">...</a></li>#}
-{#            <li><a class="dropdown-item" href="{% url 'archive' %}">RUN 1</a></li>#}
-{#        <hr>#}
-{#        {% endif %}#}
-
-   

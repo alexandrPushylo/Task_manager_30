@@ -47,7 +47,7 @@ def get_apps_technic_queryset(select_related: tuple = (),
     return apps_technic
 
 
-def reject_or_accept_apps_technic(app_tech_id) -> str:
+def reject_or_accept_apps_technic(app_tech_id) -> str | None:
     """
     Отвергнуть заявку
     :param app_tech_id:
@@ -69,5 +69,5 @@ def reject_or_accept_apps_technic(app_tech_id) -> str:
             apps_technic.technic_sheet.decrement_count_application()
             apps_technic.save()
             return 'reject'
-
+    return None
 

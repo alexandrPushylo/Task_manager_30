@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet
 import dashboard.assets as ASSETS
 import dashboard.utilities as U
@@ -7,6 +7,43 @@ import dashboard.utilities as U
 from logger import getLogger
 
 log = getLogger(__name__)
+
+
+def get_driver_sheet_queryset(select_related: tuple = (),
+                              order_by: tuple = (),
+                              **kwargs) -> QuerySet[DriverSheet]:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+
+    driver_sheet = DriverSheet.objects.filter(**kwargs)
+    if select_related:
+        driver_sheet = driver_sheet.select_related(*select_related)
+    if order_by:
+        driver_sheet = driver_sheet.order_by(*order_by)
+    return driver_sheet
+
+
+def get_driver_sheet(**kwargs) -> DriverSheet:
+    """
+    :param kwargs:
+    :return:
+    """
+    try:
+        driver_sheet = DriverSheet.objects.get(**kwargs)
+        return driver_sheet
+    except DriverSheet.DoesNotExist:
+        log.error('get_driver_sheet(): DriverSheet.DoesNotExist')
+        return DriverSheet.objects.none()
+    except DriverSheet.MultipleObjectsReturned:
+        log.error('get_driver_sheet(): DriverSheet.MultipleObjectsReturned')
+        return DriverSheet.objects.none()
+    except ValueError:
+        log.error("get_driver_sheet() - ValueError ")
+        return DriverSheet.objects.none()
 
 
 def change_status(driver_sheet_id):
@@ -92,21 +129,4 @@ def is_driver_sheet_exists(workday: WorkDaySheet) -> bool:
         return False
 
 
-def get_driver_sheet_queryset(select_related: tuple = (),
-                              order_by: tuple = (),
-                              **kwargs) -> QuerySet[DriverSheet]:
-    """
-    :param select_related:
-    :param order_by:
-    :param kwargs:
-    :return:
-    """
 
-    driver_sheet = DriverSheet.objects.filter(**kwargs)
-
-    if select_related:
-        driver_sheet = driver_sheet.select_related(*select_related)
-    if order_by:
-        driver_sheet = driver_sheet.order_by(*order_by)
-
-    return driver_sheet

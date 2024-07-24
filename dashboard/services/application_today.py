@@ -1,17 +1,11 @@
-from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet
-from django.db.models import QuerySet
-import dashboard.assets as ASSETS
-from ..types import ApplicationTodayType, TitleDescriptionType
-import dashboard.services.user as USERS_SERVICE
-import dashboard.services.technic as TECHNIC_SERVICE
-import dashboard.services.construction_site as CONSTR_SITE_SERVICE
-import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
-import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
-import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
-import dashboard.services.dashboard as DASHBOARD_SERVICE
-import dashboard.services.application_technic as APP_TECHNIC_SERVICE
-import dashboard.services.application_material as APP_MATERIAL_SERVICE
+from django.db.models import QuerySet  # type: ignore
 
+import dashboard.assets as ASSETS
+import dashboard.services.application_material as APP_MATERIAL_SERVICE
+import dashboard.services.application_technic as APP_TECHNIC_SERVICE
+import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
+import dashboard.services.user as USERS_SERVICE
+from dashboard.models import User, ApplicationToday
 from logger import getLogger
 
 log = getLogger(__name__)
@@ -23,8 +17,10 @@ def get_apps_today(**kwargs) -> ApplicationToday:
         return application_today
     except ApplicationToday.DoesNotExist:
         log.warning("get_apps_today(): ApplicationToday.DoesNotExist")
+        return ApplicationToday.objects.none()
     except ValueError:
         log.error("get_apps_today(): ValueError")
+        return ApplicationToday.objects.none()
 
 
 def create_app_today(**kwargs) -> ApplicationToday:
@@ -38,6 +34,7 @@ def create_app_today(**kwargs) -> ApplicationToday:
         return application_today
     except ValueError:
         log.error("get_or_create_app_today(): ValueError")
+        return ApplicationToday.objects.none()
 
 
 def get_apps_today_queryset(select_related: tuple = (),
@@ -79,7 +76,7 @@ def delete_application_today(application_today: ApplicationToday):
     application_today.delete()
 
 
-def validate_application_today(application_today: ApplicationToday, default_status: str = None) -> bool:
+def validate_application_today(application_today: ApplicationToday, default_status: str | None = None) -> bool:
     """
     Проверка application_today: ApplicationToday
     :param application_today: application_today: ApplicationToday
@@ -98,18 +95,4 @@ def validate_application_today(application_today: ApplicationToday, default_stat
     else:
         application_today.delete()
         return False
-
-
-# def set_status_for_application_today(application_today: ApplicationToday, status: str):
-#     """
-#     Установить статус для application_today
-#     :param application_today:
-#     :param status:
-#     :return:
-#     """
-#     if status in ASSETS.APPLICATION_STATUS_set:
-#         application_today.status = status
-#         application_today.save(update_fields=['status'])
-
-
 

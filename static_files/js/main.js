@@ -591,7 +591,10 @@ function toggleHidePanel(e) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             operation: 'toggle_panel'
         },
-        success: (d) => {window.location.reload()}
+        // success: (d) => {window.location.reload()}
+        success: (d) => {
+            $('#spec_panel').toggle()
+        }
     })
 }
 

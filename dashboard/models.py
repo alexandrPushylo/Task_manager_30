@@ -201,7 +201,7 @@ class ApplicationTechnic(models.Model):
 class ApplicationMaterial(models.Model):
     application_today = models.OneToOneField(ApplicationToday, on_delete=models.CASCADE,
                                              verbose_name="Заявка на объект")
-    description = models.TextField(max_length=2048, verbose_name="Описание")
+    description = models.TextField(max_length=4096, verbose_name="Описание")
     isChecked = models.BooleanField(default=False, verbose_name='Проверенна?')
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
     is_cancelled = models.BooleanField(default=False, verbose_name='Отменена?')

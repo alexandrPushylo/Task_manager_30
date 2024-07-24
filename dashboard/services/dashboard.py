@@ -62,8 +62,7 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         construction_site__in=construction_sites
     )
 
-    status_list_application_today = U.get_status_lists_of_apps_today(
-        workday=current_day, applications_today=applications_today)
+    status_list_application_today = U.get_status_lists_of_apps_today(applications_today=applications_today)
     context['status_list_application_today'] = status_list_application_today
 
     if request.user.is_show_technic_app:
@@ -158,8 +157,7 @@ def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: Wor
         construction_site__in=construction_sites
     )
 
-    status_list_application_today = U.get_status_lists_of_apps_today(
-        workday=current_day, applications_today=applications_today)
+    status_list_application_today = U.get_status_lists_of_apps_today(applications_today=applications_today)
     context['status_list_application_today'] = status_list_application_today
 
     if request.user.is_show_technic_app:
@@ -247,8 +245,7 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
         construction_site=construction_site,
         isArchive=False)
 
-    status_list_application_today = U.get_status_lists_of_apps_today(
-        workday=current_day, applications_today=application_today)
+    status_list_application_today = U.get_status_lists_of_apps_today(applications_today=application_today)
     context['status_list_application_today'] = status_list_application_today
 
     if request.method == 'POST':

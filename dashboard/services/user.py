@@ -1,6 +1,8 @@
 from dashboard.models import User
+from django.core.handlers.wsgi import WSGIRequest
+
 import dashboard.assets as ASSETS
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 
 from logger import getLogger
 
@@ -56,8 +58,10 @@ def get_user(**kwargs) -> User:
         return user
     except User.DoesNotExist:
         log.warning("get_user(): User.DoesNotExist ")
+        return User.objects.none()
     except ValueError:
         log.error("get_user(): ValueError")
+        return User.objects.none()
 
 
 def get_user_queryset(select_related: tuple = (),
@@ -72,7 +76,7 @@ def get_user_queryset(select_related: tuple = (),
     return user
 
 
-def edit_user(user_id, data: dict) -> User | None:
+def edit_user(user_id, data: dict) -> User:
     user = get_user(pk=user_id)
     if user:
         user.username = data['username']
@@ -87,7 +91,7 @@ def edit_user(user_id, data: dict) -> User | None:
         log.info(f"Пользователь {data['last_name']} {data['first_name']} был изменен")
         return user
     else:
-        return None
+        return User.objects.none()
 
 
 def create_new_user(data: dict) -> User | None:
@@ -106,14 +110,14 @@ def create_new_user(data: dict) -> User | None:
     return user
 
 
-def check_user_data(user_data: dict) -> dict | None:
+def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
     log.info('Проверка user_data')
     username = user_data.get('username')
     first_name = str(user_data.get('first_name')).strip().capitalize()
     last_name = str(user_data.get('last_name')).strip().capitalize()
     telephone = user_data.get('telephone')
     password = user_data.get('password')
-    post = user_data.get('post') if user_data.get('post') is not None else ASSETS.EMPLOYEE
+    post = user_data.get('post') if user_data.get('post') is not None else ASSETS.UserPosts.EMPLOYEE.title
     supervisor_user_id = int(user_data.get('supervisor_id')) if user_data.get('supervisor_id') is not None else None
 
     if all((username, first_name, last_name, password)):
@@ -132,7 +136,7 @@ def check_user_data(user_data: dict) -> dict | None:
         return None
 
 
-def add_or_edit_user(data, user_id=None):
+def add_or_edit_user(data: WSGIRequest.POST, user_id=None):
     prepare_data = check_user_data(data)
     if user_id:
         if prepare_data:
@@ -146,13 +150,14 @@ def add_or_edit_user(data, user_id=None):
             log.error('Ошибка с данными "user_data" при создании пользователя')
 
 
-def delete_user(user_id):
+def delete_user(user_id) -> User:
     user = get_user(pk=user_id)
     if user:
         user.isArchive = True
         user.save(update_fields=['isArchive'])
         log.info(f'Пользователь: ({user.last_name} {user.first_name}) был помещен в архив')
         return user
+    return User.objects.none()
 
 
 
