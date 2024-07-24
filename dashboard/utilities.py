@@ -592,24 +592,21 @@ def copy_application_to_target_day(id_application_today,
 
 def set_spec_task(technic_sheet_id):
     construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value)
-    try:
-        technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
-        current_day = technic_sheet.date
-        application_today, _ = ApplicationToday.objects.get_or_create(
-            construction_site=construction_site,
-            date=current_day,
-            status=ASSETS.ApplicationTodayStatus.SUBMITTED.title)
 
-        application_technic, at_created = ApplicationTechnic.objects.get_or_create(
-            application_today=application_today,
-            technic_sheet=technic_sheet)
-        if at_created:
-            technic_sheet.increment_count_application()
-        application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
-        application_technic.save()
+    technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
+    current_day = technic_sheet.date
+    application_today, _ = ApplicationToday.objects.get_or_create(
+        construction_site=construction_site,
+        date=current_day,
+        status=ASSETS.ApplicationTodayStatus.SUBMITTED.title)
 
-    except TechnicSheet.DoesNotExist:
-        print('SET_SPEC_TASK ERROR')
+    application_technic, at_created = ApplicationTechnic.objects.get_or_create(
+        application_today=application_today,
+        technic_sheet=technic_sheet)
+    if at_created:
+        technic_sheet.increment_count_application()
+    application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
+    application_technic.save()
 
 
 def get_view_mode(_date: date) -> str:
