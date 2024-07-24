@@ -21,6 +21,9 @@ log = getLogger(__name__)
 def change_status(technic_sheet_id):
     try:
         technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
+def change_status(technic_sheet_id):
+    technic_sheet = get_technic_sheet(pk=technic_sheet_id)
+    if technic_sheet:
         if technic_sheet.status:
             technic_sheet.status = False
             log.info(f"technic_sheet с id {technic_sheet_id} установлен статус False")
@@ -28,10 +31,6 @@ def change_status(technic_sheet_id):
             technic_sheet.status = True
             log.info(f"technic_sheet с id {technic_sheet_id} установлен статус True")
         technic_sheet.save(update_fields=['status'])
-    except TechnicSheet.DoesNotExist:
-        log.error(f"TechnicSheet с id {technic_sheet_id} не существует")
-    except ValueError:
-        log.error("change_status() - ValueError ")
 
 
 def change_driver(technic_sheet_id, driver_sheet_id):
