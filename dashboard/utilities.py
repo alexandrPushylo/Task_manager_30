@@ -716,18 +716,19 @@ def change_up_status_for_application_today(workday: WorkDaySheet, application_to
         return application_today_list.first().status
 
 
-def get_status_lists_of_apps_today(workday: WorkDaySheet, applications_today: QuerySet[ApplicationToday]) -> dict:
+def get_status_lists_of_apps_today(applications_today: QuerySet[ApplicationToday]) -> dict:
     """
     Получить сгруппированный по статусам dict с id объектами ApplicationToday
     :param applications_today:
-    :param workday: WorkDaySheet
     :return: {absent: [], saved: [], submitted: [], approved: [], send: []}
     """
-    status_lists = {ASSETS.ApplicationTodayStatus.ABSENT.title: [],
-                    ASSETS.ApplicationTodayStatus.SAVED.title: [],
-                    ASSETS.ApplicationTodayStatus.SUBMITTED.title: [],
-                    ASSETS.ApplicationTodayStatus.APPROVED.title: [],
-                    ASSETS.ApplicationTodayStatus.SEND.title: []}
+    status_lists: dict[str, list] = {
+        ASSETS.ApplicationTodayStatus.ABSENT.title: [],
+        ASSETS.ApplicationTodayStatus.SAVED.title: [],
+        ASSETS.ApplicationTodayStatus.SUBMITTED.title: [],
+        ASSETS.ApplicationTodayStatus.APPROVED.title: [],
+        ASSETS.ApplicationTodayStatus.SEND.title: []
+    }
 
     apps_today = applications_today.values('id', 'status')
     for app in apps_today:
