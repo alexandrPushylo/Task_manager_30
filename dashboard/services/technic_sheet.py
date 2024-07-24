@@ -18,7 +18,24 @@ from logger import getLogger
 log = getLogger(__name__)
 
 
-def change_status(technic_sheet_id):
+def get_technic_sheet_queryset(select_related: tuple = (),
+                               order_by: tuple = (),
+                               **kwargs) -> QuerySet[TechnicSheet]:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+
+    technic_sheet = TechnicSheet.objects.filter(**kwargs)
+    if select_related:
+        technic_sheet = technic_sheet.select_related(*select_related)
+    if order_by:
+        technic_sheet = technic_sheet.order_by(*order_by)
+    return technic_sheet
+
+
     try:
         technic_sheet = TechnicSheet.objects.get(id=technic_sheet_id)
 def change_status(technic_sheet_id):
