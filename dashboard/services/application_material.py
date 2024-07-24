@@ -1,5 +1,5 @@
 from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet, ApplicationMaterial
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 import dashboard.assets as ASSETS
 
 from logger import getLogger
@@ -13,6 +13,7 @@ def get_app_material(**kwargs) -> ApplicationMaterial:
         return application_material
     except ApplicationMaterial.DoesNotExist:
         log.error("get_app_material(): ApplicationMaterial.DoesNotExist")
+        return ApplicationMaterial.objects.none()
 
 
 def create_app_material(**kwargs) -> ApplicationMaterial:
@@ -21,6 +22,7 @@ def create_app_material(**kwargs) -> ApplicationMaterial:
         return application_material
     except ValueError:
         log.error("create_app_material(): ValueError")
+        return ApplicationMaterial.objects.none()
 
 
 def get_apps_material_queryset(select_related: tuple = (),

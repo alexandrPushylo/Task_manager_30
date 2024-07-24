@@ -38,8 +38,6 @@ TODAY = date.today()
 NOW = datetime.now().time()
 
 
-
-
 def convert_str_to_date(str_date: str) -> date:
     """конвертация str в datetime.date"""
     try:
@@ -199,8 +197,8 @@ def set_color_for_list(some_list: list) -> dict:
     return out
 
 
-def sorting_application_status(item1, item2):#TODO: !!!!!
-    if item1 == item2 and item1 in ASSETS.ApplicationTodayStatus.get_set():#!!!!!!
+def sorting_application_status(item1, item2):  # TODO: !!!!!
+    if item1 == item2 and item1 in ASSETS.ApplicationTodayStatus.get_set():  # !!!!!!
         return 0
     if item1 in (None, ASSETS.ABSENT, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED) and item2 in (ASSETS.SEND,):
         return -1
@@ -227,7 +225,8 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
 
         if application_technic.is_cancelled:
             application_technic.is_cancelled = False
-            application_technic.description = application_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
+            application_technic.description = application_technic.description.replace(
+                ASSETS.MessagesAssets.reject.value, "")
             application_technic.technic_sheet.increment_count_application()
             application_technic.technic_sheet.save()
             application_technic.save()
@@ -547,8 +546,8 @@ def send_application_by_telegram_for_all(current_day: WorkDaySheet, messages=Non
 
 
 def copy_application_to_target_day(id_application_today,
-                                   _target_day,
-                                   default_status=ASSETS.ApplicationTodayStatus.SAVED.title):
+                                   _target_day: date,
+                                   default_status: str = ASSETS.ApplicationTodayStatus.SAVED.title):
     """
     Копирование заявки ApplicationToday(id=id_application_today) на _target_day
     :param id_application_today:
@@ -730,7 +729,6 @@ def get_status_lists_of_apps_today(workday: WorkDaySheet, applications_today: Qu
                     ASSETS.ApplicationTodayStatus.APPROVED.title: [],
                     ASSETS.ApplicationTodayStatus.SEND.title: []}
 
-    # apps_today = APP_TODAY_SERVICE.get_apps_today_queryset(date=workday, isArchive=False).values('id', 'status')
     apps_today = applications_today.values('id', 'status')
     for app in apps_today:
         if app['status'] == ASSETS.ApplicationTodayStatus.ABSENT.title:
@@ -779,7 +777,7 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C1")
 
-    elif TODAY.weekday() in (4, ) and current_workday.date.weekday() in (0, ) and NOW < time_limit:
+    elif TODAY.weekday() in (4,) and current_workday.date.weekday() in (0,) and NOW < time_limit:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C2")
 

@@ -1,6 +1,10 @@
+from django.core.handlers.wsgi import WSGIRequest  # type: ignore
+
+from dashboard.types import Any
+
 from dashboard.models import Technic, User, WorkDaySheet, TechnicSheet
 import dashboard.assets as ASSETS
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 import dashboard.services.user as USERS_SERVICE
 import dashboard.services.construction_site as CONSTR_SITE_SERVICE
 import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
@@ -43,7 +47,7 @@ def edit_technic(technic_id, data: dict):
 
 
 def check_technic_data(data: dict) -> dict | None:
-    out = {}
+    out: dict[str, Any] = {}
     log.info('Проверка technic_data')
     title = data.get('title')
     tech_type = data.get('type')
@@ -78,7 +82,7 @@ def check_technic_data(data: dict) -> dict | None:
         return None
 
 
-def add_or_edit_technic(data, technic_id=None):
+def add_or_edit_technic(data: WSGIRequest.POST, technic_id=None):
     prepare_data = check_technic_data(data)
     if technic_id:
         if prepare_data:
@@ -128,11 +132,13 @@ def get_technic(**kwargs) -> Technic:
         return technic
     except Technic.DoesNotExist:
         log.error("get_technic(): Technic.DoesNotExist ")
+        return Technic.objects.none()
     except ValueError:
         log.error("get_technic(): ValueError")
+        return Technic.objects.none()
 
 
-def get_supply_technic_list() -> Technic.objects:
+def get_supply_technic_list() -> QuerySet[Technic]:
     """
     Получить список техники для supply
     :return: Technic.objects.filter()
@@ -141,14 +147,8 @@ def get_supply_technic_list() -> Technic.objects:
     return technic_list
 
 
-def get_dict_short_technic_names(technic_sheets: TechnicSheet.objects) -> dict:
+def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]) -> dict:
     technic_titles_list = technic_sheets.values_list('technic__title', flat=True).distinct()
     technic_titles_dict = {str(title).replace(' ', '').replace('.', ''): title
                            for title in technic_titles_list}
     return technic_titles_dict
-
-
-
-
-
-

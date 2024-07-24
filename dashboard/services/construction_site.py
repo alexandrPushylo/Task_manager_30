@@ -1,6 +1,6 @@
-from dashboard.models import ConstructionSite
+from dashboard.models import ConstructionSite, User
 from dashboard.services.user import get_user
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 
 from logger import getLogger
 
@@ -13,8 +13,10 @@ def get_construction_sites(**kwargs) -> ConstructionSite:
         return construction_sites
     except ConstructionSite.DoesNotExist:
         log.error('get_construction_sites(): DoesNotExist')
+        return ConstructionSite.objects.none()
     except ValueError:
         log.error('get_construction_sites(): ValueError')
+        return ConstructionSite.objects.none()
 
 
 def get_construction_site_queryset(select_related: tuple = (),
@@ -32,7 +34,6 @@ def get_construction_site_queryset(select_related: tuple = (),
         constr_sites = constr_sites.select_related(*select_related)
     if order_by:
         constr_sites = constr_sites.order_by(*order_by)
-
     return constr_sites
 
 
@@ -48,7 +49,7 @@ def hide_construction_site(constr_site_id):
         constr_site.save(update_fields=['status'])
 
 
-def delete_construction_site(constr_site_id) -> ConstructionSite:
+def delete_construction_site(constr_site_id) -> ConstructionSite | None:
     constr_site = get_construction_sites(pk=constr_site_id)
     if constr_site:
         if constr_site.isArchive:
@@ -59,10 +60,12 @@ def delete_construction_site(constr_site_id) -> ConstructionSite:
             log.info(f'Объект {constr_site.address} был помешен в архив')
         constr_site.save(update_fields=['isArchive'])
         return constr_site
+    return None
 
 
-def check_data(data: dict):
-    out = {}
+def check_data(data: dict) -> dict | None:
+    out: dict[str, User | None] = {}
+
     cs_address = data.get('address')
     cs_foreman = data.get('foreman')
 

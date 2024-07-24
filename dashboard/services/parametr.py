@@ -1,6 +1,8 @@
+from django.core.handlers.wsgi import WSGIRequest
+
 from dashboard.models import Parameter
 import dashboard.assets as ASSETS
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # type: ignore
 
 from logger import getLogger
 
@@ -13,6 +15,7 @@ def get_parameter(**kwargs) -> Parameter:
         return parameter
     except Parameter.DoesNotExist:
         log.error(f'get_parameter(): DoesNotExist')
+        return Parameter.objects.none()
 
 
 def get_parameter_queryset(select_related: tuple = (),
@@ -57,7 +60,7 @@ def create_global_parameters(global_parameters: list[dict]):
                 )
 
 
-def set_parameters(request_data: dict):
+def set_parameters(request_data: WSGIRequest.POST):
     if request_data:
         parameter_name_list = request_data.getlist('parameters_name')
         for parameter_name in parameter_name_list:
