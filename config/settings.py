@@ -27,7 +27,7 @@ DEBUG = creds.DEBUG
 TECH_SUPPORT_MODE = creds.TECH_SUPPORT_MODE
 
 ALLOWED_HOSTS = creds.ALLOWED_HOSTS
-INTERNAL_IPS = ['127.0.0.1', '10.0.0.3', 'localhost']
+INTERNAL_IPS = ALLOWED_HOSTS  # ['127.0.0.1', '10.0.0.3', 'localhost']
 
 # Application definition
 
@@ -78,12 +78,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': creds.DATABASES['default']['ENGINE'],
-        'NAME': BASE_DIR / creds.DATABASES['default']['NAME'],
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': creds.DATABASES['default']['ENGINE'],
+#         'NAME': BASE_DIR / creds.DATABASES['default']['NAME'],
+#     }
+# }
+
+DATABASES = creds.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -125,7 +127,7 @@ STATIC_ROOT = BASE_DIR / 'static'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-SESSION_COOKIE_AGE = 86400 * 31     # 86400 sec = 1 day
+SESSION_COOKIE_AGE = 86400 * 31  # 86400 sec = 1 day
 SESSION_SAVE_EVERY_REQUEST = True
 
 AUTH_USER_MODEL = 'dashboard.User'
