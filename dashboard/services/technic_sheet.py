@@ -162,6 +162,11 @@ def is_technic_sheet_exists(workday: WorkDaySheet) -> bool:
 
 
 def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
+    """
+    Авто подстановка закрепленного водителя
+    :param workday:
+    :return:
+    """
     empty_technic_sheet = get_technic_sheet_queryset(
         select_related=('driver_sheet', 'technic__attached_driver'),
         date=workday,
@@ -177,10 +182,13 @@ def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
             date=workday)
 
         for technic_sheet in empty_technic_sheet:
-            driver_sheet = driver_sheet_list.filter(driver=technic_sheet.technic.attached_driver
-                                                    )
-
-            if driver_sheet.count() == 1:
+            _technic_sheet = get_technic_sheet_queryset(
+                select_related=('driver_sheet__driver', 'technic__attached_driver'),
+                date=workday,
+                driver_sheet__driver=technic_sheet.technic.attached_driver
+            )
+            driver_sheet = driver_sheet_list.filter(driver=technic_sheet.technic.attached_driver)
+            if _technic_sheet.count() == 0:
                 technic_sheet.driver_sheet = driver_sheet.first()
                 technic_sheet.save()
 
