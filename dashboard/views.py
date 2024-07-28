@@ -918,13 +918,9 @@ def conflict_resolution_view(request):
                         update_list.append(application_technic)
                     ApplicationTechnic.objects.bulk_update(update_list, ['technic_sheet', 'priority', 'description'])
 
-                technic_driver_list = []
-                for title_short, title in technic_titles_dict.items():
-                    technic_driver_list.append({
-                        'title_short': title_short,
-                        'title': title,
-                        'technic_sheets': technic_sheets.filter(technic__title=title)
-                    })
+                technic_driver_list = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+                    technic_titles=technic_titles_dict,
+                    technic_sheets=technic_sheets)
                 context['technic_driver_list'] = technic_driver_list
 
                 priority_id_list = U.get_priority_id_list(technic_sheets)
