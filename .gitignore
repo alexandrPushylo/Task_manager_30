@@ -338,3 +338,4 @@ fabric.properties
 *.sqlite3
 .idea
 /static
+/tmp
