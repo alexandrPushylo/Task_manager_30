@@ -692,25 +692,30 @@ def delete_user_view(request):
 
 def construction_site_view(request):
     if request.user.is_authenticated:
-        context = {'title': 'Строительные объекты'}
+        context = {
+            'title': 'Строительные объекты'}
 
+        construction_site_list = None
         if USERS_SERVICE.is_administrator(request.user):
-            context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
                 isArchive=False
             )
 
         if USERS_SERVICE.is_foreman(request.user):
-            context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
                 isArchive=False,
                 foreman=request.user)
 
         if USERS_SERVICE.is_master(request.user):
-            context['construction_sites'] = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
                 isArchive=False,
                 foreman_id=request.user.supervisor_user_id)
+
+        context['active_construction_sites'] = construction_site_list.filter(status=True)
+        context['hidden_construction_sites'] = construction_site_list.filter(status=False)
 
         hide_constr_site_id = request.GET.get('hide')
         if U.is_valid_get_request(hide_constr_site_id):
@@ -918,13 +923,9 @@ def conflict_resolution_view(request):
                         update_list.append(application_technic)
                     ApplicationTechnic.objects.bulk_update(update_list, ['technic_sheet', 'priority', 'description'])
 
-                technic_driver_list = []
-                for title_short, title in technic_titles_dict.items():
-                    technic_driver_list.append({
-                        'title_short': title_short,
-                        'title': title,
-                        'technic_sheets': technic_sheets.filter(technic__title=title)
-                    })
+                technic_driver_list = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+                    technic_titles=technic_titles_dict,
+                    technic_sheets=technic_sheets)
                 context['technic_driver_list'] = technic_driver_list
 
                 priority_id_list = U.get_priority_id_list(technic_sheets)
