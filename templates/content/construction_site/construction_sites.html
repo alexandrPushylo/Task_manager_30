@@ -6,7 +6,8 @@
     <div id="construction_site" class="container-fluid position-relative translate-middle-x start-50">
         <div><h3><u>{{ title }}</u></h3></div>
         <div class="row align-items-center" id="construction_site_container">
-            {% for construction_site in construction_sites %}
+            
+            {% for construction_site in active_construction_sites %}
                 <div class="construction_site_items" style="width: 20rem">
                     <div class="card m-2 shadow-lg construction_site_card">
                         <div class="card-body p-1">
@@ -36,13 +37,48 @@
                                    {% endif %}</a>
                             </span>
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
             {% endfor %}
+        </div>
+    <hr>
+    <div class="row align-items-center" id="construction_site_container">
+        {% for construction_site in hidden_construction_sites %}
+                <div class="construction_site_items" style="width: 20rem">
+                    <div class="card m-2 shadow-lg construction_site_card">
+                        <div class="card-body p-1">
+                            <div class="card-header p-1">
+                                <span class="fw-bolder">{{ construction_site.address }}</span>
+                                <hr class="m-0"/>
+                                {% if construction_site.foreman %}
+                                    <span class="form-text small">Прораб:</span>
+                                    <span>{{ construction_site.foreman.last_name }}</span>
+                                    <span>{{ construction_site.foreman.first_name }}</span>
+                                {% endif %}
+                            </div>
+
+                            <hr class="m-0"
+                                style="border-width: medium; border-color: {% if construction_site.status %}green{% else %}red{% endif %}"/>
+                            <div class="navbar m-1">
+                                <span><a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
+                                         class="btn btn-sm btn-outline-danger" aria-current="page">Удалить</a></span>
+                                <span><a href="{% url 'edit_construction_sites' %}?id={{ construction_site.id }}"
+                                         class="btn btn-sm btn-outline-primary" aria-current="page">Изменить</a></span>
+                                <span>
+                                <a href="{% url 'construction_site' %}?hide={{ construction_site.id }}"
+                                   {% if construction_site.status %}class="btn btn-sm btn-outline-danger"
+                                   aria-current="page"> Скрыть
+                                   {% else %}class="btn btn-sm btn-outline-success" aria-current="page">
+                                       Отобразить
+                                   {% endif %}</a>
+                            </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        
         </div>
 
     </div>
