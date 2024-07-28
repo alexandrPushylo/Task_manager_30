@@ -597,8 +597,7 @@ def set_spec_task(technic_sheet_id):
     current_day = technic_sheet.date
     application_today, _ = ApplicationToday.objects.get_or_create(
         construction_site=construction_site,
-        date=current_day,
-        status=ASSETS.ApplicationTodayStatus.SUBMITTED.title)
+        date=current_day)
 
     application_technic, at_created = ApplicationTechnic.objects.get_or_create(
         application_today=application_today,
@@ -607,6 +606,8 @@ def set_spec_task(technic_sheet_id):
         technic_sheet.increment_count_application()
     application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
     application_technic.save()
+    application_today.status = ASSETS.ApplicationTodayStatus.SUBMITTED.title
+    application_today.save(update_fields=['status'])
 
 
 def get_view_mode(_date: date) -> str:
