@@ -1,5 +1,5 @@
 from datetime import date, timedelta, datetime
-
+from django.core.exceptions import ValidationError
 from django.db.models import QuerySet  # type: ignore
 
 from dashboard.models import WorkDaySheet
@@ -26,6 +26,9 @@ def get_workday(_date: date) -> WorkDaySheet:
         prepare_workday(_date)
         work_day = get_workday(_date)
         return work_day
+    except ValidationError:
+        log.error("Значение имеет неверный формат даты")
+        return get_workday(TODAY)
 
 
 def get_workday_queryset(select_related: tuple = (),
