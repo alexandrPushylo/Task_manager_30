@@ -50,7 +50,7 @@
                             {% if technic.supervisor_technic == supervisor %}
                                 <option selected="selected"
                                         value="{{ supervisor }}">{{ title }}</option>
-                            {% elif not technic.supervisor_technic and supervisor == mechanic %}
+                            {% elif not technic and supervisor == mechanic %}
                                 <option selected="selected"
                                         value="{{ supervisor }}">{{ title }}</option>
                             {% else %}

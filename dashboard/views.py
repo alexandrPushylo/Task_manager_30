@@ -569,8 +569,8 @@ def edit_technic_view(request):
         )
 
         context['supervisors'] = {
-            **ASSETS.UserPosts.SUPPLY.get_dict(),
-            **ASSETS.UserPosts.MECHANIC.get_dict()
+            **ASSETS.UserPosts.MECHANIC.get_dict(),
+            **ASSETS.UserPosts.SUPPLY.get_dict()
         }
 
         technic_type_list = set(Technic.objects.filter().values_list('type', flat=True))
