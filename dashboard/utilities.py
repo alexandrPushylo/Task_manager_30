@@ -591,6 +591,11 @@ def copy_application_to_target_day(id_application_today,
 
 
 def set_spec_task(technic_sheet_id):
+    """
+    Отправить technic_sheet в спец. объект и назначить спец. задание по умолчанию
+    :param technic_sheet_id:
+    :return:
+    """
     construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value)
 
     technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=technic_sheet_id)
