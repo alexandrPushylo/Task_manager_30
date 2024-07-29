@@ -133,13 +133,13 @@
                                     {% if construction_site.application_today.application_technic %}
                                         <div class="ms-1 mt-1">
                                             {% for app_technic in construction_site.application_today.application_technic %}
-                                                <div
+                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}
-                                                            {#                                                            class="text-decoration-line-through"#}
                                                             style="color: rgba(97,95,95,0.51)"
                                                         {% elif app_technic.technic_sheet_id in priority_id_list %}
-                                                            class="text-primary fw-bold"
+                                                            class="text-primary fw-bold"                                                        
                                                         {% endif %}
+                                                    
                                                 >
                                                     <span {% if app_technic.is_cancelled %}
                                                         class="ms-1"
@@ -149,8 +149,8 @@
                                                     {% elif app_technic.technic_sheet_id in conflict_technic_sheet and not app_technic.isChecked %}
                                                         class="ms-1 text-danger fw-bold"
                                                     {% endif %}
-
                                                     >{{ app_technic.technic_sheet__technic__title }}</span>
+                                                
                                                     {% if app_technic.technic_sheet__driver_sheet__status %}
                                                         <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
                                                            style="text-decoration: none; color: inherit;">
@@ -172,7 +172,7 @@
 
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
-                                                <textarea readonly
+                                                <textarea readonly style="font-size: 10pt"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}
                                                           style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
@@ -193,12 +193,14 @@
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
                                                 <textarea readonly aria-label=""
+                                                          style="font-size: 10pt"
                                                           class="form-control border border-1 border-success material_description">{{ construction_site.application_today.application_material.description }}</textarea>
 
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
                                                 <textarea readonly aria-label=""
+                                                          style="font-size: 10pt"
                                                           class="form-control border border-1 border-danger material_description">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
                                             <hr class="p-0 m-0">

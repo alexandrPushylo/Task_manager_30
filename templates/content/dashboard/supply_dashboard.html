@@ -107,8 +107,8 @@
                                 {% if applications_technic %}
                                     <div class="ms-1 mt-1">
                                         {% for app_technic in applications_technic %}
-                                            <div    {% if app_technic.is_cancelled %}
-                                                {#                                                class="text-decoration-line-through"#}
+                                            <div class="mt-2" style="background-color: #e7eefa; text-align: center;"   
+                                                    {% if app_technic.is_cancelled %}
                                                 style="color: rgba(97,95,95,0.51)"
                                             {% endif %}
                                             >
@@ -119,7 +119,7 @@
                                                     </span>
                                                 {% if app_technic.description %}
                                                     <label class="m-0 p-0 row">
-                                                <textarea readonly
+                                                <textarea readonly style="font-size: 10pt"
                                                         {% if app_technic.is_cancelled %}
                                                           style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
@@ -136,7 +136,7 @@
                                         {% if applications_material.isChecked %}
                                             <span class="small fw-bold">Список материалов:</span>
                                             <span style="font-size: small; color: green;">Подтверждено</span>
-                                            <textarea readonly aria-label=""
+                                            <textarea readonly aria-label="" style="font-size: 10pt"
                                                       class="form-control border border-1 border-success material_description">{{ applications_material.description }}</textarea>
 
                                         {% else %}
@@ -222,7 +222,7 @@
                                             </div>
 
                                             <div class="">
-                                        <textarea
+                                        <textarea style="font-size: 10pt"
                                                 class="form-control {% if app_tech.isChecked %} border border-2 border-success{% elif app_tech.is_cancelled %} border border-2 border-danger {% endif %}"
                                                 readonly {% if app_tech.is_cancelled or app_tech.isChecked %}
                                                 disabled{% endif %}

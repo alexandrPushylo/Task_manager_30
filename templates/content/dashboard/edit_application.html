@@ -113,7 +113,7 @@
                                         <div class="row ">
                                             <label>
                                             <textarea id="app_tech_description_{{ app_technic.id }}"
-                                                      style="width: 100%"
+                                                      style="width: 100%; font-size: 10pt"
                                                       class="form-control app_tech_description app_technic_description_{{ app_technic.id }}"
                                                       {% if app_technic.is_cancelled %}disabled{% endif %}
                                                       oninput="onInput_tech_description(this); autoResize(this);"
@@ -156,7 +156,7 @@
                     <div class="card shadow-lg">
                         <label>
                             <span class="fw-bolder ms-2">Список материалов:</span>
-                            <textarea readonly
+                            <textarea readonly style="font-size: 10pt"
                                       class="form-control autoresize material_description"
                                       oninput="autoResize(this)"
                             >{{ application_today.application_material.description }}</textarea>

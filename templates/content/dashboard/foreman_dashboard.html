@@ -115,7 +115,7 @@
                                     {% if construction_site.application_today.application_technic %}
                                         <div class="ms-1 mt-1">
                                             {% for app_technic in construction_site.application_today.application_technic %}
-                                                <div
+                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
                                                         {% if app_technic.is_cancelled %}                                                            
                                                             style="color: rgba(97,95,95,0.51)"
                                                         {% elif app_technic.isChecked %}
@@ -137,7 +137,7 @@
 
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
-                                                <textarea readonly
+                                                <textarea readonly style="font-size: 10pt"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}
                                                           style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
@@ -158,12 +158,14 @@
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
                                                 <textarea readonly aria-label="material_description"
+                                                          style="font-size: 10pt"
                                                           class="form-control border border-1 border-success material_description">{{ construction_site.application_today.application_material.description }}</textarea>
 
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
                                                 <textarea readonly aria-label="material_description"
+                                                          style="font-size: 10pt"
                                                           class="form-control border border-1 border-danger material_description">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
 
