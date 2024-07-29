@@ -591,9 +591,14 @@ function toggleHidePanel(e) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             operation: 'toggle_panel'
         },
-        // success: (d) => {window.location.reload()}
         success: (d) => {
-            $('#spec_panel').toggle()
+            $('#spec_panel').toggle();
+            const app_container = $('#applications_container')
+            if (app_container.attr('class').includes('mx-auto')){
+                app_container.removeClass('mx-auto');
+            }else {
+                app_container.addClass('mx-auto');
+            }
         }
     })
 }
