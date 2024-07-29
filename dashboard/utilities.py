@@ -640,8 +640,8 @@ def change_reception_apps_mode_auto(workday: WorkDaySheet):
     if var_time_recept_apps:
         if var_time_recept_apps.date != workday.date or var_time_recept_apps.flag:
             var_time_recept_apps.date = workday.date
-            var_time_recept_apps.flag = True
-            var_time_recept_apps.save()
+            # var_time_recept_apps.flag = True
+            # var_time_recept_apps.save()
             if var_time_recept_apps.time < datetime.now().time():
                 workday.is_only_read = True
                 workday.save()
