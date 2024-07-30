@@ -31,7 +31,7 @@
                             <textarea
                                     onblur="saveApplicationDescription(this);"
                                     oninput="autoResize(this)"
-                                    class="form-control app_tech_description"
+                                    class="form-control app_tech_description general_application_description_font"
                                     name="application_description">{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
                         </label>
                     </div>
@@ -113,8 +113,8 @@
                                         <div class="row ">
                                             <label>
                                             <textarea id="app_tech_description_{{ app_technic.id }}"
-                                                      style="width: 100%; font-size: 10pt"
-                                                      class="form-control app_tech_description app_technic_description_{{ app_technic.id }}"
+                                                      style="width: 100%;"
+                                                      class="form-control app_tech_description app_technic_description_{{ app_technic.id }} general_tech_description_font"
                                                       {% if app_technic.is_cancelled %}disabled{% endif %}
                                                       oninput="onInput_tech_description(this); autoResize(this);"
                                             >{{ app_technic.description }}</textarea>
@@ -156,8 +156,8 @@
                     <div class="card shadow-lg">
                         <label>
                             <span class="fw-bolder ms-2">Список материалов:</span>
-                            <textarea readonly style="font-size: 10pt"
-                                      class="form-control autoresize material_description"
+                            <textarea readonly
+                                      class="form-control autoresize material_description general_mat_description_font"
                                       oninput="autoResize(this)"
                             >{{ application_today.application_material.description }}</textarea>
                         </label>
