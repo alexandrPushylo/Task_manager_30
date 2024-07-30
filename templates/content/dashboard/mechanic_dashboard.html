@@ -38,7 +38,7 @@
     {% include 'includes/btn_add_driver_and_technic.html' %}
 
     <div id="mechanic_dashboard" class="translate-middle-x position-relative start-50">
-        <div id="technic_sheet_list">
+        <div id="technic_sheet_list" class="container mx-auto">
             {% for technic_sheet in technic_sheet_list %}
                 <div class="technic_sheet_item card m-3"
                      style="width: 18rem">
@@ -79,8 +79,7 @@
                                             <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
                                         {% endif %}
 
-                                        <textarea class="form-control p-1 text_area_description"
-                                                  style="font-size: 10pt"
+                                        <textarea class="form-control p-1 text_area_description general_tech_description_font"
                                                   aria-label="With textarea"
                                         >{{ app_tech.description }}</textarea>
                                     </div>

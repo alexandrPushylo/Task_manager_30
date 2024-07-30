@@ -228,3 +228,11 @@
     width: 18rem;
 }
 
+.general_application_description_font{
+}
+.general_tech_description_font{
+    font-size: 10pt;
+}
+.general_mat_description_font{
+    font-size: 10pt;
+}

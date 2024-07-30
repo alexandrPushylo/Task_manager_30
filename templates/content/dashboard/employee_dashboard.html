@@ -86,7 +86,7 @@
                                     {% if construction_site.application_today.application_technic %}
                                         <div class="ms-1 mt-1">
                                             {% for app_technic in construction_site.application_today.application_technic %}
-                                                <div>
+                                                <div style="background-color: #e7eefa; text-align: center;">
                                                     <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
                                                     {% if app_technic.technic_sheet__driver_sheet__status %}
                                                         <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
@@ -101,7 +101,7 @@
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
                                                 <textarea readonly
-                                                          class="form-control app_tech_description">{{ app_technic.description }}</textarea>
+                                                          class="form-control app_tech_description general_tech_description_font">{{ app_technic.description }}</textarea>
                                                         </label>
                                                     {% endif %}
                                                 </div>
@@ -117,12 +117,12 @@
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
                                                 <textarea readonly aria-label=""
-                                                          class="form-control border border-1 border-success material_description">{{ construction_site.application_today.application_material.description }}</textarea>
+                                                          class="form-control border border-1 border-success material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
                                                 <textarea readonly aria-label=""
-                                                          class="form-control border border-1 border-danger material_description">{{ construction_site.application_today.application_material.description }}</textarea>
+                                                          class="form-control border border-1 border-danger material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
                                             <hr class="p-0 m-0">
                                         </div>

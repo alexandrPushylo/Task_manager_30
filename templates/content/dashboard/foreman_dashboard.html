@@ -104,7 +104,7 @@
                                         <label class="w-100"><p class="fw-bolder small m-0" style="text-align: center;">
                                             Примечание к объекту:</p>
                                             <textarea readonly
-                                                      class="form-control border border-0 app_tech_description">{{ construction_site.application_today.description }}
+                                                      class="form-control border border-0 app_tech_description general_application_description_font">{{ construction_site.application_today.description }}
                                     </textarea>
                                         </label>
                                     </div>
@@ -137,11 +137,11 @@
 
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
-                                                <textarea readonly style="font-size: 10pt"
+                                                <textarea readonly class="form-control app_tech_description general_tech_description_font"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}
                                                           style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
-                                                          class="form-control app_tech_description">{{ app_technic.description }}</textarea>
+                                                          >{{ app_technic.description }}</textarea>
                                                         </label>
                                                     {% endif %}
                                                 </div>
@@ -158,15 +158,13 @@
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
                                                 <textarea readonly aria-label="material_description"
-                                                          style="font-size: 10pt"
-                                                          class="form-control border border-1 border-success material_description">{{ construction_site.application_today.application_material.description }}</textarea>
+                                                          class="form-control border border-1 border-success material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
 
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
                                                 <textarea readonly aria-label="material_description"
-                                                          style="font-size: 10pt"
-                                                          class="form-control border border-1 border-danger material_description">{{ construction_site.application_today.application_material.description }}</textarea>
+                                                          class="form-control border border-1 border-danger material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
 
                                             {#                                            {% endfor %}#}

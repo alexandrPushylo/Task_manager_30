@@ -201,7 +201,8 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
     """
     if technic_sheet_id_list:
         technic_sheet = get_technic_sheet_queryset(pk__in=technic_sheet_id_list)
-        technic_sheet.update(count_application=F('count_application') - 1)
+        for tech_sheet in technic_sheet:
+            tech_sheet.decrement_count_application()
 
 
 def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
