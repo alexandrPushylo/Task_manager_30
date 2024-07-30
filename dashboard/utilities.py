@@ -238,26 +238,26 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
             _new_app_tech, created = ApplicationTechnic.objects.get_or_create(
                 technic_sheet=application_technic.technic_sheet,
                 application_today=application_today,
-                id_orig_app=application_technic.id)
+                # id_orig_app=application_technic.id
+            )
             _new_app_tech.description = _new_app_tech.description + str_desc if _new_app_tech.description else str_desc
             _new_app_tech.save()
 
             application_technic.isChecked = True
+            application_technic.id_orig_app = _new_app_tech.id
             application_technic.save()
+            
         elif application_technic.isChecked:
-            application_technic.isChecked = False
-            application_technic.save()
-
-            _old_at = APP_TECHNIC_SERVICE.get_app_technic(
-                application_today=application_today,
-                isArchive=False,
-                technic_sheet=application_technic.technic_sheet,
-                id_orig_app=application_technic.id
+            _supply_at = APP_TECHNIC_SERVICE.get_app_technic(
+                pk=application_technic.id_orig_app
             )
-            _old_at.description = _old_at.description.replace(str_desc, '')
-            _old_at.save()
-            if not _old_at.description:
-                _old_at.delete()
+            _supply_at.description = _supply_at.description.replace(str_desc, '')
+            _supply_at.save()
+            if not _supply_at.description:
+                _supply_at.delete()
+            application_technic.isChecked = False
+            application_technic.id_orig_app = None
+            application_technic.save()
 
 
 def get_table_working_technic_sheet(current_day: WorkDaySheet):
