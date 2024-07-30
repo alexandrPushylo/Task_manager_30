@@ -246,7 +246,7 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
             application_technic.isChecked = True
             application_technic.id_orig_app = _new_app_tech.id
             application_technic.save()
-            
+
         elif application_technic.isChecked:
             _supply_at = APP_TECHNIC_SERVICE.get_app_technic(
                 pk=application_technic.id_orig_app
