@@ -648,7 +648,6 @@ function setSpecTask(e, technicSheetId) {
 }
 
 function changeReadOnlyMode(readOnly) {
-    console.log('dfs')
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
