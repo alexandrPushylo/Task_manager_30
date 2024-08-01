@@ -108,8 +108,8 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
     context['weekday'] = get_weekday(current_workday.date)
     context['VIEW_MODE'] = get_view_mode(current_workday.date)
-
-    change_reception_apps_mode_auto(workday=current_workday)
+    context['ACCEPT_MODE'] = get_accept_mode(workday=current_workday)
+    # change_reception_apps_mode_auto(workday=current_workday)
     return context
 
 

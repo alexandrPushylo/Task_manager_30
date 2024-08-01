@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title_p %}
     {% if VIEW_MODE != 'view_mode_archive' %}
-        {% if status_list_application_today.saved and not ONLY_READ %}
+        {% if status_list_application_today.saved and not ACCEPT_MODE %}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
                    role="button" class="btn btn-warning">Подать все заявки</a>
@@ -192,7 +192,7 @@
                                                class="btn btn-outline-primary" aria-current="page"><i
                                                     class="fa-regular fa-pen-to-square"></i></a>
 
-                                            {% if construction_site.application_today.status == 'saved' and not ONLY_READ %}
+                                            {% if construction_site.application_today.status == 'saved' and not ACCEPT_MODE %}
                                                 <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
                                                    class="btn btn-outline-primary ps-4 pe-4"
                                                    aria-current="page"><i class="fa-solid fa-check"></i></a>
@@ -206,7 +206,7 @@
 
                                     </div>
 
-                                    {% if ONLY_READ %}
+                                    {% if ACCEPT_MODE %}
                                         <div style="text-align: center">
                                             <span>Подача заявок на технику ограничена
                                                 {% if ONLY_READ_time %}

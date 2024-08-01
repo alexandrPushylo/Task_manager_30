@@ -48,7 +48,7 @@ def dashboard_view(request):
     context = {
         'title': request.user,
         'current_day': current_day,
-        'ONLY_READ': current_day.is_only_read
+        # 'ONLY_READ': current_day.is_only_read
         # 'APPLICATION_STATUS': ASSETS.APPLICATION_STATUS_dict
     }
     context = U.get_prepared_data(context, current_day)
