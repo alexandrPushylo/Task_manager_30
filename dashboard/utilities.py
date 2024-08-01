@@ -631,23 +631,28 @@ def get_view_mode(_date: date) -> str:
         return 'None'
 
 
-def change_reception_apps_mode_auto(workday: WorkDaySheet):
-    """ Автоматическое переключение режима приема заявок"""
+def get_accept_mode(workday: WorkDaySheet) -> bool:
+    """
+    Получить режим accept mode
+    True - заявки принимаются
+    False - заявки не принимаются
+    :param workday:
+    :return:
+    """
 
     var_time_recept_apps = PARAMETER_SERVICE.get_parameter(
         name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
     )
     if var_time_recept_apps:
-        if var_time_recept_apps.date != workday.date or var_time_recept_apps.flag:
-            var_time_recept_apps.date = workday.date
-            # var_time_recept_apps.flag = True
-            # var_time_recept_apps.save()
+        if workday.accept_mode == ASSETS.AcceptMode.AUTO.value:
             if var_time_recept_apps.time < datetime.now().time():
-                workday.is_only_read = True
-                workday.save()
+                return True
             else:
-                workday.is_only_read = False
-                workday.save()
+                return False
+        elif workday.accept_mode == ASSETS.AcceptMode.MANUAL.value:
+            return True
+        elif workday.accept_mode == ASSETS.AcceptMode.OFF.value:
+            return False
 
 
 def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: bool):
