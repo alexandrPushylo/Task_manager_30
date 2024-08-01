@@ -655,22 +655,33 @@ def get_accept_mode(workday: WorkDaySheet) -> bool:
             return False
 
 
-def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: bool):
+def set_accept_mode(current_day: WorkDaySheet, mode: ASSETS.AcceptMode):
     """
-    Ручное переключение режима приема заявок
+    Установить режим accept mode
+    :param current_day:
+    :param mode:
+    :return:
     """
-    if is_recept_apps:
-        workday.is_only_read = True
-        workday.save(update_fields=['is_only_read'])
-    else:
-        workday.is_only_read = False
-        workday.save(update_fields=['is_only_read'])
-    var_recept_apps = PARAMETER_SERVICE.get_parameter(
-        name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
-    )
-    if var_recept_apps:
-        var_recept_apps.flag = False
-        var_recept_apps.save(update_fields=['flag'])
+    current_day.accept_mode = mode.value
+    current_day.save(update_fields=['accept_mode'])
+
+
+# def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: bool):
+#     """
+#     Ручное переключение режима приема заявок
+#     """
+#     if is_recept_apps:
+#         workday.is_only_read = True
+#         workday.save(update_fields=['is_only_read'])
+#     else:
+#         workday.is_only_read = False
+#         workday.save(update_fields=['is_only_read'])
+#     var_recept_apps = PARAMETER_SERVICE.get_parameter(
+#         name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
+#     )
+#     if var_recept_apps:
+#         var_recept_apps.flag = False
+#         var_recept_apps.save(update_fields=['flag'])
 
 
 def is_valid_get_request(value: str) -> bool:
