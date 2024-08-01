@@ -109,7 +109,6 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['weekday'] = get_weekday(current_workday.date)
     context['VIEW_MODE'] = get_view_mode(current_workday.date)
     context['ACCEPT_MODE'] = get_accept_mode(workday=current_workday)
-    # change_reception_apps_mode_auto(workday=current_workday)
     return context
 
 
@@ -666,24 +665,6 @@ def set_accept_mode(current_day: WorkDaySheet, mode: ASSETS.AcceptMode):
     current_day.save(update_fields=['accept_mode'])
 
 
-# def change_reception_apps_mode_manual(workday: WorkDaySheet, is_recept_apps: bool):
-#     """
-#     Ручное переключение режима приема заявок
-#     """
-#     if is_recept_apps:
-#         workday.is_only_read = True
-#         workday.save(update_fields=['is_only_read'])
-#     else:
-#         workday.is_only_read = False
-#         workday.save(update_fields=['is_only_read'])
-#     var_recept_apps = PARAMETER_SERVICE.get_parameter(
-#         name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
-#     )
-#     if var_recept_apps:
-#         var_recept_apps.flag = False
-#         var_recept_apps.save(update_fields=['flag'])
-
-
 def is_valid_get_request(value: str) -> bool:
     """
     Проверка : value is not None and value != ''
@@ -694,22 +675,6 @@ def is_valid_get_request(value: str) -> bool:
         return True
     else:
         return False
-
-
-# def get_current_status_set_for_apps_today(current_user: User) -> set:
-#     """
-#     Получить статус set() для application_today на основании user.post
-#     :param current_user: User
-#     :return: {.., ...}
-#     """
-#     if USERS_SERVICE.is_administrator(current_user):
-#         return ASSETS.APPLICATION_STATUS_set
-#     elif (USERS_SERVICE.is_foreman(current_user) or
-#           USERS_SERVICE.is_master(current_user) or
-#           USERS_SERVICE.is_supply(current_user)):
-#         return {ASSETS.ABSENT, ASSETS.SAVED}
-#     else:
-#         return set()
 
 
 def change_up_status_for_application_today(workday: WorkDaySheet, application_today_id=None,
