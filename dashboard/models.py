@@ -1,7 +1,7 @@
 from django.db import models
 # from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
-from .assets import UserPosts
+from .assets import UserPosts, AcceptMode
 
 
 class User(AbstractUser):
@@ -74,7 +74,7 @@ class ConstructionSite(models.Model):
 class WorkDaySheet(models.Model):
     date = models.DateField(verbose_name="Дата", null=False, blank=False)
     status = models.BooleanField(default=True, verbose_name="Рабочий день")
-    is_only_read = models.BooleanField(default=False, verbose_name="Режим 'Только чтение'")
+    accept_mode = models.CharField(default=AcceptMode.AUTO.value, max_length=32, verbose_name="Режим приема заявок")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
     is_all_application_send = models.BooleanField(default=False, verbose_name="Заявки отправлены?")
 

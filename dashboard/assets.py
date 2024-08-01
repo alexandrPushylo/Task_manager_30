@@ -44,6 +44,12 @@ class ViewMode(Enum):
     ARCHIVE = 'view_mode_archive'
 
 
+class AcceptMode(Enum):
+    AUTO = 'auto'
+    MANUAL = 'manual'
+    OFF = 'off'
+
+
 COLORS = [
     '#15b03e',
     '#5a9e6c',
