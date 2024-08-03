@@ -1,4 +1,5 @@
 DASHBOARD = '/dashboard/'
+ROUTING_DASHBOARD = '/'
 TECHNICS = '/technics/'
 EDIT_TECHNIC = '/edit_technic/'
 LOGIN = '/login/'
