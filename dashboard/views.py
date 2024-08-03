@@ -882,7 +882,6 @@ def conflicts_list_view(request):
             if conflict_technic_sheet:
                 for conflict_ts in conflict_technic_sheet:
                     conflict_ts['total_count_apps'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-                        is_cancelled=False,
                         isArchive=False,
                         isChecked=False,
                         technic_sheet_id__in=conflict_ts['id_list'],
@@ -912,6 +911,7 @@ def conflict_resolution_view(request):
                 conflict_applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
                     select_related=('technic_sheet', 'application_today__construction_site__foreman'),
                     technic_sheet__in=conflict_list_id,
+                    is_cancelled=False,
                     isChecked=False,
                     isArchive=False
                 )
