@@ -563,11 +563,11 @@ function onChangeApplicationMaterialDescription(e) {
     const applicationMaterialId = e.id.replace('app_mat_desc_id_', '');
     const btn_submit = $('.btn_sub_' + applicationMaterialId);
     const text_area_desc = $('#app_mat_desc_id_' + applicationMaterialId);
-    const lable_desc = $('.lbl_desc_' + applicationMaterialId);
+    const label_desc = $('.lbl_desc_' + applicationMaterialId);
 
-    lable_desc.removeClass('text-success', 'text-danger')
-    lable_desc.addClass('text-danger')
-    lable_desc.text('Заявка не сохранена')
+    label_desc.removeClass('text-success', 'text-danger')
+    label_desc.addClass('text-danger')
+    label_desc.text('Заявка не сохранена')
 
     text_area_desc.removeClass('border-success', 'border-danger')
     text_area_desc.addClass('border-danger')
@@ -575,6 +575,62 @@ function onChangeApplicationMaterialDescription(e) {
     btn_submit.removeClass('btn-outline-primary', 'btn-outline-success')
     btn_submit.addClass('btn-warning')
     btn_submit.text('Сохранить')
+}
+
+function acceptApplicationMaterial(application_material_id){
+    const operation = 'accept_application_material'
+    const app_material_description = $('#app_mat_desc_id_'+application_material_id).val()
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: window.location,
+        data: {
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            operation: operation,
+            application_material_id: application_material_id,
+            app_material_description: app_material_description
+        },
+        success: (response) => {
+            if (response==='true') {
+                toggleStatusApplicationMaterial(application_material_id, 'accept')
+            }
+            if (response==='false') {
+                toggleStatusApplicationMaterial(application_material_id, 'reject')
+            }
+        },
+    })
+}
+
+function toggleStatusApplicationMaterial(application_material_id, status){
+    const button_submit = $('.btn_sub_'+application_material_id);
+    const label_description = $('.lbl_desc_'+application_material_id);
+    const textarea_description =   $('#app_mat_desc_id_'+application_material_id);
+
+    if (status==='accept'){
+        button_submit.removeClass('btn-primary')
+        button_submit.removeClass('btn-warning')
+        button_submit.addClass('btn-outline-success')
+        button_submit.text('Отменить заявку на:')
+
+        label_description.text('Заявка подтверждена')
+        label_description.removeClass('text-danger')
+        label_description.addClass('text-success')
+
+        textarea_description.removeClass('border-danger')
+        textarea_description.addClass('border-success')
+    }
+    if (status==='reject'){
+        button_submit.removeClass('btn-outline-success')
+        button_submit.addClass('btn-primary')
+        button_submit.text('Подтвердить заявку на:')
+
+        label_description.text('Заявка не подтверждена')
+        label_description.removeClass('text-success')
+        label_description.addClass('text-danger')
+
+        textarea_description.removeClass('border-success')
+        textarea_description.addClass('border-danger')
+    }
 }
 
 function open_print_page(e) {

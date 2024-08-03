@@ -1137,9 +1137,11 @@ def material_application_supply_view(request):
             return render(request, 'content/spec/print_material_application.html', context)
 
         if request.method == 'POST':
+            print(request.POST)
             application_material_id = request.POST.get('application_material_id')
-            application_material_description = request.POST.get('application_material_description')
-            if U.is_valid_get_request(application_material_id):
+            application_material_description = request.POST.get('app_material_description')
+            operation = request.POST.get('operation')
+            if operation == 'accept_application_material' and U.is_valid_get_request(application_material_id):
 
                 application_material = APP_MATERIAL_SERVICE.get_app_material(pk=application_material_id)
 
@@ -1147,9 +1149,11 @@ def material_application_supply_view(request):
                     application_material.description = application_material_description
                     application_material.isChecked = True
                     application_material.save()
+                    return HttpResponse(b"true")
                 else:
                     application_material.isChecked = False
                     application_material.save()
+                    return HttpResponse(b"false")
 
         application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
             select_related=('application_today__construction_site__foreman',),
