@@ -41,15 +41,19 @@
                     <form id="material_application_supply_{{ application_material.id }}" method="post">{% csrf_token %}
                         <div class="card-header">
                             {% if VIEW_MODE != 'view_mode_archive' %}
+                                
                                 <span>
                             {% if not application_material.isChecked %}
-                                <button type="submit" form="material_application_supply_{{ application_material.id }}"
+                                <button type="button" 
+                                        onclick="acceptApplicationMaterial('{{ application_material.id }}')"
                                         class="btn btn-primary btn_sub_{{ application_material.id }}">Подтвердить заявку на:</button>
                             {% else %}
-                                <button type="submit" form="material_application_supply_{{ application_material.id }}"
+                                <button type="button" 
+                                        onclick="acceptApplicationMaterial('{{ application_material.id }}')"
                                         class="btn btn-outline-success btn_sub_{{ application_material.id }}">Отменить заявку на:</button>
                             {% endif %}
-                        </span>
+                                </span>
+                                
                             {% endif %}
                             <input type="hidden" aria-label="" name="application_material_id"
                                    value="{{ application_material.id }}">
