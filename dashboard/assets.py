@@ -1,3 +1,5 @@
+import datetime
+
 from .types import Enum, TitleDescriptionType, UserPostType, ApplicationTodayType
 
 UserPosts = UserPostType(
@@ -25,6 +27,10 @@ WEEKDAY = ("Понедельник", "Вторник", "Среда", "Четве
 MONTHS = (
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь')
 
+TIME_REDIRECT_DASHBOARD_FOR_FOREMAN = datetime.time(hour=10, minute=0)
+TIME_REDIRECT_DASHBOARD_FOR_MECHANIC = datetime.time(hour=10, minute=0)
+TIME_REDIRECT_DASHBOARD_FOR_DRIVER = datetime.time(hour=19, minute=0)
+TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE = datetime.time(hour=17, minute=0)
 
 class ErrorMessages(Enum):
     invalid_signin = 'Неверный логин или пароль'

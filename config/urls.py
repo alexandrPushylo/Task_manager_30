@@ -35,6 +35,7 @@ from dashboard.views import change_status_application_today, change_weekend_to_w
 from dashboard.views import settings_view
 from dashboard.views import maintenance_view
 from dashboard.views import def_test
+from dashboard.views import routing
 
 urlpatterns = [
                   path('', include('dashboard.urls')),
@@ -42,29 +43,29 @@ urlpatterns = [
                   # path('edit_application/', edit_application_view, name='edit_application'),
                   # path('clear_application/', clear_application_today, name='clear_application'),
 
-                  path('conflicts_list/', conflicts_list_view, name='conflicts_list'),
-                  path('conflict_resolution/', conflict_resolution_view, name='conflict_resolution'),
+                  # path('conflicts_list/', conflicts_list_view, name='conflicts_list'),
+                  # path('conflict_resolution/', conflict_resolution_view, name='conflict_resolution'),
 
-                  path('technic_application_list/', show_technic_application, name='technic_application_list'),
-                  path('material_application_list/', show_material_application, name='material_application_list'),
-                  path('material_application_supply/', material_application_supply_view,
-                       name='material_application_supply'),
+                  # path('technic_application_list/', show_technic_application, name='technic_application_list'),
+                  # path('material_application_list/', show_material_application, name='material_application_list'),
+                  # path('material_application_supply/', material_application_supply_view,
+                  #      name='material_application_supply'),
 
                   # path('work_days/', workday_sheet_view, name='work_days'),
                   # path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
                   # path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
 
-                  path('users/', users_view, name='users'),
-                  path('edit_user/', edit_user_view, name='edit_user'),
-                  path('delete_user/', delete_user_view, name='delete_user'),
-                  path('profile/', profile_view, name='profile'),
+                  # path('users/', users_view, name='users'),
+                  # path('edit_user/', edit_user_view, name='edit_user'),
+                  # path('delete_user/', delete_user_view, name='delete_user'),
+                  # path('profile/', profile_view, name='profile'),
 
-                  path('technics/', technic_view, name='technics'),
-                  path('edit_technic/', edit_technic_view, name='edit_technic'),
-                  path('delete_technic/', delete_technic_view, name='delete_technic'),
-
-                  path('construction_site/', construction_site_view, name='construction_site'),
-                  path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
+                  # path('technics/', technic_view, name='technics'),
+                  # path('edit_technic/', edit_technic_view, name='edit_technic'),
+                  # path('delete_technic/', delete_technic_view, name='delete_technic'),
+                  #
+                  # path('construction_site/', construction_site_view, name='construction_site'),
+                  # path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
 
                   path('admin/', admin.site.urls),
                   path('login/', login_view, name='login'),
@@ -78,9 +79,7 @@ urlpatterns = [
                   # path('ck_app_stat/', check_application_status, name='check_application_status'),
                   path('validate_app_today', validate_application_today_view, name='validate_application_today'),
                   path('test/', def_test, name='test'),
-
-                  # re_path(r'^.*', maintenance_view),
-                  # re_path(r'^.*', dashboard)
+                  re_path(r'^.*', routing)
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
