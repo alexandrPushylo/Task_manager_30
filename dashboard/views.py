@@ -785,8 +785,14 @@ def edit_construction_sites(request):
     if request.user.is_authenticated:
         context = {
             'title': 'Изменить объект',
-            'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title, order_by=('last_name',))
         }
+        if USERS_SERVICE.is_foreman(request.user):
+            context['foreman_list'] = USERS_SERVICE.get_user_queryset(pk=request.user.id)
+        elif USERS_SERVICE.is_master(request.user):
+            context['foreman_list'] = USERS_SERVICE.get_user_queryset(pk=request.user.supervisor_user_id)
+        elif USERS_SERVICE.is_administrator(request.user):
+            context['foreman_list'] = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title,
+                                                                      order_by=('last_name',))
 
         if request.method == 'POST':
             _id = request.POST.get('id')
