@@ -882,6 +882,7 @@ def conflicts_list_view(request):
             if conflict_technic_sheet:
                 for conflict_ts in conflict_technic_sheet:
                     conflict_ts['total_count_apps'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                        is_cancelled=False,
                         isArchive=False,
                         isChecked=False,
                         technic_sheet_id__in=conflict_ts['id_list'],
