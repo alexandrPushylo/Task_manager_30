@@ -35,6 +35,7 @@ from dashboard.views import change_status_application_today, change_weekend_to_w
 from dashboard.views import settings_view
 from dashboard.views import maintenance_view
 from dashboard.views import def_test
+from dashboard.views import routing
 
 urlpatterns = [
                   path('', include('dashboard.urls')),
@@ -80,7 +81,7 @@ urlpatterns = [
                   path('test/', def_test, name='test'),
 
                   # re_path(r'^.*', maintenance_view),
-                  # re_path(r'^.*', dashboard)
+                  re_path(r'^.*', routing)
 
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

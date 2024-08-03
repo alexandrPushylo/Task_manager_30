@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 
@@ -37,6 +38,40 @@ log = getLogger(__name__)
 
 
 # Create your views here.
+
+
+def routing(request):
+    if request.user.is_authenticated:
+        next_work_day = WORK_DAY_SERVICE.get_next_workday()
+        next_app_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            isArchive=False,
+            date=next_work_day
+        )
+        if USERS_SERVICE.is_administrator(request.user):
+            if next_app_today.exists():
+                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+
+        elif USERS_SERVICE.is_foreman(request.user) or USERS_SERVICE.is_master(request.user):
+            if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
+                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+
+        elif USERS_SERVICE.is_supply(request.user):
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        elif USERS_SERVICE.is_mechanic(request.user):
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        elif USERS_SERVICE.is_driver(request.user):
+            # if next_app_today.filter(
+            #         Q(status=ASSETS.ApplicationTodayStatus.APPROVED.title) |
+            #         Q(status=ASSETS.ApplicationTodayStatus.SEND.title)
+            # ).exists():
+            if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
+                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        elif USERS_SERVICE.is_employee(request.user):
+            if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
+                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
 def dashboard_view(request):
