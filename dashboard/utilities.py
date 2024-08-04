@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-
+from config.creds import USE_TELEGRAM
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite, ApplicationMaterial
 from django.db.models.query import QuerySet
 from django.db.models import Q
@@ -375,7 +375,8 @@ def send_messages_by_telegram(chat_id, messages):
     :param messages:
     :return:
     """
-    T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
+    if USE_TELEGRAM:
+        T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
 
 
 def get_user_key(user_id) -> str:
