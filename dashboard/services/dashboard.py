@@ -207,6 +207,7 @@ def get_dashboard_for_foreman_or_master(request, foreman: User, current_day: Wor
                 'technic_sheet_id',
                 'technic_sheet__driver_sheet__driver__id',
             )
+    context['construction_sites'] = sorted(context['construction_sites'], key=U.sorting_application_status)
     return context
 
 
