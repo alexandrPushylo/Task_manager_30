@@ -196,19 +196,27 @@ def set_color_for_list(some_list: list) -> dict:
     return out
 
 
-def sorting_application_status(item1, item2):  # TODO: !!!!!
-    if item1 == item2 and item1 in ASSETS.ApplicationTodayStatus.get_set():  # !!!!!!
-        return 0
-    if item1 in (None, ASSETS.ABSENT, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED) and item2 in (ASSETS.SEND,):
-        return -1
-    if item1 in (None, ASSETS.ABSENT, ASSETS.SAVED, ASSETS.SUBMITTED) and item2 in (ASSETS.SEND, ASSETS.APPROVED):
-        return -1
-    if item1 in (None, ASSETS.ABSENT, ASSETS.SAVED) and item2 in (ASSETS.SEND, ASSETS.SUBMITTED, ASSETS.APPROVED):
-        return -1
-    if item1 in (None, ASSETS.ABSENT,) and item2 in (ASSETS.SEND, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED):
-        return -1
-    if item1 in (None,) and item2 in (ASSETS.SEND, ASSETS.SAVED, ASSETS.SUBMITTED, ASSETS.APPROVED, ASSETS.ABSENT):
-        return -1
+def sorting_application_status(item):
+    """
+    Сортировка application_today по статусу
+    :param item:
+    :return:
+    """
+    if item is None or item['application_today'] is None:
+        return 10
+
+    status = item['application_today']['status']
+
+    if status == ASSETS.ApplicationTodayStatus.SAVED.title:
+        return 1
+    if status == ASSETS.ApplicationTodayStatus.SUBMITTED.title:
+        return 3
+    if status == ASSETS.ApplicationTodayStatus.APPROVED.title:
+        return 5
+    if status == ASSETS.ApplicationTodayStatus.SEND.title:
+        return 7
+    if status == ASSETS.ApplicationTodayStatus.ABSENT.title:
+        return 9
 
 
 def accept_app_tech_to_supply(app_tech_id, application_today_id):

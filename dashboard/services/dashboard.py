@@ -114,6 +114,7 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
                 'technic_sheet_id',
                 'technic_sheet__driver_sheet__driver__id',
             )
+    context['construction_sites'] = sorted(context['construction_sites'], key=U.sorting_application_status)
 
     technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
         date=current_day,
@@ -132,7 +133,6 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         get_only_id_list=True
     )
     context['conflict_technic_sheet'] = conflict_technic_sheet
-
     return context
 
 
