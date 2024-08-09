@@ -47,13 +47,30 @@ const toggleWorkdayStatus = (e) => {
 }
 
 const toggleButtonStatus = (e, itemId) => {
+    const operation = "toggleDriverSheetStatus"
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            item_id: itemId
+            item_id: itemId,
+            operation: operation
+        },
+        success: (response) => {
+            const row = $('#driver_sheet_id__'+itemId)
+            if(response==='true'){
+                row.css('color', '#018349')
+                row.css('text-decoration-line', 'none')
+            }
+            if(response==='false'){
+                row.css('color', 'black')
+                row.css('text-decoration-line', 'line-through')
+            }
+            if(response==='none'){
+                row.css('color', 'red')
+            }
+
         }
     })//.done((d) => {window.location.reload()})
 }
@@ -216,7 +233,9 @@ function addTechnicSheetToApp(e) {
             app_tech_desc: app_technic_description.val(),
             operation: operation
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 
     $('.technic_driver_selects_add').hide()
@@ -252,7 +271,9 @@ $('.button_reject_app_tech').click(function () {
             construction_site_id: $('input[name="construction_site_id"]').val(),
             operation: operation
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 })
 // const toggleWorkdayStatus = (e) => {
@@ -305,7 +326,9 @@ function applyChangesAppTechnic(e) {
             app_tech_desc: app_tech_description,
             operation: operation
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -323,7 +346,9 @@ function saveApplicationDescription(el) {
             application_today_description: $('textarea[name="application_description"]').val(),
             operation: operation
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -351,7 +376,9 @@ function saveApplicationMaterials(el) {
             material_description: $('textarea[name="app_material_desc"]').val(),
             operation: operation
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -436,7 +463,9 @@ function changePriorityForConflictResolution(e) {
             app_technic_id: appTechnicId,
             app_technic_priority: appTechnicPriority
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -459,7 +488,9 @@ function applyChangesForConflictResolution(e) {
             technic_sheet_id: technic_sheet_id,
             technic_description: technic_description
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -506,7 +537,9 @@ function setViewProps(e) {
             is_show_material_app: is_show_material_app,
             operation: operation,
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -524,7 +557,9 @@ function setFilterProps(e) {
             sort_by: $('select[name="sort_by"]').val(),
             operation: operation
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -539,7 +574,9 @@ function changeIsCancelled(e) {
             applicationTechnicId: applicationTechnicId,
             operation: 'reject'
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -555,7 +592,9 @@ function changeIsChecked(e, appTodayId) {
             application_today_id: appTodayId,
             operation: 'accept'
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -577,9 +616,9 @@ function onChangeApplicationMaterialDescription(e) {
     btn_submit.text('Сохранить')
 }
 
-function acceptApplicationMaterial(application_material_id){
+function acceptApplicationMaterial(application_material_id) {
     const operation = 'accept_application_material'
-    const app_material_description = $('#app_mat_desc_id_'+application_material_id).val()
+    const app_material_description = $('#app_mat_desc_id_' + application_material_id).val()
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -591,22 +630,22 @@ function acceptApplicationMaterial(application_material_id){
             app_material_description: app_material_description
         },
         success: (response) => {
-            if (response==='true') {
+            if (response === 'true') {
                 toggleStatusApplicationMaterial(application_material_id, 'accept')
             }
-            if (response==='false') {
+            if (response === 'false') {
                 toggleStatusApplicationMaterial(application_material_id, 'reject')
             }
         },
     })
 }
 
-function toggleStatusApplicationMaterial(application_material_id, status){
-    const button_submit = $('.btn_sub_'+application_material_id);
-    const label_description = $('.lbl_desc_'+application_material_id);
-    const textarea_description =   $('#app_mat_desc_id_'+application_material_id);
+function toggleStatusApplicationMaterial(application_material_id, status) {
+    const button_submit = $('.btn_sub_' + application_material_id);
+    const label_description = $('.lbl_desc_' + application_material_id);
+    const textarea_description = $('#app_mat_desc_id_' + application_material_id);
 
-    if (status==='accept'){
+    if (status === 'accept') {
         button_submit.removeClass('btn-primary')
         button_submit.removeClass('btn-warning')
         button_submit.addClass('btn-outline-success')
@@ -619,7 +658,7 @@ function toggleStatusApplicationMaterial(application_material_id, status){
         textarea_description.removeClass('border-danger')
         textarea_description.addClass('border-success')
     }
-    if (status==='reject'){
+    if (status === 'reject') {
         button_submit.removeClass('btn-outline-success')
         button_submit.addClass('btn-primary')
         button_submit.text('Подтвердить заявку на:')
@@ -650,9 +689,9 @@ function toggleHidePanel(e) {
         success: (d) => {
             $('#spec_panel').toggle();
             const app_container = $('#applications_container')
-            if (app_container.attr('class').includes('mx-auto')){
+            if (app_container.attr('class').includes('mx-auto')) {
                 app_container.removeClass('mx-auto');
-            }else {
+            } else {
                 app_container.addClass('mx-auto');
             }
         }
@@ -669,7 +708,9 @@ function connectTelegramBot(e, userKey) {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             user_key: userKey
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -685,7 +726,9 @@ function copyApplicationTo(e) {
             operation: 'copy'
 
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -699,7 +742,9 @@ function setSpecTask(e, technicSheetId) {
             technic_sheet_id: technicSheetId,
             operation: 'set_spec_task'
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -713,7 +758,9 @@ function changeReadOnlyMode(readOnly) {
             read_only: readOnly,
             operation: 'change_read_only_mode'
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
@@ -734,12 +781,13 @@ function changeReadOnlyMode(readOnly) {
 // }
 
 //&&???
-function checkChangesForEditApplication(){
+function checkChangesForEditApplication() {
     const btn_cancel_for_edit_app = $('#btn_cancel_for_edit_app');
     const btn_apply_for_edit_app = $('#btn_apply_for_edit_app');
     btn_cancel_for_edit_app.hide();
     btn_apply_for_edit_app.show();
 }
+
 function prepareModalDeleteApplication(url) {
     $('#btn_delete_app').attr('href', url);
 }

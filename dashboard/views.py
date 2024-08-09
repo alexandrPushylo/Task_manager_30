@@ -511,8 +511,16 @@ def driver_sheet_view(request):
 
         if request.method == "POST":
             driver_sheet_id = request.POST.get('item_id')
-            if driver_sheet_id is not None and driver_sheet_id != '':
-                DRIVER_SHEET_SERVICE.change_status(driver_sheet_id=driver_sheet_id)
+            operation = request.POST.get('operation')
+            if U.is_valid_get_request(driver_sheet_id) and operation == 'toggleDriverSheetStatus':
+                status = DRIVER_SHEET_SERVICE.change_status(driver_sheet_id=driver_sheet_id)
+                if status:
+                    return HttpResponse(b"true")
+                elif not status:
+                    return HttpResponse(b"false")
+                else:
+                    return HttpResponse(b"none")
+
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day)

@@ -46,7 +46,12 @@ def get_driver_sheet(**kwargs) -> DriverSheet:
         return DriverSheet.objects.none()
 
 
-def change_status(driver_sheet_id):
+def change_status(driver_sheet_id) -> bool | None:
+    """
+    Изменение статуса DriverSheet
+    :param driver_sheet_id:
+    :return:
+    """
     try:
         driver_sheet = DriverSheet.objects.get(id=driver_sheet_id)
         if driver_sheet.status:
@@ -54,14 +59,18 @@ def change_status(driver_sheet_id):
             log.info(f"driver_sheet с id {driver_sheet_id} установлен статус False")
             driver_sheet.save(update_fields=['status'])
             TechnicSheet.objects.filter(driver_sheet=driver_sheet).update(driver_sheet=None)
+            return False
         else:
             driver_sheet.status = True
             log.info(f"driver_sheet с id {driver_sheet_id} установлен статус True")
             driver_sheet.save(update_fields=['status'])
+            return True
     except DriverSheet.DoesNotExist:
         log.error(f"Driver_sheet с id {driver_sheet_id} не существует")
+        return None
     except ValueError:
         log.error(f"Driver_sheet change_status() - ValueError")
+        return None
 
 
 def prepare_driver_sheet(workday: WorkDaySheet):
