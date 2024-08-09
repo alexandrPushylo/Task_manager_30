@@ -86,7 +86,9 @@ function changeDriverForTechnic(e, techSheetId) {
             driver_sheet_id: $('select[name=' + e_name + ']').val(),
             technic_sheet_id: techSheetId
         },
-        success: (d) => {window.location.reload()}
+        success: (d) => {
+            window.location.reload()
+        }
     })
 }
 
