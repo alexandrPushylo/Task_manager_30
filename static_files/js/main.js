@@ -46,7 +46,7 @@ const toggleWorkdayStatus = (e) => {
 
 }
 
-const toggleButtonStatus = (e, itemId) => {
+const toggleDriverSheetStatus = (e, itemId) => {
     const operation = "toggleDriverSheetStatus"
     $.ajax({
         type: 'POST',
@@ -57,7 +57,7 @@ const toggleButtonStatus = (e, itemId) => {
             item_id: itemId,
             operation: operation
         },
-        success: (response) => {
+        success: (response)=> {
             const row = $('#driver_sheet_id__'+itemId)
             if(response==='true'){
                 row.css('color', '#018349')
@@ -70,6 +70,9 @@ const toggleButtonStatus = (e, itemId) => {
             if(response==='none'){
                 row.css('color', 'red')
             }
+        }
+    })
+}
 
         }
     })//.done((d) => {window.location.reload()})
