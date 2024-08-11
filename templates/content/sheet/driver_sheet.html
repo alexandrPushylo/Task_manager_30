@@ -52,7 +52,9 @@
                 </thead>
                 <tbody>
                 {% for driver in driver_sheets %}
-                    <tr class="driver_sheet_row">
+                    <tr class="driver_sheet_row" id="driver_sheet_id__{{ driver.id }}"
+                        {% if driver.status %} style="color: #018349" {% else %} style="text-decoration-line: line-through" {% endif %}
+                    >
                         <td hidden="hidden"><input type="hidden" name="id" value="{{ driver.id }}"/></td>
 {#                        <td>{{ driver.date.date }}</td>#}
                         <td>{{ driver.driver.last_name }} {{ driver.driver.first_name }}</td>
@@ -62,7 +64,7 @@
                             <input type="checkbox" role="switch" class="form-check-input"
                                    {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
                                    aria-label=""
-                                   onchange="toggleButtonStatus(this, {{ driver.id }})"
+                                   onchange="toggleDriverSheetStatus(this, {{ driver.id }})"
                                    name="status_{{ driver.id }}"
                                    {% if driver.status %}checked{% endif %}/>
                         </td>

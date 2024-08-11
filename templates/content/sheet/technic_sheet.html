@@ -34,74 +34,70 @@
             </ul>
         </nav>
     </div>
-    <div id="technic_sheet" class="container">
+    <div id="technic_sheet" class="container-sm">{% csrf_token %}
         <div>
             <p class="m-0 fs-3"><u>{{ title }}</u></p>
             <p class=" m-0 ms-2">на {{ current_day.date }}</p>
         </div>
-        <form id="technic_sheet_form" method="post">{% csrf_token %}
-            <table class="table  translate-middle-x position-relative start-50">
-                <thead>
-                <tr>
-                    <th hidden="hidden">id</th>
-                    <th>Техника</th>
-                    <th>Водитель</th>
-                    <th>Статус</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for technic_sheet in technic_sheets %}
-                    <tr class="technic_sheet_row">
-                        <td hidden="hidden"><input type="hidden" name="id" value="{{ technic_sheet.id }}"/></td>
+    
+    
+        {% for technic_sheet in technic_sheets %}
+            <div class="card my-2" style="box-shadow: 1px 1px 10px 1px;">
+                <div class="card-header" id="technic_sheet_id__{{ technic_sheet.id }}"
+                     {% if technic_sheet.status %}
+                        style="background-color: #effdf6"
+                     {% else %}
+                        style="background-color: #fdefef"
+                     {% endif %}
+                >
+                    <span class="fw-bolder">{{ technic_sheet.technic.title }}</span>
+                    {% if technic_sheet.technic.attached_driver.last_name %}
+                        <span class="small">({{ technic_sheet.technic.attached_driver.last_name }})</span>
+                    {% endif %}
+                    <span class="m-0 fw-bolder small" style="float: right">[ {{ technic_sheet.technic.id_information }} ]</span>
+                </div>
 
-                        <td><span class="fw-bolder">{{ technic_sheet.technic.title }}</span>
-                            {% if technic_sheet.technic.attached_driver.last_name %}
-                                <p class="m-0 small">({{ technic_sheet.technic.attached_driver.last_name }})</p>
-                            {% endif %}
-                            <p class="m-0 fw-bolder small">[ {{ technic_sheet.technic.id_information }} ]</p>
-                        </td>
-                        <td class="m-0 p-0 pt-3">
-                            <select class="form-control p-1"
-                                    {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
-                                    aria-label=""
-                                    name="driver_sheet_{{ technic_sheet.id }}"
-                                    onchange="changeDriverForTechnic(this, {{ technic_sheet.id }})">
-                                <option></option>
-                                {% for driver_sheet in driver_sheets %}
-                                    {% if technic_sheet.driver_sheet.id == driver_sheet.id %}
-                                        <option selected
-                                                value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.
-                                        </option>
-                                    {% else %}
-                                        <option value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.</option>
-                                    {% endif %}
-                                {% endfor %}
+                <div class="card-body p-1 row">
+                    <div class="col-auto ms-2">
+                        <select class="form-control p-1"
+                                {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
+                                aria-label=""
+                                name="driver_sheet_{{ technic_sheet.id }}"
+                                onchange="changeDriverForTechnic(this, {{ technic_sheet.id }})">
+                            <option></option>
+                            {% for driver_sheet in driver_sheets %}
+                                {% if technic_sheet.driver_sheet.id == driver_sheet.id %}
+                                    <option selected
+                                            value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.
+                                    </option>
+                                {% else %}
+                                    <option value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                            </select>
-                        </td>
-
-                        <td class="form-switch"
-                            style="text-align: right">
-                            <input type="checkbox" role="switch" class="form-check-input"
-                                   {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
-                                   aria-label=""
-                                   onchange="toggleButtonStatus(this, {{ technic_sheet.id }})"
-                                   name="status_{{ technic_sheet.id }}"
-                                   {% if technic_sheet.status %}checked{% endif %}/>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </form>
+                    <div class="form-switch col"
+                         style="text-align: right">
+                        <input type="checkbox" role="switch" class="form-check-input m-2"
+                                {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
+                               aria-label=""
+                               onchange="toggleTechnicSheetStatus(this, {{ technic_sheet.id }})"
+                               name="status_{{ technic_sheet.id }}"
+                               {% if technic_sheet.status %}checked{% endif %}/>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    
 
     </div>
 {% endblock %}
 
 {% block footer %}
     <div></div>
-    <div style="display: none" class="button_save_div">
-        <button class="btn btn-sm btn-success" type="submit" form="technic_sheet_form">Подтвердить изменения</button>
-    </div>
+{#    <div style="display: none" class="button_save_div">#}
+{#        <button class="btn btn-sm btn-success" type="submit" form="technic_sheet_form">Подтвердить изменения</button>#}
+{#    </div>#}
     <div></div>
 {% endblock %}

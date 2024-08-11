@@ -137,8 +137,8 @@
     border-radius: 10px;
 }
 #technic_sheet {
-    /*margin-top: 20px;*/
-    width: max-content;
+    /*width: max-content;*/
+    max-width: max-content;
     box-shadow: 5px 5px 20px 5px;
     border: 1px solid black;
     border-radius: 10px;
