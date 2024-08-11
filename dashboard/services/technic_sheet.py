@@ -56,20 +56,22 @@ def get_technic_sheet(**kwargs) -> TechnicSheet:
         return TechnicSheet.objects.none()
 
 
-def change_status(technic_sheet_id):
+def change_status(technic_sheet_id) -> bool:
     technic_sheet = get_technic_sheet(pk=technic_sheet_id)
     if technic_sheet:
         if technic_sheet.status:
             technic_sheet.status = False
             log.info(f"technic_sheet с id {technic_sheet_id} установлен статус False")
+            technic_sheet.save(update_fields=['status'])
+            return False
         else:
             technic_sheet.status = True
             log.info(f"technic_sheet с id {technic_sheet_id} установлен статус True")
-        technic_sheet.save(update_fields=['status'])
+            technic_sheet.save(update_fields=['status'])
+            return True
 
 
 def change_driver(technic_sheet_id, driver_sheet_id):
-
     if not driver_sheet_id or driver_sheet_id == '':
         driver_sheet = None
     else:
@@ -77,7 +79,7 @@ def change_driver(technic_sheet_id, driver_sheet_id):
     technic_sheet = get_technic_sheet(id=technic_sheet_id)
     technic_sheet.driver_sheet = driver_sheet
     technic_sheet.save(update_fields=['driver_sheet'])
-    log.info(f"Для technic_sheet изменен водитель")
+    log.info("Для technic_sheet изменен водитель")
 
 
 def prepare_technic_sheets(workday: WorkDaySheet):

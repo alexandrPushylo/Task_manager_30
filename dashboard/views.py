@@ -521,7 +521,6 @@ def driver_sheet_view(request):
                 else:
                     return HttpResponse(b"none")
 
-
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day)
 
@@ -546,13 +545,22 @@ def technic_sheet_view(request):
         context = {'title': 'Табель: техника'}
 
         if request.method == 'POST':
-            technic_sheet_id = request.POST.get('item_id')
-            if technic_sheet_id:
-                TECHNIC_SHEET_SERVICE.change_status(technic_sheet_id=technic_sheet_id)
-
             technic_sheet_id = request.POST.get('technic_sheet_id')
             driver_sheet_id = request.POST.get('driver_sheet_id')
-            if technic_sheet_id:
+            item_id = request.POST.get('item_id')
+            operation = request.POST.get('operation')
+
+            if operation == 'toggleTechnicSheetStatus' and U.is_valid_get_request(item_id):
+                technic_sheet_id = request.POST.get('item_id')
+                status = TECHNIC_SHEET_SERVICE.change_status(technic_sheet_id=technic_sheet_id)
+                if status:
+                    return HttpResponse(b"true")
+                elif not status:
+                    return HttpResponse(b"false")
+                else:
+                    return HttpResponse(b"none")
+
+            if operation == 'changeDriverForTechnic' and U.is_valid_get_request(technic_sheet_id):
                 TECHNIC_SHEET_SERVICE.change_driver(
                     technic_sheet_id=technic_sheet_id,
                     driver_sheet_id=driver_sheet_id)

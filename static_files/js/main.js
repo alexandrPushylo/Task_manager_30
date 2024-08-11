@@ -74,11 +74,36 @@ const toggleDriverSheetStatus = (e, itemId) => {
     })
 }
 
+const toggleTechnicSheetStatus = (e, itemId) => {
+    const operation = "toggleTechnicSheetStatus"
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: window.location,
+        data: {
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            item_id: itemId,
+            operation: operation
+        },
+        success: (response)=> {
+            const row = $('#technic_sheet_id__'+itemId)
+            if(response==='true'){
+                row.css('background-color', '#effdf6')
+                // row.css('text-decoration-line', 'none')
+            }
+            if(response==='false'){
+                row.css('background-color', '#fdefef')
+                // row.css('text-decoration-line', 'line-through')
+            }
+            if(response==='none'){
+                row.css('color', 'red')
+            }
         }
-    })//.done((d) => {window.location.reload()})
+    })
 }
 
 function changeDriverForTechnic(e, techSheetId) {
+    const operation = "changeDriverForTechnic"
     const e_name = e.name;
     $.ajax({
         type: 'POST',
@@ -87,10 +112,8 @@ function changeDriverForTechnic(e, techSheetId) {
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             driver_sheet_id: $('select[name=' + e_name + ']').val(),
-            technic_sheet_id: techSheetId
-        },
-        success: (d) => {
-            window.location.reload()
+            technic_sheet_id: techSheetId,
+            operation: operation
         }
     })
 }
