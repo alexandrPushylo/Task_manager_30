@@ -48,8 +48,7 @@ def get_workday_queryset(select_related: tuple = (),
     return workday
 
 
-
-def prepare_workday(_date: date) -> WorkDaySheet | None:
+def prepare_workday(_date: date):
     if WorkDaySheet.objects.filter(date__gte=_date).count() < 14:
         for n in range(21):
             day = date.today() + timedelta(days=n)
@@ -58,10 +57,9 @@ def prepare_workday(_date: date) -> WorkDaySheet | None:
             else:
                 status = True
             WorkDaySheet.objects.update_or_create(date=day, defaults={'status': status})
-        log.info(f"Prepare workday выполнен")
+        log.info("Prepare workday выполнен")
     else:
-        log.info(f"Prepare workday не выполнен")
-        return None
+        log.info("Prepare workday не выполнен")
 
 
 def get_range_workdays(start_date: date, before_days: int, after_days: int) -> WorkDaySheet.objects:
@@ -76,6 +74,8 @@ def get_range_workdays(start_date: date, before_days: int, after_days: int) -> W
         date__gte=start_date - timedelta(days=before_days),
         date__lte=start_date + timedelta(days=after_days)
     )
+    if before_days+after_days+1 != workdays.count():
+        prepare_workday(start_date)
     return workdays
 
 

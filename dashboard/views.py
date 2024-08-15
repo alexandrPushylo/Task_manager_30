@@ -899,6 +899,7 @@ def conflicts_list_view(request):
                 for conflict_ts in conflict_technic_sheet:
                     conflict_ts['total_count_apps'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
                         isArchive=False,
+                        is_cancelled=False,
                         isChecked=False,
                         technic_sheet_id__in=conflict_ts['id_list'],
                         priority=1
@@ -1154,7 +1155,7 @@ def material_application_supply_view(request):
             return render(request, 'content/spec/print_material_application.html', context)
 
         if request.method == 'POST':
-            print(request.POST)
+            # print(request.POST)
             application_material_id = request.POST.get('application_material_id')
             application_material_description = request.POST.get('app_material_description')
             operation = request.POST.get('operation')

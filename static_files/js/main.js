@@ -304,34 +304,6 @@ $('.button_reject_app_tech').click(function () {
         }
     })
 })
-// const toggleWorkdayStatus = (e) => {
-//     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
-//     const pathname = window.location.pathname;
-//     const [id, status] = e
-//     // console.log(id, status)
-//     const workDayStatus = $('.status_' + id);
-//     // console.log(workDayStatus)
-//     if (workDayStatus.is(':checked')) {
-//         workDayStatus.prop('checked', false);
-//     } else {
-//         workDayStatus.prop('checked', true);
-//     }
-//     // console.log(workDayStatus.checked)
-//
-//     // $.ajax({
-//     //         type: 'POST',
-//     //         mode: 'same-origin',
-//     //         url: pathname,
-//     //         data: {
-//     //             csrfmiddlewaretoken: csrf,
-//     //             id_day: id,
-//     //             status: status
-//     //         }
-//     //     }).done((d)=>{
-//     //         console.log(d)
-//     // })
-//
-// }
 
 function applyChangesAppTechnic(e) {
     const operation = "apply_changes_application_technic";
@@ -411,21 +383,6 @@ function saveApplicationMaterials(el) {
 }
 
 
-// function myCalendar(){
-//
-//     const sd = jsCalendar.get('#calendar')
-//
-//     console.log(sd)
-//
-//     // sd.onDateClick(function(event, date){
-//     //     // inputA.value = date.toString();
-//     //     console.log(date)
-//     // });
-//
-//
-//
-// }
-// myCalendar();
 
 $('.io_choice_day').change(function () {
     const current_day = this.value;
@@ -435,23 +392,7 @@ $('.io_choice_day').change(function () {
     // console.log(dd)
 })
 
-// $('#conflict_resolution_container').masonry({
-// // указываем элемент-контейнер в котором расположены блоки для динамической верстки
-//     itemSelector: '.conflict_resolution_items',
-//     // columnWidth: 200,
-// // указываем класс элемента являющегося блоком в нашей сетке
-//     singleMode: true,
-// // true - если у вас все блоки одинаковой ширины
-//     isResizable: true,
-// // перестраивает блоки при изменении размеров окна
-//     isAnimated: true,
-// // анимируем перестроение блоков
-//     animationOptions: {
-//         queue: false,
-//         duration: 500
-//     }
-// // опции анимации - очередь и продолжительность анимации
-// });
+
 
 function selectTechnicTitleForConflictResolution(e) {
     const technic_title = e.value;
