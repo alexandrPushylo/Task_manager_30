@@ -74,6 +74,8 @@ def get_range_workdays(start_date: date, before_days: int, after_days: int) -> W
         date__gte=start_date - timedelta(days=before_days),
         date__lte=start_date + timedelta(days=after_days)
     )
+    if before_days+after_days+1 != workdays.count():
+        prepare_workday(start_date)
     return workdays
 
 
