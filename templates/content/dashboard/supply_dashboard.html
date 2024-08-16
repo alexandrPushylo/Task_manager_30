@@ -113,7 +113,11 @@
                                             {% endif %}
                                             >
                                                 <span class="ms-1">{{ app_technic.technic_sheet.technic.title }}</span>
+                                            {% if app_technic.technic_sheet.driver_sheet.driver.last_name %}
                                                 <span>({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
+                                            {% else %}
+                                                <span class="text-warning">(Водитель не назначен)</span>                                                
+                                            {% endif %}
                                                 <span>[<span>{{ app_technic.priority }}</span>/
                                                         <span>{{ app_technic.technic_sheet.count_application }}</span>]
                                                     </span>
