@@ -286,3 +286,17 @@ def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> Technic
         return get_technic_sheet(pk=least_busy_technic_sheet['id'])
 
 
+def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):
+    technic_sheet = get_technic_sheet(pk=technic_sheet_id)
+    applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        technic_sheet=technic_sheet,
+        isChecked=False,
+        isArchive=False,
+        is_cancelled=False
+    )
+    if exclude_app_tech:
+        count_applications_technic = applications_technic.exclude(application_today__id=exclude_app_tech).count()
+    else:
+        count_applications_technic = applications_technic.count()
+    technic_sheet.count_application = count_applications_technic
+    technic_sheet.save(update_fields=['count_application'])
