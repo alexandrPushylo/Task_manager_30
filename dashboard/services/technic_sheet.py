@@ -195,7 +195,7 @@ def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
                 technic_sheet.save()
 
 
-def decrement_technic_sheet_list(technic_sheet_id_list):
+def decrement_technic_sheet_list(technic_sheet_id_list,  **kwargs):
     """
     Декремент количества заявок на технику для каждого из technic_sheet_list
     :param technic_sheet_id_list:
@@ -203,8 +203,12 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
     """
     if technic_sheet_id_list:
         technic_sheet = get_technic_sheet_queryset(pk__in=technic_sheet_id_list)
-        for tech_sheet in technic_sheet:
-            tech_sheet.decrement_count_application()
+        # for tech_sheet in technic_sheet:
+        #     calculate_count_applications(tech_sheet.id)
+        #     tech_sheet.decrement_count_application()
+
+        for technic_sheet_id in technic_sheet_id_list:
+            calculate_count_applications(technic_sheet_id, **kwargs)
 
 
 def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
