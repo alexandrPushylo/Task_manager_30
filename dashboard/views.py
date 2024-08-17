@@ -691,7 +691,7 @@ def users_view(request):
             users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title, order_by=('last_name',))
         else:
             users_list = []
-        context['users_list'] = users_list
+        context['users_list'] = users_list.filter(isArchive=False)
         return render(request, 'content/users/users.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
