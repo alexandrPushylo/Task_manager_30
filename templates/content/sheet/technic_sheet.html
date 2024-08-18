@@ -59,15 +59,17 @@
 
                 <div class="card-body p-1 row">
                     <div class="col-auto ms-2">
-                        <select class="form-control p-1"
+                        <select class="form-control p-1"                                
                                 {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
                                 aria-label=""
                                 name="driver_sheet_{{ technic_sheet.id }}"
-                                onchange="changeDriverForTechnic(this, {{ technic_sheet.id }})">
+                                onchange="changeDriverForTechnic(this, {{ technic_sheet.id }})"
+                                {% if technic_sheet.driver_sheet and not technic_sheet.driver_sheet.status %}style="border: red 1px solid" {% endif %}
+                        >
                             <option></option>
                             {% for driver_sheet in driver_sheets %}
                                 {% if technic_sheet.driver_sheet.id == driver_sheet.id %}
-                                    <option selected
+                                    <option selected 
                                             value="{{ driver_sheet.id }}">{{ driver_sheet.driver.last_name }} {{ driver_sheet.driver.first_name.0 }}.
                                     </option>
                                 {% else %}

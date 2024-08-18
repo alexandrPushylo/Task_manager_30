@@ -105,15 +105,27 @@ const toggleTechnicSheetStatus = (e, itemId) => {
 function changeDriverForTechnic(e, techSheetId) {
     const operation = "changeDriverForTechnic"
     const e_name = e.name;
+    const selectName = $('select[name=' + e_name + ']')
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            driver_sheet_id: $('select[name=' + e_name + ']').val(),
+            driver_sheet_id: selectName.val(),
             technic_sheet_id: techSheetId,
             operation: operation
+        },
+        success: (response)=> {
+            if(response==='true'){
+                selectName.css('border', 'none')
+            }
+            if(response==='false'){
+                selectName.css('border', 'red 1px solid')
+            }
+            if(response==='none'){
+                selectName.css('border', 'none')
+            }
         }
     })
 }

@@ -80,6 +80,10 @@ def change_driver(technic_sheet_id, driver_sheet_id):
     technic_sheet.driver_sheet = driver_sheet
     technic_sheet.save(update_fields=['driver_sheet'])
     log.info("Для technic_sheet изменен водитель")
+    if driver_sheet:
+        return driver_sheet.status
+    else:
+        return None
 
 
 def prepare_technic_sheets(workday: WorkDaySheet):

@@ -561,9 +561,15 @@ def technic_sheet_view(request):
                     return HttpResponse(b"none")
 
             if operation == 'changeDriverForTechnic' and U.is_valid_get_request(technic_sheet_id):
-                TECHNIC_SHEET_SERVICE.change_driver(
-                    technic_sheet_id=technic_sheet_id,
-                    driver_sheet_id=driver_sheet_id)
+                status = TECHNIC_SHEET_SERVICE.change_driver(
+                        technic_sheet_id=technic_sheet_id,
+                        driver_sheet_id=driver_sheet_id)
+                if status:
+                    return HttpResponse(b"true")
+                elif status is None:
+                    return HttpResponse(b"none")
+                else:
+                    return HttpResponse(b"false")
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context['current_day'] = current_day
