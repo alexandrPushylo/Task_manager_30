@@ -281,7 +281,7 @@ def get_least_busy_technic_sheet(free_technic_sheet_list: list[dict]) -> dict:
     return {}
 
 
-def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet:
+def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet | None:
     workload_dict = get_workload_dict_of_technic_sheet(workday=workday)
     free_technic_sheet_list = get_free_list_of_technic_sheet(technic_title=technic_title, workload_dict=workload_dict)
     if free_technic_sheet_list:
@@ -291,7 +291,12 @@ def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> Technic
         any_technic_sheet_list = get_free_list_of_technic_sheet(
             technic_title=technic_title, workload_dict=workload_dict, get_only_free=False)
         least_busy_technic_sheet = get_least_busy_technic_sheet(any_technic_sheet_list)
-        return get_technic_sheet(pk=least_busy_technic_sheet['id'])
+        if least_busy_technic_sheet:
+            return get_technic_sheet(pk=least_busy_technic_sheet['id'])
+        else:
+            return None
+        # print(least_busy_technic_sheet)
+        # return get_technic_sheet(pk=least_busy_technic_sheet['id'])
 
 
 def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):
