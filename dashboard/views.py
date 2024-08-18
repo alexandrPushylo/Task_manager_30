@@ -236,9 +236,8 @@ def edit_application_view(request):
         technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('technic', 'driver_sheet__driver'),
             isArchive=False,
-            status=True,
             driver_sheet__isnull=False,
-            driver_sheet__status=True,
+            status=True,
             date=current_day
         )
 
@@ -251,6 +250,12 @@ def edit_application_view(request):
         context['technic_driver_list'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets
+        )
+        context['technic_driver_list_for_add'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+            technic_titles=technic_titles_dict,
+            technic_sheets=technic_sheets.filter(
+                driver_sheet__status=True,
+            )
         )
 
         if request.method == 'POST':
@@ -308,10 +313,15 @@ def edit_application_view(request):
                     else:
                         some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
                     description = post_application_technic_description if post_application_technic_description else ''
-                    if application_technic.technic_sheet.id != some_technic_sheet.id:
-                        application_technic.technic_sheet.decrement_count_application()
-                        application_technic.technic_sheet = some_technic_sheet
-                        some_technic_sheet.increment_count_application()
+
+                    if some_technic_sheet:
+                        if application_technic.technic_sheet != some_technic_sheet:
+                            if application_technic.technic_sheet is not None:
+                                application_technic.technic_sheet.decrement_count_application()
+                            application_technic.technic_sheet = some_technic_sheet
+                            some_technic_sheet.increment_count_application()
+                    else:
+                        application_technic.technic_sheet = None
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
