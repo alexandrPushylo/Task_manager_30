@@ -210,11 +210,11 @@ def sorting_application_status(item):
     if status == ASSETS.ApplicationTodayStatus.SAVED.title:
         return 1
     if status == ASSETS.ApplicationTodayStatus.SUBMITTED.title:
-        return 3
+        return 5
     if status == ASSETS.ApplicationTodayStatus.APPROVED.title:
         return 5
     if status == ASSETS.ApplicationTodayStatus.SEND.title:
-        return 7
+        return 5
     if status == ASSETS.ApplicationTodayStatus.ABSENT.title:
         return 9
 
