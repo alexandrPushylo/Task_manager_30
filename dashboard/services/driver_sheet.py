@@ -58,7 +58,7 @@ def change_status(driver_sheet_id) -> bool | None:
             driver_sheet.status = False
             log.info(f"driver_sheet с id {driver_sheet_id} установлен статус False")
             driver_sheet.save(update_fields=['status'])
-            TechnicSheet.objects.filter(driver_sheet=driver_sheet).update(driver_sheet=None)
+            # TechnicSheet.objects.filter(driver_sheet=driver_sheet).update(driver_sheet=None)
             return False
         else:
             driver_sheet.status = True
