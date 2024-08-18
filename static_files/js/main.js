@@ -89,11 +89,9 @@ const toggleTechnicSheetStatus = (e, itemId) => {
             const row = $('#technic_sheet_id__'+itemId)
             if(response==='true'){
                 row.css('background-color', '#effdf6')
-                // row.css('text-decoration-line', 'none')
             }
             if(response==='false'){
                 row.css('background-color', '#fdefef')
-                // row.css('text-decoration-line', 'line-through')
             }
             if(response==='none'){
                 row.css('color', 'red')
