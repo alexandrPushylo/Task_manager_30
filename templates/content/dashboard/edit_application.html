@@ -68,17 +68,16 @@
                                                             onchange="changeTechnicSheetSelector(this)"
                                                             {% if app_technic.is_cancelled %}disabled=""{% endif %}
                                                             class="{{ technic_driver.title_short }}_{{ app_technic.id }} technic_driver_selects technic_driver_selects_{{ app_technic.id }} form-control p-1">
-                                                        <option value="">--Любой--</option>
+{#                                                        <option value="">--Любой--</option>#}
+                                                    
                                                         {% for technic_sheet in technic_driver.technic_sheets %}
-                                                            {% if app_technic.technic_sheet_id == technic_sheet.id %}
-                                                                <option selected
-                                                                        value="{{ technic_sheet.id }}">
-                                                                    {{ technic_sheet.driver_sheet.driver.last_name }}</option>
-                                                            {% else %}
-                                                                <option value="{{ technic_sheet.id }}">
-                                                                    {{ technic_sheet.driver_sheet.driver.last_name }}</option>
-                                                            {% endif %}
+{#                                                            {% if app_technic.technic_sheet_id == technic_sheet.id %}#}
+                                                                <option {% if app_technic.technic_sheet_id == technic_sheet.id %} selected {% endif %}
+                                                                        value="{{ technic_sheet.id }}"
+                                                                >{% if not technic_sheet.driver_sheet.status %}Не назначен{% else %}{{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
+{#                                                            
                                                         {% endfor %}
+                                                    
 
                                                     </select>
                                                 {% endfor %}
@@ -227,7 +226,7 @@
                             </label>
 
                             <label class="mt-2 col-12">
-                                {% for technic_driver in technic_driver_list %}
+                                {% for technic_driver in technic_driver_list_for_add %}
                                     <select class="form-control technic_driver_selects_add {{ technic_driver.title_short }}">
                                         <option value="">--Любой--</option>
                                         {% for technic_sheet in technic_driver.technic_sheets %}

@@ -80,6 +80,10 @@ def change_driver(technic_sheet_id, driver_sheet_id):
     technic_sheet.driver_sheet = driver_sheet
     technic_sheet.save(update_fields=['driver_sheet'])
     log.info("Для technic_sheet изменен водитель")
+    if driver_sheet:
+        return driver_sheet.status
+    else:
+        return None
 
 
 def prepare_technic_sheets(workday: WorkDaySheet):
@@ -195,7 +199,7 @@ def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
                 technic_sheet.save()
 
 
-def decrement_technic_sheet_list(technic_sheet_id_list):
+def decrement_technic_sheet_list(technic_sheet_id_list,  **kwargs):
     """
     Декремент количества заявок на технику для каждого из technic_sheet_list
     :param technic_sheet_id_list:
@@ -203,8 +207,12 @@ def decrement_technic_sheet_list(technic_sheet_id_list):
     """
     if technic_sheet_id_list:
         technic_sheet = get_technic_sheet_queryset(pk__in=technic_sheet_id_list)
-        for tech_sheet in technic_sheet:
-            tech_sheet.decrement_count_application()
+        # for tech_sheet in technic_sheet:
+        #     calculate_count_applications(tech_sheet.id)
+        #     tech_sheet.decrement_count_application()
+
+        for technic_sheet_id in technic_sheet_id_list:
+            calculate_count_applications(technic_sheet_id, **kwargs)
 
 
 def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
@@ -273,7 +281,7 @@ def get_least_busy_technic_sheet(free_technic_sheet_list: list[dict]) -> dict:
     return {}
 
 
-def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet:
+def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet | None:
     workload_dict = get_workload_dict_of_technic_sheet(workday=workday)
     free_technic_sheet_list = get_free_list_of_technic_sheet(technic_title=technic_title, workload_dict=workload_dict)
     if free_technic_sheet_list:
@@ -283,6 +291,25 @@ def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> Technic
         any_technic_sheet_list = get_free_list_of_technic_sheet(
             technic_title=technic_title, workload_dict=workload_dict, get_only_free=False)
         least_busy_technic_sheet = get_least_busy_technic_sheet(any_technic_sheet_list)
-        return get_technic_sheet(pk=least_busy_technic_sheet['id'])
+        if least_busy_technic_sheet:
+            return get_technic_sheet(pk=least_busy_technic_sheet['id'])
+        else:
+            return None
+        # print(least_busy_technic_sheet)
+        # return get_technic_sheet(pk=least_busy_technic_sheet['id'])
 
 
+def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):
+    technic_sheet = get_technic_sheet(pk=technic_sheet_id)
+    applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        technic_sheet=technic_sheet,
+        isChecked=False,
+        isArchive=False,
+        is_cancelled=False
+    )
+    if exclude_app_tech:
+        count_applications_technic = applications_technic.exclude(application_today__id=exclude_app_tech).count()
+    else:
+        count_applications_technic = applications_technic.count()
+    technic_sheet.count_application = count_applications_technic
+    technic_sheet.save(update_fields=['count_application'])

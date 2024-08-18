@@ -72,7 +72,7 @@ def delete_application_today(application_today: ApplicationToday):
     technic_sheet_id_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         isArchive=False, application_today=application_today
     ).values_list('technic_sheet', flat=True)
-    TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list)
+    TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list, exclude_app_tech=application_today.id)
     application_today.delete()
 
 

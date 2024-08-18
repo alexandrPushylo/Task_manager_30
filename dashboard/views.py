@@ -236,9 +236,8 @@ def edit_application_view(request):
         technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('technic', 'driver_sheet__driver'),
             isArchive=False,
-            status=True,
             driver_sheet__isnull=False,
-            driver_sheet__status=True,
+            status=True,
             date=current_day
         )
 
@@ -251,6 +250,12 @@ def edit_application_view(request):
         context['technic_driver_list'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets
+        )
+        context['technic_driver_list_for_add'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+            technic_titles=technic_titles_dict,
+            technic_sheets=technic_sheets.filter(
+                driver_sheet__status=True,
+            )
         )
 
         if request.method == 'POST':
@@ -308,10 +313,15 @@ def edit_application_view(request):
                     else:
                         some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
                     description = post_application_technic_description if post_application_technic_description else ''
-                    if application_technic.technic_sheet.id != some_technic_sheet.id:
-                        application_technic.technic_sheet.decrement_count_application()
-                        application_technic.technic_sheet = some_technic_sheet
-                        some_technic_sheet.increment_count_application()
+
+                    if some_technic_sheet:
+                        if application_technic.technic_sheet != some_technic_sheet:
+                            if application_technic.technic_sheet is not None:
+                                application_technic.technic_sheet.decrement_count_application()
+                            application_technic.technic_sheet = some_technic_sheet
+                            some_technic_sheet.increment_count_application()
+                    else:
+                        application_technic.technic_sheet = None
                     application_technic.description = description
                     application_technic.save(update_fields=['technic_sheet', 'description'])
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
@@ -561,9 +571,15 @@ def technic_sheet_view(request):
                     return HttpResponse(b"none")
 
             if operation == 'changeDriverForTechnic' and U.is_valid_get_request(technic_sheet_id):
-                TECHNIC_SHEET_SERVICE.change_driver(
-                    technic_sheet_id=technic_sheet_id,
-                    driver_sheet_id=driver_sheet_id)
+                status = TECHNIC_SHEET_SERVICE.change_driver(
+                        technic_sheet_id=technic_sheet_id,
+                        driver_sheet_id=driver_sheet_id)
+                if status:
+                    return HttpResponse(b"true")
+                elif status is None:
+                    return HttpResponse(b"none")
+                else:
+                    return HttpResponse(b"false")
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context['current_day'] = current_day
@@ -691,7 +707,7 @@ def users_view(request):
             users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title, order_by=('last_name',))
         else:
             users_list = []
-        context['users_list'] = users_list
+        context['users_list'] = users_list.filter(isArchive=False)
         return render(request, 'content/users/users.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)

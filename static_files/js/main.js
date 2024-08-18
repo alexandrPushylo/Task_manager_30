@@ -89,11 +89,9 @@ const toggleTechnicSheetStatus = (e, itemId) => {
             const row = $('#technic_sheet_id__'+itemId)
             if(response==='true'){
                 row.css('background-color', '#effdf6')
-                // row.css('text-decoration-line', 'none')
             }
             if(response==='false'){
                 row.css('background-color', '#fdefef')
-                // row.css('text-decoration-line', 'line-through')
             }
             if(response==='none'){
                 row.css('color', 'red')
@@ -105,15 +103,27 @@ const toggleTechnicSheetStatus = (e, itemId) => {
 function changeDriverForTechnic(e, techSheetId) {
     const operation = "changeDriverForTechnic"
     const e_name = e.name;
+    const selectName = $('select[name=' + e_name + ']')
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            driver_sheet_id: $('select[name=' + e_name + ']').val(),
+            driver_sheet_id: selectName.val(),
             technic_sheet_id: techSheetId,
             operation: operation
+        },
+        success: (response)=> {
+            if(response==='true'){
+                selectName.css('border', 'none')
+            }
+            if(response==='false'){
+                selectName.css('border', 'red 1px solid')
+            }
+            if(response==='none'){
+                selectName.css('border', 'none')
+            }
         }
     })
 }
