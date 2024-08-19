@@ -20,7 +20,6 @@
                             <span class="fw-bold">{{ weekday }}</span>
                         </p>
                     </div>
-                    {#                {% for application_today in applications_today %}#}
                     <div class="card-header">
                         <input type="hidden" name="application_id" value="{{ application_today.id }}">
                         <input type="hidden" name="construction_site_id" value="{{ construction_site.id }}">
@@ -32,98 +31,98 @@
                                     onblur="saveApplicationDescription(this);"
                                     oninput="autoResize(this)"
                                     class="form-control app_tech_description general_application_description_font"
-                                    name="application_description">{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
+                                    name="application_description">{% if application_today.description %}
+                                {{ application_today.description }}{% endif %}</textarea>
                         </label>
                     </div>
 
 
                     {% if application_today.application_technic %}
                         <div class="card-body p-1">
-{#                            <div id="list_application_technic" class="">#}
-                                {% for app_technic in application_today.application_technic %}
-                                    
-                                    
-                                    <div id="{{ app_technic.id }}" class="mt-3">
-                                        <div class="row">
-                                            <label class="col-auto p-0 ps-3">
-                                                <select id="technic_title_{{ app_technic.id }}" 
-                                                        class="form-control p-1"
-                                                        {% if app_technic.is_cancelled %}disabled=""{% endif %}
-                                                        onchange="selectTechnicTitle(this)">
-                                                    {% for title_short, title in technic_titles_dict.items %}
-                                                        {% if app_technic.technic_sheet__technic__title == title %}
-                                                            <option selected
-                                                                    value="{{ title_short }}">{{ title }}</option>
-                                                        {% else %}
-                                                            <option value="{{ title_short }}">{{ title }}</option>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                </select>
-                                            </label>
-                                            
+                            {% for app_technic in application_today.application_technic %}
 
-                                            <label class="col-auto p-0">
-                                                {% for technic_driver in technic_driver_list %}
-                                                    <select id="technic_sheet_{{ app_technic.id }}"
-                                                            onchange="changeTechnicSheetSelector(this)"
-                                                            {% if app_technic.is_cancelled %}disabled=""{% endif %}
-                                                            class="{{ technic_driver.title_short }}_{{ app_technic.id }} technic_driver_selects technic_driver_selects_{{ app_technic.id }} form-control p-1">
-{#                                                        <option value="">--Любой--</option>#}
-                                                    
-                                                        {% for technic_sheet in technic_driver.technic_sheets %}
-{#                                                            {% if app_technic.technic_sheet_id == technic_sheet.id %}#}
-                                                                <option {% if app_technic.technic_sheet_id == technic_sheet.id %} selected {% endif %}
-                                                                        value="{{ technic_sheet.id }}"
-                                                                >{% if not technic_sheet.driver_sheet.status %}Не назначен{% else %}{{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
-{#                                                            
-                                                        {% endfor %}
-                                                    
 
-                                                    </select>
+                                <div id="{{ app_technic.id }}" class="mt-3">
+                                    <div class="row">
+                                        <label class="col-auto p-0 ps-3">
+                                            <select id="technic_title_{{ app_technic.id }}"
+                                                    class="form-control p-1"
+                                                    {% if app_technic.is_cancelled %}disabled=""{% endif %}
+                                                    onchange="selectTechnicTitle(this)">
+                                                {% for title_short, title in technic_titles_dict.items %}
+                                                    {% if app_technic.technic_sheet__technic__title == title %}
+                                                        <option selected
+                                                                value="{{ title_short }}">{{ title }}</option>
+                                                    {% else %}
+                                                        <option value="{{ title_short }}">{{ title }}</option>
+                                                    {% endif %}
                                                 {% endfor %}
-                                            </label>
+                                            </select>
+                                        </label>
 
-                                            <label class="col-auto p-0 ps-1">
-                                                <button id="apply_{{ app_technic.id }}" type="button"
-                                                        style="display: none"
-                                                        onclick="applyChangesAppTechnic(this)"
-                                                        class="ms-1 btn btn-success button_apply_app_tech">
-                                                    <i class="fa-solid fa-check"></i></button>
-                                                <button id="reload_{{ app_technic.id }}" type="button"
-                                                        style="display: none"
-                                                        onclick="reloadPage(this)"
-                                                        class="btn btn-primary button_reload_app_tech">
-                                                    <i class="fa-solid fa-rotate-left"></i></button>
-                                                {% if not app_technic.is_cancelled  %}
-                                                    <button id="reject_{{ app_technic.id }}" type="button"
-                                                            class="btn btn-outline-danger mb-1 button_reject_app_tech">
-                                                        Отменить
-                                                    </button>
-                                                {% else %}
-                                                    <button id="reject_{{ app_technic.id }}" type="button"
-                                                            class="btn btn-outline-success mb-1 button_reject_app_tech">
-                                                        Принять
-                                                    </button>
-                                                {% endif %}
-                                                
-                                            </label>
-                                        </div>
 
-                                        <div class="row ">
-                                            <label>
+                                        <label class="col-auto p-0">
+                                            {% for technic_driver in technic_driver_list %}
+                                                <select id="technic_sheet_{{ app_technic.id }}"
+                                                        onchange="changeTechnicSheetSelector(this)"
+                                                        {% if app_technic.is_cancelled %}disabled=""{% endif %}
+                                                        class="{{ technic_driver.title_short }}_{{ app_technic.id }} technic_driver_selects technic_driver_selects_{{ app_technic.id }} form-control p-1">
+                                                    {% for technic_sheet in technic_driver.technic_sheets %}
+                                                        <option
+                                                                {% if app_technic.technic_sheet_id == technic_sheet.id %}
+                                                                    selected {% endif %}
+                                                                    value="{{ technic_sheet.id }}"
+                                                        >{% if not technic_sheet.driver_sheet.status %}Не
+                                                            назначен{% else %}
+                                                            {{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
+
+                                                    {% endfor %}
+
+
+                                                </select>
+                                            {% endfor %}
+                                        </label>
+
+                                        <label class="col-auto p-0 ps-1">
+                                            <button id="apply_{{ app_technic.id }}" type="button"
+                                                    style="display: none"
+                                                    onclick="applyChangesAppTechnic(this)"
+                                                    class="ms-1 btn btn-success button_apply_app_tech">
+                                                <i class="fa-solid fa-check"></i></button>
+                                            <button id="reload_{{ app_technic.id }}" type="button"
+                                                    style="display: none"
+                                                    onclick="reloadPage(this)"
+                                                    class="btn btn-primary button_reload_app_tech">
+                                                <i class="fa-solid fa-rotate-left"></i></button>
+                                            {% if not app_technic.is_cancelled %}
+                                                <button id="reject_{{ app_technic.id }}" type="button"
+                                                        class="btn btn-outline-danger mb-1 button_reject_app_tech">
+                                                    Отменить
+                                                </button>
+                                            {% else %}
+                                                <button id="reject_{{ app_technic.id }}" type="button"
+                                                        class="btn btn-outline-success mb-1 button_reject_app_tech">
+                                                    Принять
+                                                </button>
+                                            {% endif %}
+
+                                        </label>
+                                    </div>
+
+                                    <div class="row ">
+                                        <label>
                                             <textarea id="app_tech_description_{{ app_technic.id }}"
                                                       style="width: 100%;"
                                                       class="form-control app_tech_description app_technic_description_{{ app_technic.id }} general_tech_description_font"
                                                       {% if app_technic.is_cancelled %}disabled{% endif %}
                                                       oninput="onInput_tech_description(this); autoResize(this);"
                                             >{{ app_technic.description }}</textarea>
-                                            </label>
-                                        </div>
+                                        </label>
                                     </div>
-                                    
-                                    
-                                {% endfor %}
-{#                            </div>#}
+                                </div>
+
+
+                            {% endfor %}
                         </div>
                     {% endif %}
                 </div>
@@ -134,18 +133,19 @@
                         <div class="btn-group">
                             <button type="button" class="btn btn-outline-primary p-1"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#modalApplicationTechnic">Добавить технику</button>
+                                    data-bs-target="#modalApplicationTechnic">Добавить технику
+                            </button>
                             {% if is_changeable_material or user.post == 'supply' %}
                                 <button type="button" class="btn btn-outline-primary  p-1"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalMaterials">
-                                        <span>Добавить материалы</span>
+                                    <span>Добавить материалы</span>
                                 </button>
                             {% else %}
                                 <button type="button" class="btn btn-outline-secondary  p-1" disabled>
-                                        <span>Время приема заявок окончено</span>
+                                    <span>Время приема заявок окончено</span>
                                 </button>
-                            {% endif %} 
+                            {% endif %}
                         </div>
                         <div></div>
                     </div>
@@ -162,7 +162,7 @@
                         </label>
                     </div>
                 {% endif %}
-            
+
             </form>
         </div>
 
@@ -230,7 +230,10 @@
                                     <select class="form-control technic_driver_selects_add {{ technic_driver.title_short }}">
                                         <option value="">--Любой--</option>
                                         {% for technic_sheet in technic_driver.technic_sheets %}
-                                            <option value="{{ technic_sheet.id }}">{{ technic_sheet.driver_sheet.driver.last_name }}{% if technic_sheet.count_application > 0 %} [Занят] {% else %} [Свободен]{% endif %}</option>
+                                            <option value="{{ technic_sheet.id }}">
+                                                {{ technic_sheet.driver_sheet.driver.last_name }}
+                                                        {% if technic_sheet.count_application > 0 %} [Занят] {% else %}
+                                                            [Свободен]{% endif %}</option>
                                         {% endfor %}
                                     </select>
                                 {% endfor %}
@@ -262,9 +265,9 @@
 {% block footer %}
     <div></div>
     <div>
-            <a id="btn_apply_for_edit_app" 
-               href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}" 
-               class="btn btn-sm btn-success">Принять</a>   
+        <a id="btn_apply_for_edit_app"
+           href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}"
+           class="btn btn-sm btn-success">Принять</a>
     </div>
     <div></div>
 {% endblock %}
