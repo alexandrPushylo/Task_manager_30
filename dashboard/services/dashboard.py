@@ -407,5 +407,32 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
             'applications_technic': applications_technic.filter(technic_sheet=tech_sheet).order_by('priority')
         })
     context['technic_application_list'] = technic_application_list
+
+    application_today_id_list = applications_technic.filter(technic_sheet__in=current_technic_sheet).values_list('application_today', flat=True)
+
+    applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+        id__in=application_today_id_list,
+        status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES
+    ).values(
+        'id',
+        'construction_site__address',
+        'construction_site__foreman__last_name',
+        'construction_site__foreman__first_name',
+        'description'
+    )
+    for application in applications_today:
+        application['application_technic'] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            application_today__id=application['id'],
+        ).values(
+            'is_cancelled',
+            'technic_sheet__technic__title',
+            'technic_sheet__driver_sheet__status',
+            'technic_sheet__driver_sheet__driver__last_name',
+            'priority',
+            'technic_sheet__count_application',
+            'description',
+        )
+    context['applications_today'] = applications_today
+
     return context
 

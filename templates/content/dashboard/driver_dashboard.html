@@ -12,8 +12,8 @@
             <nav aria-label="Page navigation example" class="d-flex justify-content-center">
                 <ul class="pagination">
 
-                    <li class="page-item"><a 
-                            class="page-link fw-bold text-dark me-2 ps-4 pe-4" 
+                    <li class="page-item"><a
+                            class="page-link fw-bold text-dark me-2 ps-4 pe-4"
                             href="{% url 'dashboard' %}?current_day={{ prev_work_day.date.isoformat }}"><i
                             class="fa-solid fa-angles-left"></i></a></li>
                     {% for day in work_days %}
@@ -25,8 +25,8 @@
                                 <span class="small">{{ day.weekday }}</span>
                             </a></li>
                     {% endfor %}
-                    <li class="page-item"><a 
-                            class="page-link fw-bold text-dark ms-2 ps-4 pe-4" 
+                    <li class="page-item"><a
+                            class="page-link fw-bold text-dark ms-2 ps-4 pe-4"
                             href="{% url 'dashboard' %}?current_day={{ next_work_day.date.isoformat }}"><i
                             class="fa-solid fa-angles-right"></i></a></li>
                 </ul>
@@ -36,58 +36,143 @@
         <div class="mt-2">
             {% for application_technic in technic_application_list %}
                 <div class="card mb-3">
-                {% ifchanged %}
-                    <div class="card-header">
-                        <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet.driver.last_name }}</span>
-                        <span class="fw-bolder">({{ application_technic.technic_sheet.technic.title }})</span>
-                    </div>
-                {% endifchanged %}
-                    <div class="card-title">
-                    {% if application_technic.applications_technic %}
-                        {% for application in application_technic.applications_technic %}
-                            <div class="card-body input-group p-1">
-                                <div class="col-auto input-group-text p-2">
-                                    <span class="fw-bolder">{{ application.priority }}</span>
-                                </div>
-
-                                <div class="col ms-1">
-                                    <span class="fw-bolder small ms-2">{{ application.application_today.construction_site.address }}</span>
-                                    {% if application.application_today.construction_site.foreman %}
-                                    <span class="small">({{ application.application_today.construction_site.foreman.last_name }})</span>
-                                    {% endif %}
-                                    {% if application.application_today.description %}
-                                        <p class="m-0 mb-1 ms-2">
-                                            <span class="small form-text">Примечание к объекту:</span>
-                                            <span>{{ application.application_today.description }}</span>
-                                        </p>
-                                        <hr class="m-1">
-                                    {% endif %}
-
-                                    <textarea class="form-control p-1 text_area_description" readonly
-                                              aria-label="">{{ application.description }}</textarea>
-                                </div>
-                            </div>  <hr class="m-1">                      
-                        {% endfor %}
-                        {% else %}
-                        <div class="p-1">
-                            <p class="ms-2">
-                                <span>На данный момент задание отсутствует</span>
-                            </p>
+                    {% ifchanged %}
+                        <div class="card-header">
+                            <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet.driver.last_name }}</span>
+                            <span class="fw-bolder">({{ application_technic.technic_sheet.technic.title }})</span>
                         </div>
-                    {% endif %}
+                    {% endifchanged %}
+                    <div class="card-title">
+                        {% if application_technic.applications_technic %}
+                            {% for application in application_technic.applications_technic %}
+                                <div class="card-body input-group p-1">
+                                    <div class="col-auto input-group-text p-2">
+                                        <span class="fw-bolder">{{ application.priority }}</span>
+                                    </div>
+
+                                    <div class="col ms-1">
+                                        <span class="fw-bolder small ms-2">{{ application.application_today.construction_site.address }}</span>
+                                        {% if application.application_today.construction_site.foreman %}
+                                            <span class="small">({{ application.application_today.construction_site.foreman.last_name }})</span>
+                                        {% endif %}
+                                        {#                                    {% if application.application_today.description %}#}
+                                        {#                                        <p class="m-0 mb-1 ms-2">#}
+                                        {#                                            <span class="small form-text">Примечание к объекту:</span>#}
+                                        {#                                            <span>{{ application.application_today.description }}</span>#}
+                                        {#                                        </p>#}
+                                        {#                                        <hr class="m-1">#}
+                                        {#                                    {% endif %}#}
+
+                                        <textarea class="form-control p-1 text_area_description" readonly
+                                                  aria-label="">{{ application.description }}</textarea>
+                                    </div>
+                                </div>
+                                <hr class="m-1">
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-1">
+                                <p class="ms-2">
+                                    <span>На данный момент задание отсутствует</span>
+                                </p>
+                            </div>
+                        {% endif %}
                     </div>
 
                 </div>
             {% endfor %}
         </div>
 
+
+        <div id="applications_container" class="mt-2 position-relative translate-middle-x start-50">
+            {% for application_today in applications_today %}
+                <div class="col-sm-auto application_items mb-5">
+
+                    <div class="application_items_border border border-2">
+
+                        <div class="card m-1">
+                            <div class="card-header p-0">
+
+                                <p class="card-title fw-bolder p-0 m-0 text-uppercase"
+                                   style="text-align: center">{{ application_today.construction_site__address }}</p>
+                                <p class="m-0 ms-2" style="text-align: center">
+                                    <span class="fw-bolder">{{ weekday }}</span>,
+                                    <span>{{ current_day.date }}</span>
+                                </p>
+                                {% if application_today.construction_site__foreman__last_name %}
+                                    <p class="card-title p-0 m-0 ms-2">
+                                        <span class="small m-0">Прораб:</span>
+                                        <span class="fw-bolder">{{ application_today.construction_site__foreman__last_name }}</span>
+                                        <span class="fw-bolder">{{ application_today.construction_site__foreman__first_name }}</span>
+                                    </p>{% endif %}
+                                <hr class="m-0"/>
+
+
+                                {% if application_today.description %}
+                                    <div class="mt-1">
+                                        <label class="w-100"><p class="fw-bolder small m-0" style="text-align: center;">
+                                            Примечание к объекту:</p>
+                                            <textarea readonly
+                                                      class="form-control border border-0 app_tech_description general_application_description_font">{{ application_today.description }}
+                                    </textarea>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-text">
+                                {% if application_today %}
+                                    {% if application_today.application_technic %}
+                                        <div class="ms-1 mt-1">
+                                            {% for app_technic in application_today.application_technic %}
+                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
+                                                        {% if app_technic.is_cancelled %}
+                                                     style="color: rgba(97,95,95,0.51)"
+                                                        {% elif app_technic.isChecked %}
+                                                     style="color: rgba(97,95,95,0.51)"
+                                                        {% endif %}
+                                                >
+                                                    <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
+
+                                                    {% if app_technic.technic_sheet__driver_sheet__status %}
+                                                        <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                        <span>[<span>{{ app_technic.priority }}</span>/
+                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
+                                                    </span>
+                                                    {% else %}
+                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                    {% endif %}
+
+                                                    {% if app_technic.description %}
+                                                        <label class="m-0 p-0 row">
+                                                <textarea readonly
+                                                          class="form-control app_tech_description general_tech_description_font"
+                                                        {% if app_technic.is_cancelled or app_technic.isChecked %}
+                                                          style="color: rgba(97,95,95,0.51)"
+                                                        {% endif %}
+                                                >{{ app_technic.description }}</textarea>
+                                                        </label>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}
 
 {% block footer %}
     <div></div>
     <div>
-        <a class="btn btn-primary" href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
+        <a class="btn btn-primary"
+           href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
     </div>
     <div></div>
 {% endblock %}
