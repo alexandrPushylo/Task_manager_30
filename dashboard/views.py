@@ -237,7 +237,7 @@ def edit_application_view(request):
             select_related=('technic', 'driver_sheet__driver'),
             isArchive=False,
             driver_sheet__isnull=False,
-            status=True,
+            # status=True,
             date=current_day
         )
 
@@ -255,6 +255,7 @@ def edit_application_view(request):
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets.filter(
                 driver_sheet__status=True,
+                status=True,
             )
         )
 
