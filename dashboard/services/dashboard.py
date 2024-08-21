@@ -216,6 +216,9 @@ def get_dashboard_for_mechanic(request, current_day: WorkDaySheet, context: dict
         select_related=('technic__attached_driver', 'driver_sheet__driver'),
         date=current_day, isArchive=False)
 
+    if not technic_sheet_list.exists():
+        U.prepare_sheets(current_day)
+
     context['technic_sheet_list'] = technic_sheet_list
 
     application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
