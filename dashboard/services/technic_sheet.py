@@ -105,7 +105,7 @@ def prepare_technic_sheets(workday: WorkDaySheet):
     if count_technics != count_technic_sheet:
         log.info(f"TechnicSheet на {workday.date} не готов")
 
-        driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(isArchive=False, date=workday, status=True)
+        driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(isArchive=False, date=workday)
 
         last_workday = WORK_DAY_SERVICE.get_workday_queryset(date__lt=workday.date, status=True).first()
         last_technic_sheet = get_technic_sheet_queryset(date=last_workday, isArchive=False)
