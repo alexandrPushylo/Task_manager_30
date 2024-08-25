@@ -503,6 +503,7 @@ function setViewProps(e) {
     const is_show_absent_app = $('input[name="is_show_absent_app"]').is(':checked');
     const is_show_technic_app = $('input[name="is_show_technic_app"]').is(':checked');
     const is_show_material_app = $('input[name="is_show_material_app"]').is(':checked');
+    const color_title = $('input[name="io_color_title"]').val();
 
     $.ajax({
         type: 'POST',
@@ -514,6 +515,7 @@ function setViewProps(e) {
             is_show_absent_app: is_show_absent_app,
             is_show_technic_app: is_show_technic_app,
             is_show_material_app: is_show_material_app,
+            color_title: color_title,
             operation: operation,
         },
         success: (d) => {
