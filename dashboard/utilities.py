@@ -320,6 +320,9 @@ def set_data_for_filter(request):
     sort_by = request.POST.get('sort_by')
     sort_by = sort_by if sort_by != '' else None
 
+    color_title = request.POST.get('color_title')
+    color_title = color_title if color_title is not None else '#000000'
+
     _user = USERS_SERVICE.get_user(pk=request.user.id)
     if _user:
         if is_show_saved_app:
@@ -336,6 +339,8 @@ def set_data_for_filter(request):
             _user.filter_foreman = filter_foreman
         if _hide_panel:
             _user.is_show_panel = False if _user.is_show_panel else True
+        if color_title:
+            _user.color_title = color_title
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
         _user.save()

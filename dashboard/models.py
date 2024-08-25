@@ -24,6 +24,8 @@ class User(AbstractUser):
     filter_technic = models.CharField(max_length=100, null=True, blank=True, verbose_name='Фильтр по технике')
     sort_by = models.CharField(max_length=100, null=True, blank=True, verbose_name='Сортировать по:')
 
+    color_title = models.CharField(max_length=8, null=False, default='#000000', verbose_name='Цвет названия объекта')
+
 
 #   TECHNIC-------------------------------------------------------------------
 class Technic(models.Model):
