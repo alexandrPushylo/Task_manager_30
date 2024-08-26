@@ -50,6 +50,17 @@ class Technic(models.Model):
         ordering = ['title']
 
 
+class TemplateDescForTechnic(models.Model):
+    technic = models.OneToOneField(Technic, on_delete=models.CASCADE, null=False, blank=False, verbose_name='Техника')
+    description = models.TextField(max_length=1024, null=True, blank=True, default='', verbose_name="Описание")
+
+    def __str__(self):
+        return f"{self.technic} ({self.description})"
+
+    class Meta:
+        verbose_name = "Templates для техники"
+        verbose_name_plural = "Template для техники"
+
 #   TECHNIC-END---------------------------------------------------------------
 
 
