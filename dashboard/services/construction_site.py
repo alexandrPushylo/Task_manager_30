@@ -42,10 +42,10 @@ def hide_construction_site(constr_site_id):
     if constr_site:
         if constr_site.status:
             constr_site.status = False
-            log.info(f'Объект был скрыт')
+            log.info('Объект был скрыт')
         else:
             constr_site.status = True
-            log.info(f'Объект был отображен')
+            log.info('Объект был отображен')
         constr_site.save(update_fields=['status'])
 
 
@@ -54,10 +54,11 @@ def delete_construction_site(constr_site_id) -> ConstructionSite | None:
     if constr_site:
         if constr_site.isArchive:
             constr_site.isArchive = False
-            log.info(f'Объект {constr_site.address} был восстановлен из архива')
+            log.info('Объект %s был восстановлен из архива' % constr_site.address)
         else:
             constr_site.isArchive = True
-            log.info(f'Объект {constr_site.address} был помешен в архив')
+            log.info('Объект %s был помешен в архив' % constr_site.address)
+
         constr_site.save(update_fields=['isArchive'])
         return constr_site
     return None
@@ -75,13 +76,13 @@ def check_data(data: dict) -> dict | None:
             out['foreman'] = foreman
         else:
             out['foreman'] = None
-            log.error(f'Прораба с id {cs_foreman} не существует')
+            log.error('Прораба с id %s не существует' % cs_foreman)
     else:
         out['foreman'] = None
 
     if cs_address:
         out['address'] = cs_address
-        log.info(f'Данные: (cs_address) в порядке')
+        log.info('Данные: (cs_address) в порядке')
         return out
     else:
         log.error('Ошибка с данными: (cs_address) при проверке')
@@ -93,7 +94,7 @@ def create_construction_site(data: dict):
         address=data['address'],
         foreman=data['foreman'],
     )
-    log.info(f'Объект {data["address"]} был создан')
+    log.info('Объект %s был создан' % data["address"])
 
 
 def edit_construction_site(constr_site_id, data: dict):
@@ -102,7 +103,7 @@ def edit_construction_site(constr_site_id, data: dict):
         constr_site.address = data['address']
         constr_site.foreman = data['foreman']
         constr_site.save(update_fields=['address', 'foreman'])
-        log.info(f'Объект {data["address"]} был изменен')
+        log.info('Объект %s был изменен' % data["address"])
 
 
 def create_or_edit_construction_site(data: dict, constr_site_id=None):

@@ -115,7 +115,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
 def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
     TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
-    log.info(f"Prepare sheets done")
+    log.info("Prepare sheets done")
 
 
 def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
