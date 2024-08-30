@@ -115,7 +115,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
 def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
     TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
-    log.info(f"Prepare sheets done")
+    log.info("Prepare sheets done")
 
 
 def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
@@ -625,7 +625,11 @@ def set_spec_task(technic_sheet_id):
         technic_sheet=technic_sheet)
     if at_created:
         technic_sheet.increment_count_application()
-    application_technic.description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
+
+    template_description = TECHNIC_SERVICE.get_description_for_spec_app(technic_sheet.technic.id)
+    if template_description is None:
+        template_description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
+    application_technic.description = template_description
     application_technic.save()
     application_today.status = ASSETS.ApplicationTodayStatus.SUBMITTED.title
     application_today.save(update_fields=['status'])

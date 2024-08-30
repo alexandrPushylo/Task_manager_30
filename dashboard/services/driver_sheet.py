@@ -87,16 +87,16 @@ def prepare_driver_sheet(workday: WorkDaySheet):
     count_driver = drivers_list.count()
 
     if count_driver != count_driver_sheets:
-        log.info(f"DriverSheet не готов")
+        log.info("DriverSheet не готов")
 
         last_workday = WorkDaySheet.objects.filter(date__lt=workday.date, status=True).first()
         last_driver_sheet = DriverSheet.objects.filter(date=last_workday, isArchive=False)
 
         if count_driver > count_driver_sheets:
-            log.info(f"count_driver > count_driver_sheets {count_driver} > {count_driver_sheets}")
+            log.info("count_driver > count_driver_sheets %s > %s" % (count_driver, count_driver_sheets))
 
             if last_driver_sheet.count() == count_driver:  # COPY
-                log.info(f"last_driver_sheet.exists() is {last_driver_sheet.exists()} - Копирование")
+                log.info("last_driver_sheet.exists() is %s - Копирование" % last_driver_sheet.exists())
 
                 current_driver_sheet = [DriverSheet(
                     date=workday,
@@ -104,7 +104,7 @@ def prepare_driver_sheet(workday: WorkDaySheet):
                     status=ds.status) for ds in last_driver_sheet]
 
             else:  # CREATE
-                log.info(f"last_driver_sheet.exists() is {last_driver_sheet.exists()} - Создание")
+                log.info("last_driver_sheet.exists() is %s - Создание" % last_driver_sheet.exists())
 
                 exclude_drivers = driver_sheets.values_list('driver_id', flat=True)
 
@@ -115,19 +115,19 @@ def prepare_driver_sheet(workday: WorkDaySheet):
             DriverSheet.objects.bulk_create(current_driver_sheet)
 
         if count_driver_sheets != 0 and count_driver != count_driver_sheets:  # Delete duplicate
-            log.info(f"count_driver < count_driver_sheets {count_driver} < {count_driver_sheets}")
-            log.info(f"Поиск дубликата")
+            log.info("count_driver < count_driver_sheets %s < %s" % (count_driver, count_driver_sheets))
+            log.info("Поиск дубликата")
             for driver in drivers_list:
                 double_ds = DriverSheet.objects.filter(date=workday, driver=driver)
                 if double_ds.count() > 1:
-                    log.info(f"Дубликат double_ds удален")
+                    log.info("Дубликат double_ds удален")
                     double_ds.first().delete()
 
         if count_driver == count_driver_sheets:
-            log.info(f"count_driver = count_driver_sheets {count_driver} = {count_driver_sheets}")
+            log.info("count_driver = count_driver_sheets %s = %s" % (count_driver, count_driver_sheets))
 
     else:
-        log.info(f"DriverSheet существует")
+        log.info("DriverSheet существует")
 
 
 def is_driver_sheet_exists(workday: WorkDaySheet) -> bool:

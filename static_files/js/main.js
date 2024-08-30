@@ -714,6 +714,7 @@ function copyApplicationTo(e) {
 }
 
 function setSpecTask(e, technicSheetId) {
+    const operation = "set_spec_task";
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -721,7 +722,7 @@ function setSpecTask(e, technicSheetId) {
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             technic_sheet_id: technicSheetId,
-            operation: 'set_spec_task'
+            operation: operation
         },
         success: (d) => {
             window.location.reload()

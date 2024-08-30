@@ -3,6 +3,7 @@ from django.core.handlers.wsgi import WSGIRequest  # type: ignore
 from dashboard.types import Any
 
 from dashboard.models import Technic, User, WorkDaySheet, TechnicSheet
+from dashboard.models import TemplateDescForTechnic
 import dashboard.assets as ASSETS
 from django.db.models import QuerySet  # type: ignore
 import dashboard.services.user as USERS_SERVICE
@@ -152,3 +153,18 @@ def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]) -> dict
     technic_titles_dict = {str(title).replace(' ', '').replace('.', ''): title
                            for title in technic_titles_list}
     return technic_titles_dict
+
+
+def get_description_for_spec_app(technic_id) -> str | None:
+    """
+    Получить шаблон описания для "спец объекта".
+    :param technic_id:
+    :return:
+    """
+    if technic_id:
+        try:
+            template_description = TemplateDescForTechnic.objects.get(technic__id=technic_id)
+            return template_description.description
+        except TemplateDescForTechnic.DoesNotExist:
+            log.warning('TemplateDescForTechnic.DoesNotExist')
+
