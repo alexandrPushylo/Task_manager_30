@@ -54,8 +54,11 @@ class TemplateDescForTechnic(models.Model):
     technic = models.OneToOneField(Technic, on_delete=models.CASCADE, null=False, blank=False, verbose_name='Техника')
     description = models.TextField(max_length=1024, null=True, blank=True, default='', verbose_name="Описание")
 
+    is_auto_mode = models.BooleanField(default=True, verbose_name='Автоматический режим')
+    is_default_mode = models.BooleanField(default=False, verbose_name='Режим по умолчанию')
+
     def __str__(self):
-        return f"{self.technic} ({self.description})"
+        return f"[{'auto' if self.is_auto_mode else 'default' if self.is_default_mode else 'manual'}] {self.technic} ({self.description}) "
 
     class Meta:
         verbose_name = "Templates для техники"

@@ -14,7 +14,7 @@ def get_parameter(**kwargs) -> Parameter:
         parameter = Parameter.objects.get(**kwargs)
         return parameter
     except Parameter.DoesNotExist:
-        log.error(f'get_parameter(): DoesNotExist')
+        log.error('get_parameter(): DoesNotExist')
         return Parameter.objects.none()
 
 

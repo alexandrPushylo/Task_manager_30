@@ -31,11 +31,14 @@
             </ul>
         </nav>
     </div>
-    {% if VIEW_MODE == 'view_mode_archive' %}
-        {% include 'includes/label_archive.html' %}
-    {% endif %}
-    {% include 'includes/weekday_current_day.html' %}
-    {% include 'includes/btn_add_driver_and_technic.html' %}
+    <div style="text-align: center">
+        {% if VIEW_MODE == 'view_mode_archive' %}
+            {% include 'includes/label_archive.html' %}
+        {% endif %}
+        {% include 'includes/weekday_current_day.html' %}
+        {% include 'includes/btn_add_driver_and_technic.html' %}
+    </div>
+    
 
     <div id="mechanic_dashboard" class="translate-middle-x position-relative start-50">
         <div id="technic_sheet_list" class="container mx-auto">

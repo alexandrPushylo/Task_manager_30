@@ -36,36 +36,10 @@ from dashboard.views import settings_view
 from dashboard.views import maintenance_view
 from dashboard.views import def_test
 from dashboard.views import routing
+from dashboard.views import task_desc_for_spec_constr_site_view
 
 urlpatterns = [
                   path('', include('dashboard.urls')),
-                  # path('dashboard/', dashboard, name='dashboard'),
-                  # path('edit_application/', edit_application_view, name='edit_application'),
-                  # path('clear_application/', clear_application_today, name='clear_application'),
-
-                  # path('conflicts_list/', conflicts_list_view, name='conflicts_list'),
-                  # path('conflict_resolution/', conflict_resolution_view, name='conflict_resolution'),
-
-                  # path('technic_application_list/', show_technic_application, name='technic_application_list'),
-                  # path('material_application_list/', show_material_application, name='material_application_list'),
-                  # path('material_application_supply/', material_application_supply_view,
-                  #      name='material_application_supply'),
-
-                  # path('work_days/', workday_sheet_view, name='work_days'),
-                  # path('driver_sheet/', driver_sheet_view, name='driver_sheet'),
-                  # path('technic_sheet/', technic_sheet_view, name='technic_sheet'),
-
-                  # path('users/', users_view, name='users'),
-                  # path('edit_user/', edit_user_view, name='edit_user'),
-                  # path('delete_user/', delete_user_view, name='delete_user'),
-                  # path('profile/', profile_view, name='profile'),
-
-                  # path('technics/', technic_view, name='technics'),
-                  # path('edit_technic/', edit_technic_view, name='edit_technic'),
-                  # path('delete_technic/', delete_technic_view, name='delete_technic'),
-                  #
-                  # path('construction_site/', construction_site_view, name='construction_site'),
-                  # path('edit_construction_sites/', edit_construction_sites, name='edit_construction_sites'),
 
                   path('admin/', admin.site.urls),
                   path('login/', login_view, name='login'),
@@ -73,6 +47,7 @@ urlpatterns = [
                   path('register/', register_view, name='register'),
                   path('restore_pwd/', restore_password_view, name='restore_password'),
                   path('settings/', settings_view, name='settings'),
+                  path('templates_for_spec_constr_site/', task_desc_for_spec_constr_site_view, name='tasks_for_spec_constr_site'),
 
                   path('change_app_status/', change_status_application_today, name='change_app_status'),
                   path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),

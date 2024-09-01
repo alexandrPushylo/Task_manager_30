@@ -155,16 +155,85 @@ def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]) -> dict
     return technic_titles_dict
 
 
-def get_description_for_spec_app(technic_id) -> str | None:
+def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptionMode:
     """
-    Получить шаблон описания для "спец объекта".
+    Получить шаблон описания для "спец объекта" с помощью technic_id.
     :param technic_id:
     :return:
     """
     if technic_id:
         try:
             template_description = TemplateDescForTechnic.objects.get(technic__id=technic_id)
-            return template_description.description
+            if template_description.is_default_mode:
+                return ASSETS.TaskDescriptionMode.DEFAULT
+            elif template_description.is_auto_mode:
+                return ASSETS.TaskDescriptionMode.AUTO
+            elif all((not template_description.is_auto_mode, not template_description.is_default_mode)):
+                return ASSETS.TaskDescriptionMode.MANUAL
+            else:
+                return ''
         except TemplateDescForTechnic.DoesNotExist:
             log.warning('TemplateDescForTechnic.DoesNotExist')
+
+
+def get_task_description_queryset(select_related: tuple = (),
+                          order_by: tuple = (),
+                          **kwargs) -> QuerySet[TemplateDescForTechnic]:
+    """
+    :param select_related:
+    :param order_by:
+    :param kwargs:
+    :return:
+    """
+    description = TemplateDescForTechnic.objects.filter(**kwargs)
+
+    if select_related:
+        description = description.select_related(*select_related)
+    if order_by:
+        description = description.order_by(*order_by)
+    return description
+
+
+def get_task_description(**kwargs) -> TemplateDescForTechnic:
+    try:
+        description = TemplateDescForTechnic.objects.get(**kwargs)
+        return description
+    except TemplateDescForTechnic.DoesNotExist:
+        log.error("get_task_description(): TemplateDescForTechnic.DoesNotExist ")
+        return TemplateDescForTechnic.objects.none()
+    except ValueError:
+        log.error("get_task_description(): ValueError")
+        return TemplateDescForTechnic.objects.none()
+
+
+def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, description: str|None):
+    """
+    Установить шаблон задания для "спец объекта" с помощью technic_id.
+    :param technic_id:
+    :param type_mode:
+    :param description:
+    :return:
+    """
+    task_description = get_task_description(technic=technic_id)
+    if not task_description:
+        task_description = TemplateDescForTechnic()
+        task_description.technic_id = technic_id
+    match type_mode:
+        case ASSETS.TaskDescriptionMode.AUTO.value:
+            task_description.is_auto_mode = True
+            task_description.is_default_mode = False
+            task_description.save()
+        case ASSETS.TaskDescriptionMode.DEFAULT.value:
+            task_description.is_auto_mode = False
+            task_description.is_default_mode = True
+            task_description.save()
+        case ASSETS.TaskDescriptionMode.MANUAL.value:
+            task_description.is_auto_mode = False
+            task_description.is_default_mode = False
+            task_description.description = description if description is not None else ''
+            task_description.save()
+        case _:
+            log.warning('type_mode не валиден set_task_description')
+
+
 

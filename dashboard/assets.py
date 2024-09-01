@@ -56,6 +56,12 @@ class AcceptMode(Enum):
     OFF = 'off'
 
 
+class TaskDescriptionMode(Enum):
+    AUTO = 'auto'
+    DEFAULT = 'default'
+    MANUAL = 'manual'
+
+
 COLORS = [
     '#15b03e',
     '#5a9e6c',

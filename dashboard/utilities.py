@@ -626,10 +626,29 @@ def set_spec_task(technic_sheet_id):
     if at_created:
         technic_sheet.increment_count_application()
 
-    template_description = TECHNIC_SERVICE.get_description_for_spec_app(technic_sheet.technic.id)
-    if template_description is None:
-        template_description = ASSETS.MessagesAssets.CS_SPEC_DEFAULT_DESC.value
-    application_technic.description = template_description
+    template_description = TECHNIC_SERVICE.get_description_mode_for_spec_app(technic_sheet.technic.id)
+    match template_description:
+        case ASSETS.TaskDescriptionMode.DEFAULT:
+            description = PARAMETER_SERVICE.get_parameter(
+                name=VAR.VAR_TASK_DESCRIPTION_FOR_SPEC_CONSTR_SITE['name']
+            ).value
+        case ASSETS.TaskDescriptionMode.MANUAL:
+            description = TECHNIC_SERVICE.get_task_description(
+                technic__id=technic_sheet.technic.id).description
+        case ASSETS.TaskDescriptionMode.AUTO:
+            task_description = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                application_today__construction_site__address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value,
+                application_today__date__date=current_day.date - timedelta(days=1),
+                technic_sheet__technic=technic_sheet.technic,
+            )
+            if task_description.exists():
+                description = task_description.first().description
+            else:
+                description = ''
+        case _:
+            description=''
+
+    application_technic.description = description
     application_technic.save()
     application_today.status = ASSETS.ApplicationTodayStatus.SUBMITTED.title
     application_today.save(update_fields=['status'])
@@ -792,3 +811,6 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
         log.debug(f"get_accept_to_change_materials_app(): C3")
 
     return is_accept
+
+
+
