@@ -1,4 +1,5 @@
 import telebot
+from telebot.apihelper import ApiTelegramException
 from telebot import types
 import json
 from config.creds import TELEGRAM_BOT_TOKEN
