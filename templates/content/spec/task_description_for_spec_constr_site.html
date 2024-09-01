@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
+
+
+{% block content %}
+    <div id="setting_page" class="container" style="width: max-content">
+        <div>
+            <p class="m-0 fs-3"><u>{{ title }}</u></p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Задание по умолчанию</span>
+            </div>
+            <div class="card-body p-0">
+                <form method="post" id="form_default_task_description">{% csrf_token %}
+                    <textarea name="default_task_description"
+                          id="default_task_description"
+                          aria-label="" 
+                              onchange="$('#btn_submit_form_default_task_description').show();"
+                              oninput="$('#btn_submit_form_default_task_description').show();"
+                          class="form-control">{{ default_task_description }}</textarea>
+                </form>                
+            </div>
+            <div class="card-footer">
+                <button id="btn_submit_form_default_task_description" 
+                        class="btn p-1 btn-success"
+                        style="display: none;"
+                        type="submit" form="form_default_task_description">Применить</button>
+            </div>                
+        </div>
+
+
+        <div class="container">
+            {% csrf_token %}
+                {% for technic in technic_list %}
+                    <div class="card w-auto my-1">
+                    <div class="card-header">
+                        <span>{{ technic.title }}</span>
+                        <span>({{ technic.attached_driver__last_name }})</span>
+                        <button id="btn_technic_id_{{ technic.id }}" 
+                            class="btn btn-sm btn-outline-success ms-2"
+                                onclick="setTaskDescription('{{ technic.id }}')"
+                            style="display: none;"
+                            type="button" form="form_default_task_description">Применить</button>
+                        
+                        <input type="hidden" value="{{ technic.id }}" name="technic_{{ technic.id }}">                        
+                    </div>
+                    <div class="card-body p-2 m-0">
+                        <div class="">
+                            <input type="radio" name="technic_{{ technic.id }}" 
+                                   value="auto"
+                                   onchange="$('#io_manual_mode_{{ technic.id }}').attr('disabled','disabled'); $('#btn_technic_id_{{ technic.id }}').show();"
+                                   {% if technic.task_description.is_auto_mode and not technic.task_description.is_default_mode %}checked{% endif %}
+                                   id="auto_mode_{{ technic.id }}">
+                            <label for="auto_mode_{{ technic.id }}">
+                                <span>Принять предыдущее задание</span></label>
+                        </div>
+                        <div class="">
+                            <input type="radio" name="technic_{{ technic.id }}" 
+                                   value="default"
+                                   {% if technic.task_description.is_default_mode and not technic.task_description.is_auto_mode %}checked{% endif %}
+                                   onchange="$('#io_manual_mode_{{ technic.id }}').attr('disabled','disabled'); $('#btn_technic_id_{{ technic.id }}').show();"
+                                   id="default_mode_{{ technic.id }}">
+                            <label for="default_mode_{{ technic.id }}">
+                                <span>"{{ default_task_description }}"</span></label>
+                        </div>
+                        <div class="">
+                            <input type="radio" name="technic_{{ technic.id }}" 
+                                   value="manual"
+                                   {% if technic.task_description %}
+                                    {% if not technic.task_description.is_default_mode and not technic.task_description.is_auto_mode %}checked{% endif %}
+                                   {% endif %}
+                                   onchange="$('#io_manual_mode_{{ technic.id }}').removeAttr('disabled'); $('#btn_technic_id_{{ technic.id }}').show();"
+                                   id="manual_mode_{{ technic.id }}">
+                            
+                            <label for="manual_mode_{{ technic.id }}">
+                                <input type="text" id="io_manual_mode_{{ technic.id }}"
+                                       value="{{ technic.task_description.description }}"
+                                       onchange="$('#btn_technic_id_{{ technic.id }}').show();"
+                                       oninput="$('#btn_technic_id_{{ technic.id }}').show();"
+                                       name="technic_{{ technic.id }}" aria-label=""                                        
+                                       {% if technic.task_description %}
+                                    {% if technic.task_description.is_default_mode or technic.task_description.is_auto_mode %}disabled{% endif %}
+                                   {% endif %}
+                                       class="form-control"></label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a class="btn btn-sm btn-primary" href="{% url 'dashboard' %}">Назад</a>
+{#        <button class="btn btn-sm btn-success" type="submit" form="ddd">Сохранить</button>#}
+    </div>
+    <div></div>
+{% endblock %}

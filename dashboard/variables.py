@@ -22,6 +22,11 @@ VAR_TIME_RECEPTION_OF_MATERIALS = {
     'time': datetime.time(hour=16, minute=0),
     'flag': True,
 }
+VAR_TASK_DESCRIPTION_FOR_SPEC_CONSTR_SITE = {
+    'title': 'Задание по умолчанию для "спец. объекта"',
+    'name': 'default_task_desc_for_spec_site',
+    'value': 'Дробить бетон и асфальт',
+}
 
 
 #   ===========================================================================================================
@@ -31,5 +36,6 @@ VARIABLES_LIST = (
     VAR_DEFAULT_PASSWORD,
     VAR_TIME_RECEPTION_OF_TECHNICS,
     VAR_TIME_RECEPTION_OF_MATERIALS,
+    VAR_TASK_DESCRIPTION_FOR_SPEC_CONSTR_SITE
 )
 

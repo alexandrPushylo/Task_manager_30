@@ -771,3 +771,34 @@ function checkChangesForEditApplication() {
 function prepareModalDeleteApplication(url) {
     $('#btn_delete_app').attr('href', url);
 }
+
+function setTaskDescription(technic_id) {
+    const operation = "set_task_description";
+
+    let task_mode;
+    let manual_description;
+
+    if ($('#auto_mode_' + technic_id).is(':checked')) {
+        task_mode = 'auto';
+    } else if ($('#default_mode_' + technic_id).is(':checked')) {
+        task_mode = 'default';
+    } else if ($('#manual_mode_' + technic_id).is(':checked')) {
+        task_mode = 'manual';
+        manual_description = $('#io_manual_mode_' + technic_id).val();
+    }
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: window.location,
+        data: {
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            operation: operation,
+            technic_id: technic_id,
+            task_mode: task_mode,
+            manual_description: manual_description
+        },
+        success: (d) => {
+            $('#btn_technic_id_' + technic_id).hide();
+        }
+    })
+}

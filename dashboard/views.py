@@ -1277,3 +1277,49 @@ def settings_view(request):
         return render(request, 'content/spec/settings.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def task_desc_for_spec_constr_site_view(request):
+    if request.user.is_authenticated:
+        context = {'title': 'Templates'}
+
+        if request.method == 'POST':
+            if request.POST.get('operation') == 'set_task_description':
+                technic_id = request.POST.get('technic_id')
+                task_mode = request.POST.get('task_mode')
+                manual_description = request.POST.get('manual_description')
+                TECHNIC_SERVICE.set_task_description(technic_id, task_mode, manual_description)
+
+        default_task_description = PARAMETER_SERVICE.get_parameter(
+            name=VAR.VAR_TASK_DESCRIPTION_FOR_SPEC_CONSTR_SITE['name']
+        )
+        technic_list = TECHNIC_SERVICE.get_technics_queryset(
+            isArchive=False,
+        ).values('id', 'title', 'attached_driver__last_name')
+
+        if request.POST.get('default_task_description') is not None:
+            default_task_description.value = request.POST.get('default_task_description')
+            default_task_description.save()
+            context['default_task_description'] = request.POST.get('default_task_description')
+        else:
+            context['default_task_description'] = default_task_description.value
+
+        task_description_list = TECHNIC_SERVICE.get_task_description_queryset().values(
+            'technic',
+            'description',
+            'is_auto_mode',
+            'is_default_mode'
+        )
+        task_description_list = {task['technic']: {
+            'description': task['description'],
+            'is_auto_mode': task['is_auto_mode'],
+            'is_default_mode': task['is_default_mode'],
+        } for task in task_description_list}
+
+        context['technic_list'] = technic_list
+        for technic in context['technic_list']:
+            technic['task_description'] = task_description_list.get(technic['id'])
+
+        return render(request, 'content/spec/task_description_for_spec_constr_site.html', context)
+
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
