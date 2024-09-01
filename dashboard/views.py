@@ -353,7 +353,8 @@ def edit_application_view(request):
                         post_application_material_description):
                     application_material = APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id)
                     application_material.description = post_application_material_description
-                    application_material.save(update_fields=['description'])
+                    application_material.isChecked=False
+                    application_material.save(update_fields=['description', 'isChecked'])
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
