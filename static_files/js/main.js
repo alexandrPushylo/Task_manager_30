@@ -57,17 +57,17 @@ const toggleDriverSheetStatus = (e, itemId) => {
             item_id: itemId,
             operation: operation
         },
-        success: (response)=> {
-            const row = $('#driver_sheet_id__'+itemId)
-            if(response==='true'){
+        success: (response) => {
+            const row = $('#driver_sheet_id__' + itemId)
+            if (response === 'true') {
                 row.css('color', '#018349')
                 row.css('text-decoration-line', 'none')
             }
-            if(response==='false'){
+            if (response === 'false') {
                 row.css('color', 'black')
                 row.css('text-decoration-line', 'line-through')
             }
-            if(response==='none'){
+            if (response === 'none') {
                 row.css('color', 'red')
             }
         }
@@ -85,15 +85,15 @@ const toggleTechnicSheetStatus = (e, itemId) => {
             item_id: itemId,
             operation: operation
         },
-        success: (response)=> {
-            const row = $('#technic_sheet_id__'+itemId)
-            if(response==='true'){
+        success: (response) => {
+            const row = $('#technic_sheet_id__' + itemId)
+            if (response === 'true') {
                 row.css('background-color', '#effdf6')
             }
-            if(response==='false'){
+            if (response === 'false') {
                 row.css('background-color', '#fdefef')
             }
-            if(response==='none'){
+            if (response === 'none') {
                 row.css('color', 'red')
             }
         }
@@ -114,14 +114,14 @@ function changeDriverForTechnic(e, techSheetId) {
             technic_sheet_id: techSheetId,
             operation: operation
         },
-        success: (response)=> {
-            if(response==='true'){
+        success: (response) => {
+            if (response === 'true') {
                 selectName.css('border', 'none')
             }
-            if(response==='false'){
+            if (response === 'false') {
                 selectName.css('border', 'red 1px solid')
             }
-            if(response==='none'){
+            if (response === 'none') {
                 selectName.css('border', 'none')
             }
         }
@@ -393,7 +393,6 @@ function saveApplicationMaterials(el) {
 }
 
 
-
 $('.io_choice_day').change(function () {
     const current_day = this.value;
     // console.log(current_day)
@@ -401,7 +400,6 @@ $('.io_choice_day').change(function () {
     // const dd = location.search;
     // console.log(dd)
 })
-
 
 
 function selectTechnicTitleForConflictResolution(e) {
