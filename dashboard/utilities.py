@@ -384,7 +384,10 @@ def send_messages_by_telegram(chat_id, messages):
     :return:
     """
     if USE_TELEGRAM:
-        T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
+        try:
+            T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
+        except T.ApiTelegramException as e:
+            log.error('send_messages_by_telegram(): ApiTelegramException')
 
 
 def get_user_key(user_id) -> str:
