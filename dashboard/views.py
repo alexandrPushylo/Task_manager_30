@@ -1281,7 +1281,7 @@ def settings_view(request):
 
 def task_desc_for_spec_constr_site_view(request):
     if request.user.is_authenticated:
-        context = {'title': 'Templates'}
+        context = {'title': 'Шаблоны заданий для "Спец. объекта"'}
 
         if request.method == 'POST':
             if request.POST.get('operation') == 'set_task_description':
