@@ -114,46 +114,49 @@
                                 {% if construction_site.application_today %}
                                     {% if construction_site.application_today.application_technic %}
                                         <div class="ms-1 mt-1">
-                                            {% for app_technic in construction_site.application_today.application_technic %}
-                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
-                                                        {% if app_technic.is_cancelled %}                                                            
-                                                            style="color: rgba(97,95,95,0.51)"
-                                                        {% elif app_technic.isChecked %}
-                                                            style="color: rgba(97,95,95,0.51)"
-                                                        {% endif %}
-                                                >
-                                                    <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
-
+                                            {% for app_technic in construction_site.application_today.application_technic %}                                                
+                                                
+                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;">
+                                                    {% if app_technic.isChecked %}
+                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% elif app_technic.is_cancelled %}
+                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    
+                                                    {% elif not app_technic.technic_sheet__status %}
+                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% else %}
+                                                        <span> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% endif %}
+    
+                                                    
                                                     {% if app_technic.technic_sheet__driver_sheet__status %}
                                                         <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
-                                                           style="text-decoration: none; color: inherit;">
-                                                            <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span></a>
-                                                        <span>[<span>{{ app_technic.priority }}</span>/
-                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
-                                                    </span>
+                                                           style="text-decoration: none; color: black;">                                                        
+                                                            <span class=" {% if app_technic.isChecked %}AP-isChecked-title
+                                                                          {% elif app_technic.is_cancelled %}AP-cancelled-title
+                                                                          {% endif %}"                                                              
+                                                            >({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                        </a>
+                                                        <span>[{{ app_technic.priority }}/{{ app_technic.technic_sheet__count_application }}]</span>
                                                     {% else %}
-                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                        <span class="AP-empty-title">(Не назначен)</span>
                                                     {% endif %}
-
+                                                    
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
-                                                <textarea readonly class="form-control app_tech_description general_tech_description_font"
-                                                        {% if app_technic.is_cancelled or app_technic.isChecked %}
-                                                          style="color: rgba(97,95,95,0.51)"
-                                                        {% endif %}
-                                                          >{{ app_technic.description }}</textarea>
-                                                        </label>
+                                                            <textarea readonly 
+                                                                      class="form-control app_tech_description general_tech_description_font {% if app_technic.is_cancelled %}AP-cancelled-title {% elif app_technic.isChecked %}AP-isChecked-title {% endif %}"
+                                                            >{{ app_technic.description }}</textarea>
+                                                         </label>
                                                     {% endif %}
                                                 </div>
-
-
+                                                
                                             {% endfor %}
                                         </div>
                                     {% endif %}
 
                                     {% if construction_site.application_today.application_material %}
                                         <div class="m-0 p-1">
-                                            {#                                            {% for app_material in construction_site.application_today.application_material %}#}
                                             {% if construction_site.application_today.application_material.isChecked %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
@@ -167,7 +170,6 @@
                                                           class="form-control border border-1 border-danger material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
 
-                                            {#                                            {% endfor %}#}
                                             <hr class="p-0 m-0">
                                         </div>
                                     {% endif %}
