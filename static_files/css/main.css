@@ -236,3 +236,10 @@
 .general_mat_description_font{
     font-size: 10pt;
 }
+
+#edit_application{
+    margin-bottom: 7rem;
+    /*width: max-content;*/
+    min-width: max-content;
+    max-width: 20vw;
+}
