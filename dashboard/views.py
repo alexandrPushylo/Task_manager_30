@@ -299,6 +299,22 @@ def edit_application_view(request):
                     APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
+            elif operation == 'delete_application_technic':
+                log.info('delete_application_technic')
+
+                if (U.is_valid_get_request(post_application_today_id) and
+                        U.is_valid_get_request(post_application_technic_id)):
+                    status = APP_TECHNIC_SERVICE.delete_application_technic(
+                        application_technic_id=post_application_technic_id)
+                    if status == 'success':
+                        APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
+                        return HttpResponse(b"success")
+                    else:
+                        return HttpResponse(b"fail")
+                return HttpResponse(b"error")
+                #     APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+                #     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
+
             elif operation == 'apply_changes_application_technic':
                 log.info('apply_changes_application_technic')
                 if (U.is_valid_get_request(post_application_technic_id) and

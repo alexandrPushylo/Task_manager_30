@@ -1,4 +1,5 @@
 from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet, ApplicationTechnic
+from dashboard.services import technic_sheet as TECHNIC_SHEET_SERVICE
 import dashboard.assets as ASSETS
 from django.db.models import QuerySet
 
@@ -71,3 +72,17 @@ def reject_or_accept_apps_technic(app_tech_id) -> str | None:
             return 'reject'
     return None
 
+
+def delete_application_technic(application_technic_id) -> str | None:
+    """
+    Удалить application_technic по "application_technic_id"
+    :param application_technic_id:
+    :return:
+    """
+    application_technic = get_app_technic(pk=application_technic_id)
+    if application_technic:
+        TECHNIC_SHEET_SERVICE.calculate_count_applications(application_technic.technic_sheet.id)
+        # application_technic.technic_sheet.decrement_count_application()
+        application_technic.delete()
+        return 'success'
+    return None

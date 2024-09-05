@@ -282,11 +282,6 @@ function addTechnicSheetToApp(e) {
     app_technic_description.val('')
 }
 
-function deleteTechSheet(e) {
-    const per = e.parentElement.parentElement
-    per.remove()
-
-}
 
 function autoResize(elem) {
     elem.style.height = 'auto';
@@ -311,6 +306,30 @@ $('.button_reject_app_tech').click(function () {
         },
         success: (d) => {
             window.location.reload()
+        }
+    })
+})
+
+$('.button_delete_app_tech').click(function () {
+    const operation = "delete_application_technic";
+    const csrf = $('input[name="csrfmiddlewaretoken"]').val();
+    const pathname = window.location;
+    const applicationTechnicId = this.id.replace('delete_', '')
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: pathname,
+        data: {
+            csrfmiddlewaretoken: csrf,
+            application_technic_id: applicationTechnicId,
+            app_today_id: $('input[name="application_id"]').val(),
+            construction_site_id: $('input[name="construction_site_id"]').val(),
+            operation: operation
+        },
+        success: (response) => {
+            if (response==="success"){
+                $('#'+applicationTechnicId).hide()
+            }
         }
     })
 })
