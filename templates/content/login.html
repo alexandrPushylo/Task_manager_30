@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
     <div id="login_form" class="translate-middle-x position-relative start-50 mt-5">
-        <form method="post">{% csrf_token %}
-            <div class="row">
-                <label>Логин (Фамилия)
+        <form method="post" id="form_login">{% csrf_token %}
+            <div>
+                <label class="w-100">Логин (Фамилия)
                     <input type="text" class="form-control" name="username" placeholder="напр: Петров">
                 </label>
             </div>
-            <div class="row">
-                <label>Пароль
+            <div>
+                <label class="w-100">Пароль
                     <input type="password" class="form-control" name="password" placeholder="1234">
                 </label>
             </div>
