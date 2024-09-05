@@ -120,6 +120,8 @@ def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
     post = user_data.get('post') if user_data.get('post') is not None else ASSETS.UserPosts.EMPLOYEE.title
     supervisor_user_id = int(user_data.get('supervisor_id')) if user_data.get('supervisor_id') is not None else None
 
+    telephone = U.validate_telephone(telephone)
+
     if all((username, first_name, last_name, password)):
         log.info(f'Данные: (username, first_name, last_name, password) в порядке')
         return {
