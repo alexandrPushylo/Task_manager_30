@@ -347,6 +347,7 @@ def edit_application_view(request):
                 if U.is_valid_get_request(post_application_today_id):
                     application_today = APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id)
                     if U.is_valid_get_request(post_application_today_description):
+                        post_application_today_description = post_application_today_description.strip()
                         application_today.description = post_application_today_description
                     else:
                         application_today.description = None
