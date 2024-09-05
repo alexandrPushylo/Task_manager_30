@@ -80,8 +80,8 @@
                                 {% if construction_site.application_today.status == 'saved' %} border-warning
                                 {% elif construction_site.application_today.status == 'submitted' %} border-primary
                                 {% elif construction_site.application_today.status == 'approved' %} border-success
-                                {% endif %} 
-                                ">
+                                {% endif %}"
+                    >
 
                         <div class="card m-1" {% if not construction_site.application_today %}
                              style="color: rgba(0,0,0,0.26);"
@@ -133,51 +133,42 @@
                                     {% if construction_site.application_today.application_technic %}
                                         <div class="ms-1 mt-1">
                                             {% for app_technic in construction_site.application_today.application_technic %}
-                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
-                                                        {% if app_technic.is_cancelled or app_technic.isChecked %}
-                                                            style="color: rgba(97,95,95,0.51)"
-                                                        {% elif app_technic.technic_sheet_id in priority_id_list %}
-                                                            class="text-primary fw-bold"                                                        
-                                                        {% endif %}
-                                                    
-                                                >
-                                                    <span {% if app_technic.is_cancelled %}
-                                                        class="ms-1"
-                                                        style="color: rgba(97,95,95,0.51)"
-                                                    {% elif not app_technic.technic_sheet__status %}
-                                                        class="ms-1 text-decoration-line-through"
-                                                    {% elif app_technic.technic_sheet_id in conflict_technic_sheet and not app_technic.isChecked %}
-                                                        class="ms-1 text-danger fw-bold"
-                                                    {% endif %}
-                                                    >{{ app_technic.technic_sheet__technic__title }}</span>
                                                 
+                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;">
+                                                    {% if app_technic.isChecked %}
+                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% elif app_technic.is_cancelled %}
+                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% elif app_technic.technic_sheet_id in conflict_technic_sheet %}
+                                                        <span class="AP-conflict-title"> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% elif not app_technic.technic_sheet__status %}
+                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% else %}
+                                                        <span> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                    {% endif %}
+    
+                                                    
                                                     {% if app_technic.technic_sheet__driver_sheet__status %}
                                                         <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
-                                                           style="text-decoration: none; color: inherit;">
-                                                            <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span></a>
-
-
-                                                        <span {% if app_technic.is_cancelled or app_technic.isChecked %}
-                                                            style="color: rgba(97,95,95,0.51)"
-                                                        {% elif app_technic.technic_sheet_id in priority_id_list %}
-                                                            class="text-primary"
-                                                        {% else %}
-                                                            class="text-dark"
-                                                        {% endif %}>[<span>{{ app_technic.priority }}</span>/
-                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
-                                                    </span>
+                                                           style="text-decoration: none; color: black;">
+                                                        
+                                                            <span class=" {% if app_technic.isChecked %}AP-isChecked-title
+                                                                          {% elif app_technic.is_cancelled %}AP-cancelled-title
+                                                                          {% elif app_technic.technic_sheet_id in priority_id_list %}AP-priority-title
+                                                                          {% endif %}"                                                              
+                                                            >({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                        </a>
+                                                        <span>[{{ app_technic.priority }}/{{ app_technic.technic_sheet__count_application }}]</span>
                                                     {% else %}
-                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                        <span class="AP-empty-title">(Не назначен)</span>
                                                     {% endif %}
-
+                                                    
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
-                                                <textarea readonly class="form-control app_tech_description general_tech_description_font"
-                                                        {% if app_technic.is_cancelled or app_technic.isChecked %}
-                                                          style="color: rgba(97,95,95,0.51)"
-                                                        {% endif %}
-                                                          >{{ app_technic.description }}</textarea>
-                                                        </label>
+                                                            <textarea readonly 
+                                                                      class="form-control app_tech_description general_tech_description_font {% if app_technic.is_cancelled %}AP-cancelled-title {% elif app_technic.isChecked %}AP-isChecked-title {% endif %}"
+                                                            >{{ app_technic.description }}</textarea>
+                                                         </label>
                                                     {% endif %}
                                                 </div>
 
