@@ -7,35 +7,23 @@
         </div>
         <div class="main_header_title">
             {% block title_p %}
-            {% include 'top_panel/title_p.html' %}
-            {% endblock %}    
+                {% include 'top_panel/title_p.html' %}
+            {% endblock %}
         </div>
         <div class="main_header_user me-3">
             {% if user.is_authenticated %}{% include 'top_panel/user_p.html' %}
-            {% else %}{% include 'top_panel/signin_signout.html' %}
+                {% else %}{% include 'top_panel/signin_signout.html' %}
             {% endif %}
         </div>
     </div>
 
-{#    <div id="main_content_box" class="container-fluid">#}
-{#        <div id="main_left_nav" ></div>#}
-        <div id="main_content" 
-             class="mb-5"
-        >{% block content %}{% endblock %}</div>
-{#        <div id="main_right_nav" class="overflow-auto col-auto">{% block right_nav %}{% endblock %}</div>#}
-{#    </div>#}
-    
-    <div id="main_footer" 
-         class="navbar translate-middle-x position-fixed bottom-0 start-50">
-    {% block footer %}
-{#        <div></div>#}
-{#        <div></div>#}
-{#        <div></div>#}
+    <div id="main_content"
+         class="mb-5"
+    >{% block content %}{% endblock %}</div>
+
+    <div id="main_footer" class="navbar translate-middle-x position-fixed bottom-0 start-50">
+        {% block footer %}
         {% endblock %}
     </div>
  
-
-
-
-
 {% endblock %}
