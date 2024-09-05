@@ -255,7 +255,7 @@ def edit_application_view(request):
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets.filter(
                 driver_sheet__status=True,
-                status=True,
+                # status=True,
             )
         )
 
@@ -289,7 +289,8 @@ def edit_application_view(request):
                         technic_sheet=some_technic_sheet,
                         description=description
                     )
-                    some_technic_sheet.increment_count_application()
+                    if some_technic_sheet:
+                        some_technic_sheet.increment_count_application()
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             elif operation == 'reject_application_technic':
@@ -417,6 +418,7 @@ def edit_application_view(request):
                     'technic_sheet__driver_sheet__driver__last_name',
                     'technic_sheet__driver_sheet__driver__first_name',
                     'is_cancelled',
+                    'isChecked',
                     'description'
                 )
                 context['application_today']['application_material'] = APP_MATERIAL_SERVICE.get_apps_material_queryset(
