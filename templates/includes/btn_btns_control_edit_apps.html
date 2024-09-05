@@ -1,0 +1,30 @@
+<div class="dropdown" style="margin-top: 0.1rem">
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+        <i class="fa-solid fa-ellipsis"></i>
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end">
+        {% if app_technic.is_cancelled or app_technic.isChecked %}
+            <li>
+                <button id="reject_{{ app_technic.id }}" type="button"
+                        class="dropdown-item fw-bolder text-success button_reject_app_tech">Принять заявку
+                </button>
+            </li>
+        {% else %}
+            <li>
+                <button id="reject_{{ app_technic.id }}" type="button"
+                        class="dropdown-item fw-bolder text-primary button_reject_app_tech">Отменить заявку
+                </button>
+            </li>
+        {% endif %}
+        <li>
+            <hr class=" dropdown-divider">
+        </li>
+        <li>
+            <button id="delete_{{ app_technic.id }}" type="button"
+                    class="dropdown-item fw-bolder text-danger button_delete_app_tech">Удалить заявку
+            </button>
+        </li>
+    </ul>
+</div>

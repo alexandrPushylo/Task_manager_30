@@ -1,0 +1,14 @@
+<div class="btn-group" style="box-shadow: 2px 2px 10px 2px;">
+    <button type="button" class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#modalApplicationTechnic">
+        <span class="fw-bolder"><i class="fa-solid fa-plus"></i> ТЕХНИКА</span>
+    </button>
+    {% if is_changeable_material or user.post == 'supply' %}
+        <button type="button" class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#modalMaterials">
+            <span class="fw-bolder"><i class="fa-solid fa-plus"></i> МАТЕРИАЛЫ</span>
+        </button>
+    {% endif %}
+</div>

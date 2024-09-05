@@ -1,0 +1,26 @@
+<div class="modal fade" id="modalMaterials" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Добавить материалы</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body m-0">
+                <label class="row">
+                        <textarea name="app_material_desc"
+                                  onclick="autoResize(this)"
+                                  oninput="autoResize(this)"
+                                  class="form-control"
+                                  style="height: auto"
+                        >{{ application_today.application_material.description }}</textarea>
+                </label>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button onclick="saveApplicationMaterials(this)" type="button" class="btn btn-primary">Добавить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

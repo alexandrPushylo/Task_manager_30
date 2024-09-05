@@ -2,6 +2,7 @@ from dashboard.models import User
 from django.core.handlers.wsgi import WSGIRequest
 
 import dashboard.assets as ASSETS
+import dashboard.utilities as U
 from django.db.models import QuerySet  # type: ignore
 
 from logger import getLogger
@@ -106,7 +107,7 @@ def create_new_user(data: dict) -> User | None:
         is_staff=False,
         is_superuser=False
     )
-    log.info(f'Пользователь: ({user.last_name} {user.first_name}) был добавлен')
+    log.info('Пользователь %s был добавлен' % data['last_name'])
     return user
 
 
@@ -120,8 +121,10 @@ def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
     post = user_data.get('post') if user_data.get('post') is not None else ASSETS.UserPosts.EMPLOYEE.title
     supervisor_user_id = int(user_data.get('supervisor_id')) if user_data.get('supervisor_id') is not None else None
 
+    telephone = U.validate_telephone(telephone)
+
     if all((username, first_name, last_name, password)):
-        log.info(f'Данные: (username, first_name, last_name, password) в порядке')
+        log.info('Данные: (username, first_name, last_name, password) в порядке')
         return {
             'username': username,
             'first_name': first_name,

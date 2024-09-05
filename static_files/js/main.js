@@ -130,9 +130,11 @@ function changeDriverForTechnic(e, techSheetId) {
 
 function onInput_tech_description(e) {
     const atID = e.id.replace('app_tech_description_', '');
-    $('#apply_' + atID).show();
-    $('#reload_' + atID).show();
-    $('#reject_' + atID).hide();
+    $('#div_btn_edit_control_' + atID).show();
+    $('#btn_options_' + atID).show();
+    // $('#apply_' + atID).show();
+    // $('#reload_' + atID).show();
+    // $('#reject_' + atID).hide();
 }
 
 $('.app_tech_description').each(function () {
@@ -209,25 +211,29 @@ function selectTechnicTitle(e) {
     const application_technic_id = e.id.replace('technic_title_', '');
     const select_technic_sheet = $('.' + technic_title + '_' + application_technic_id);
     const technic_driver_selects = $('.technic_driver_selects_' + application_technic_id);
-    const button_apply_app_tech = $('#apply_' + technic_title_id);
-    const button_reload_app_tech = $('#reload_' + technic_title_id);
-    const button_reject_app_tech = $('#reject_' + technic_title_id);
+    // const button_apply_app_tech = $('#apply_' + technic_title_id);
+    // const button_reload_app_tech = $('#reload_' + technic_title_id);
+    // const button_reject_app_tech = $('#reject_' + technic_title_id);
 
+    $('#div_btn_edit_control_' + technic_title_id).show();
+    $('#btn_options_' + technic_title_id).hide();
     technic_driver_selects.hide();
     select_technic_sheet.show();
-    button_apply_app_tech.show();
-    button_reload_app_tech.show();
-    button_reject_app_tech.hide();
+    // button_apply_app_tech.show();
+    // button_reload_app_tech.show();
+    // button_reject_app_tech.hide();
 }
 
 function changeTechnicSheetSelector(e) {
     const tech_sheet_id = e.id.replace('technic_sheet_', '')
-    const button_apply_app_tech = $('#apply_' + tech_sheet_id);
-    const button_reload_app_tech = $('#reload_' + tech_sheet_id);
-    const button_reject_app_tech = $('#reject_' + tech_sheet_id);
-    button_apply_app_tech.show();
-    button_reload_app_tech.show();
-    button_reject_app_tech.hide();
+    // const button_apply_app_tech = $('#apply_' + tech_sheet_id);
+    // const button_reload_app_tech = $('#reload_' + tech_sheet_id);
+    // const button_reject_app_tech = $('#reject_' + tech_sheet_id);
+    $('#div_btn_edit_control_' + tech_sheet_id).show();
+    $('#btn_options_' + tech_sheet_id).hide();
+    // button_apply_app_tech.show();
+    // button_reload_app_tech.show();
+    // button_reject_app_tech.hide();
 }
 
 $('.technic_driver_selects > option[selected]').parent().show();
@@ -282,11 +288,6 @@ function addTechnicSheetToApp(e) {
     app_technic_description.val('')
 }
 
-function deleteTechSheet(e) {
-    const per = e.parentElement.parentElement
-    per.remove()
-
-}
 
 function autoResize(elem) {
     elem.style.height = 'auto';
@@ -311,6 +312,30 @@ $('.button_reject_app_tech').click(function () {
         },
         success: (d) => {
             window.location.reload()
+        }
+    })
+})
+
+$('.button_delete_app_tech').click(function () {
+    const operation = "delete_application_technic";
+    const csrf = $('input[name="csrfmiddlewaretoken"]').val();
+    const pathname = window.location;
+    const applicationTechnicId = this.id.replace('delete_', '')
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: pathname,
+        data: {
+            csrfmiddlewaretoken: csrf,
+            application_technic_id: applicationTechnicId,
+            app_today_id: $('input[name="application_id"]').val(),
+            construction_site_id: $('input[name="construction_site_id"]').val(),
+            operation: operation
+        },
+        success: (response) => {
+            if (response==="success"){
+                $('#'+applicationTechnicId).hide()
+            }
         }
     })
 })

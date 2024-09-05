@@ -255,7 +255,7 @@ def edit_application_view(request):
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets.filter(
                 driver_sheet__status=True,
-                status=True,
+                # status=True,
             )
         )
 
@@ -289,7 +289,8 @@ def edit_application_view(request):
                         technic_sheet=some_technic_sheet,
                         description=description
                     )
-                    some_technic_sheet.increment_count_application()
+                    if some_technic_sheet:
+                        some_technic_sheet.increment_count_application()
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             elif operation == 'reject_application_technic':
@@ -298,6 +299,22 @@ def edit_application_view(request):
                         U.is_valid_get_request(post_application_technic_id)):
                     APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
+
+            elif operation == 'delete_application_technic':
+                log.info('delete_application_technic')
+
+                if (U.is_valid_get_request(post_application_today_id) and
+                        U.is_valid_get_request(post_application_technic_id)):
+                    status = APP_TECHNIC_SERVICE.delete_application_technic(
+                        application_technic_id=post_application_technic_id)
+                    if status == 'success':
+                        APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
+                        return HttpResponse(b"success")
+                    else:
+                        return HttpResponse(b"fail")
+                return HttpResponse(b"error")
+                #     APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+                #     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             elif operation == 'apply_changes_application_technic':
                 log.info('apply_changes_application_technic')
@@ -331,6 +348,7 @@ def edit_application_view(request):
                 if U.is_valid_get_request(post_application_today_id):
                     application_today = APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id)
                     if U.is_valid_get_request(post_application_today_description):
+                        post_application_today_description = post_application_today_description.strip()
                         application_today.description = post_application_today_description
                     else:
                         application_today.description = None
@@ -353,7 +371,8 @@ def edit_application_view(request):
                         post_application_material_description):
                     application_material = APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id)
                     application_material.description = post_application_material_description
-                    application_material.save(update_fields=['description'])
+                    application_material.isChecked=False
+                    application_material.save(update_fields=['description', 'isChecked'])
                     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
@@ -399,6 +418,7 @@ def edit_application_view(request):
                     'technic_sheet__driver_sheet__driver__last_name',
                     'technic_sheet__driver_sheet__driver__first_name',
                     'is_cancelled',
+                    'isChecked',
                     'description'
                 )
                 context['application_today']['application_material'] = APP_MATERIAL_SERVICE.get_apps_material_queryset(

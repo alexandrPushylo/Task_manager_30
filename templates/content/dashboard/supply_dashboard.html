@@ -45,7 +45,7 @@
 
         <div style="text-align: center">
             <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"
-               class="btn btn-sm {% if count_not_checked_app_mater %} btn-warning {% else %}btn-outline-success{% endif %}">
+               class="btn  {% if count_not_checked_app_mater %} btn-warning {% else %}btn-success{% endif %}">
                 {% if count_not_checked_app_mater and VIEW_MODE != 'view_mode_archive' %}
                     <span>Есть {{ count_not_checked_app_mater }} не подтвержденных заявок</span>
                 {% else %}

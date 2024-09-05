@@ -1,0 +1,52 @@
+<div class="modal fade" id="modalApplicationTechnic" data-bs-backdrop="static" data-bs-keyboard="false"
+     tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Добавить технику</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body m-0">
+                <div>
+                    <div class="input-group row">
+                        <label class="col-12"> Название техники
+                            <select class="form-control select_add_tech_title"
+                                    onchange="selectAddTechnicDriver(this)">
+                                <option value="none">---</option>
+                                {% for title_short, title in technic_titles_dict.items %}
+                                    <option value="{{ title_short }}">{{ title }}</option>
+
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label class="mt-2 col-12">
+                            {% for technic_driver in technic_driver_list_for_add %}
+                                <select class="form-control technic_driver_selects_add {{ technic_driver.title_short }}">
+                                    <option value="">--Любой--</option>
+                                    {% for technic_sheet in technic_driver.technic_sheets %}
+                                        <option value="{{ technic_sheet.id }}">
+                                            {{ technic_sheet.driver_sheet.driver.last_name }}
+                                            {% if technic_sheet.count_application > 0 %} (Занят)
+                                            {% elif not technic_sheet.status %} (Не работает)    
+                                            {% else %}(Свободен)
+                                            {% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endfor %}
+                        </label>
+                    </div>
+                    <label class="row mt-2">
+                            <textarea class="form-control app_technic_description"
+                                      placeholder="Описания задания"
+                                      oninput="autoResize(this)"></textarea>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button style="text-align: left" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button onclick="addTechnicSheetToApp(this)" type="button" class="btn btn-primary">Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>

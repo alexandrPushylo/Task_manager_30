@@ -816,4 +816,20 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
     return is_accept
 
 
-
+def validate_telephone(telephone: str, length=9) -> str | None:
+    """
+    Валидация номера телефона
+    :param length:
+    :param telephone:
+    :return:
+    """
+    if telephone:
+        pref = '+375'
+        out = [sym for sym in telephone if sym in '0123456789']
+        out = ''.join(out)
+        if len(out) == length:
+            return pref + out
+        elif len(out) > length:
+            return pref + out[:length]
+        else:
+            return None
