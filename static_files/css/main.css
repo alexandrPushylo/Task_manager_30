@@ -227,3 +227,25 @@
     min-width: max-content;
     max-width: 20vw;
 }
+
+
+.AP-conflict-title{
+    color: red;
+}
+.AP-priority-title{
+    color: blue;
+}
+.AP-cancelled-title{
+    color: rgba(97,95,95,0.51);
+}
+.AP-isChecked-title{
+    color: rgba(97,95,95,0.51);
+}
+.AP-not_work-title{
+    text-decoration-line: line-through;
+}
+.AP-empty-title{
+    color: darkorange;
+}
+
+
