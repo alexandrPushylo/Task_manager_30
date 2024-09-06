@@ -14,7 +14,7 @@
                             <select class="form-control select_add_tech_title"
                                     onchange="selectAddTechnicDriver(this)">
                                 <option value="none">---</option>
-                                {% for title_short, title in technic_titles_dict.items %}
+                                {% for title_short, title in technic_titles_dict_for_add.items %}
                                     <option value="{{ title_short }}">{{ title }}</option>
 
                                 {% endfor %}

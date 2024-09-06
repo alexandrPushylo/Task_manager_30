@@ -42,7 +42,7 @@
                             {% for app_technic in application_today.application_technic %}
                                 <div id="{{ app_technic.id }}" class="mt-3" >
                                     <div class="row m-0 p-1" style="background: #e8ebfa">
-                                    
+
                                         <label class="col-auto p-0" >
                                             <select id="technic_title_{{ app_technic.id }}"
                                                     class="form-control p-1"
@@ -81,7 +81,7 @@
                                             {% include 'includes/btn_btns_control_edit_apps.html' %}
                                         </div>
                                     </div>
-                                    <div class="btn-group row m-0 p-1" 
+                                    <div class="btn-group row m-0 p-1"
                                          id="div_btn_edit_control_{{ app_technic.id }}"
                                          style="display: none"
                                     >
@@ -93,7 +93,7 @@
                                                 onclick="applyChangesAppTechnic(this)"
                                                 class="btn btn-sm btn-success button_apply_app_tech w-auto"
                                         >Сохранить изменения</button>
-                                        
+
                                     </div>
 
                                     <div class="row ">
