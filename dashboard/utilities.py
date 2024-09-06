@@ -281,8 +281,7 @@ def get_table_working_technic_sheet(current_day: WorkDaySheet):
         isArchive=False,
         date=current_day
     )
-    # _out = _technic_sheet.order_by('driver_sheet__driver__last_name')
-    return _technic_sheet.order_by('technic__title')
+    return _technic_sheet.order_by('technic__title', 'driver_sheet__driver__last_name')
 
 
 def set_data_for_filter(request):

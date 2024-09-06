@@ -237,7 +237,6 @@ def edit_application_view(request):
             select_related=('technic', 'driver_sheet__driver'),
             isArchive=False,
             driver_sheet__isnull=False,
-            # status=True,
             date=current_day
         )
 
@@ -263,7 +262,7 @@ def edit_application_view(request):
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets.filter(
                 driver_sheet__status=True,
-                status=True,#####
+                status=True,
             )
         )
 
@@ -618,7 +617,7 @@ def technic_sheet_view(request):
 
         technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('driver_sheet__driver', 'technic__attached_driver'),
-            order_by=('technic__title',),
+            order_by=('technic__title', 'driver_sheet__driver__last_name'),
             date=current_day,
         )
         driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
