@@ -244,18 +244,26 @@ def edit_application_view(request):
         if not technic_sheets.exists():
             U.prepare_sheets(current_day)
 
-        technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(technic_sheets=technic_sheets)
-        context['technic_titles_dict'] = technic_titles_dict
-
+        technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(
+            technic_sheets=technic_sheets
+        )
         context['technic_driver_list'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets
+        )
+
+        context['technic_titles_dict'] = TECHNIC_SERVICE.get_dict_short_technic_names(
+            technic_sheets=technic_sheets.filter()
+        )
+
+        context['technic_titles_dict_for_add'] = TECHNIC_SERVICE.get_dict_short_technic_names(
+            technic_sheets=technic_sheets.filter(status=True)
         )
         context['technic_driver_list_for_add'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
             technic_titles=technic_titles_dict,
             technic_sheets=technic_sheets.filter(
                 driver_sheet__status=True,
-                # status=True,
+                status=True,#####
             )
         )
 
@@ -313,8 +321,6 @@ def edit_application_view(request):
                     else:
                         return HttpResponse(b"fail")
                 return HttpResponse(b"error")
-                #     APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
-                #     APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
 
             elif operation == 'apply_changes_application_technic':
                 log.info('apply_changes_application_technic')
