@@ -1267,6 +1267,13 @@ def def_test(request):  # TODO: def TEST
     # for work_day in work_days:
     #     work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
     template = 'content/tests/change_workday.html'
+
+    if request.GET.get('chat_id'):
+        chat_id = request.GET.get('chat_id')
+        print(
+            f"{request.user.id} -- {chat_id}"
+        )
+        return HttpResponse(chat_id)
     # context = {
     #     'title': 'Test',
     #     'today': U.TODAY,
