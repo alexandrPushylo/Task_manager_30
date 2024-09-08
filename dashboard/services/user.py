@@ -163,4 +163,8 @@ def delete_user(user_id) -> User:
     return User.objects.none()
 
 
-
+def is_supply_driver(current_technic_sheet_id_list: list, supply_technic_list_id_list: list) -> bool:
+    if set(current_technic_sheet_id_list).issubset(supply_technic_list_id_list):
+        return True
+    else:
+        return False
