@@ -84,9 +84,9 @@
                                     <div>
                                         <input type="hidden" id="orig_technic_title_{{ app_technic.id }}"
                                                value="{{ app_technic.technic_sheet__technic__title }}">
-                                        <input type="hidden" id="orig_technic_sheet_{{ app_technic.id }}" 
+                                        <input type="hidden" id="orig_technic_sheet_{{ app_technic.id }}"
                                                value="{{ app_technic.technic_sheet_id }}">
-                                        <input type="hidden" id="orig_technic_description_{{ app_technic.id }}" 
+                                        <input type="hidden" id="orig_technic_description_{{ app_technic.id }}"
                                                value="{{ app_technic.description }}">
                                     </div>
                                     <div class="btn-group row m-0 p-1"
@@ -144,7 +144,8 @@
 
     </div>
 
-    <div class="container position-fixed translate-middle-x bottom-0 start-50"
+    <div id="btn_edit_technics_and_materials" 
+         class="container position-fixed translate-middle-x bottom-0 start-50"
          style="margin-bottom: 4rem; width: max-content">
         {% include 'includes/btn_edit_technics_and_materials.html' %}
     </div>
