@@ -82,9 +82,11 @@
             {% endfor %}
         </div>
 
-
+        
         <div id="applications_container" class="mt-2 position-relative translate-middle-x start-50">
+        
             {% for application_today in applications_today %}
+                {% if application_today.application_technic or application_today.application_material %}
                 <div class="col-sm-auto application_items mb-5">
 
                     <div class="application_items_border border border-2">
@@ -121,7 +123,7 @@
                             <div class="card-text">
                                 {% if application_today %}
                                     {% if application_today.application_technic %}
-                                        <div class="ms-1 mt-1">
+                                        <div class="mt-1">
                                             {% for app_technic in application_today.application_technic %}
                                                 <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
                                                         {% if app_technic.is_cancelled %}
@@ -155,6 +157,22 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
+                                    
+                                    {% if application_today.application_material %}                                    
+                                    <div class="card">
+                                        <div class="card-header p-1">
+                                            <span class="fw-bolder small">Список материалов</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <textarea readonly
+                                                      aria-label=""
+                                                      class="form-control material_description general_mat_description_font"
+                                            >{{application_today.application_material.0.description}}</textarea>
+                                            
+                                        </div>
+
+                                    </div>
+                                    {% endif %}
 
                                 {% endif %}
 
@@ -163,8 +181,11 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
             {% endfor %}
+        
         </div>
+    
     </div>
 {% endblock %}
 
