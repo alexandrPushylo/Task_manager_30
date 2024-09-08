@@ -211,33 +211,36 @@ function selectTechnicTitle(e) {
     const application_technic_id = e.id.replace('technic_title_', '');
     const select_technic_sheet = $('.' + technic_title + '_' + application_technic_id);
     const technic_driver_selects = $('.technic_driver_selects_' + application_technic_id);
-    // const button_apply_app_tech = $('#apply_' + technic_title_id);
-    // const button_reload_app_tech = $('#reload_' + technic_title_id);
-    // const button_reject_app_tech = $('#reject_' + technic_title_id);
 
     $('#div_btn_edit_control_' + technic_title_id).show();
     $('#btn_options_' + technic_title_id).hide();
     technic_driver_selects.hide();
     select_technic_sheet.show();
-    // button_apply_app_tech.show();
-    // button_reload_app_tech.show();
-    // button_reject_app_tech.hide();
 }
 
 function changeTechnicSheetSelector(e) {
     const tech_sheet_id = e.id.replace('technic_sheet_', '')
-    // const button_apply_app_tech = $('#apply_' + tech_sheet_id);
-    // const button_reload_app_tech = $('#reload_' + tech_sheet_id);
-    // const button_reject_app_tech = $('#reject_' + tech_sheet_id);
     $('#div_btn_edit_control_' + tech_sheet_id).show();
     $('#btn_options_' + tech_sheet_id).hide();
-    // button_apply_app_tech.show();
-    // button_reload_app_tech.show();
-    // button_reject_app_tech.hide();
 }
 
 $('.technic_driver_selects > option[selected]').parent().show();
 
+function cancelAddedTechnic(e){
+    const tech_sheet_id = e.id.replace('cancel_', '');
+    const orig_technic_sheet_id = $('#orig_technic_sheet_'+tech_sheet_id).val();
+    const orig_technic_desc = $('#orig_technic_description_'+tech_sheet_id).val();
+
+    let orig_technic_title = $('#orig_technic_title_'+tech_sheet_id).val();
+    orig_technic_title = orig_technic_title.replace(' ','').replace('.','');
+
+    $('#technic_title_'+tech_sheet_id).val(orig_technic_title).change();
+    $('.'+orig_technic_title+'_'+tech_sheet_id).val(orig_technic_sheet_id).change();
+    $('#app_tech_description_'+tech_sheet_id).val(orig_technic_desc)
+
+    $('#div_btn_edit_control_' + tech_sheet_id).hide();
+    $('#btn_options_' + tech_sheet_id).show();
+}
 
 function reloadPage(e) {
     window.location.reload()
