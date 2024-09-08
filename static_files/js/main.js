@@ -134,7 +134,6 @@ function onInput_tech_description(e) {
     $('#btn_options_' + atID).show();
     $('#btn_edit_technics_and_materials').hide();
     $('#main_footer').hide();
-    e.scrollIntoView();
 }
 
 $('.app_tech_description').each(function () {
