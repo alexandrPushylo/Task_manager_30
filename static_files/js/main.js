@@ -133,6 +133,7 @@ function onInput_tech_description(e) {
     $('#div_btn_edit_control_' + atID).show();
     $('#btn_options_' + atID).show();
     $('#btn_edit_technics_and_materials').hide();
+    $('#main_footer').hide();
 }
 
 $('.app_tech_description').each(function () {
@@ -239,6 +240,7 @@ function cancelAddedTechnic(e){
     $('#div_btn_edit_control_' + tech_sheet_id).hide();
     $('#btn_options_' + tech_sheet_id).show();
     $('#btn_edit_technics_and_materials').show();
+    $('#main_footer').show();
 }
 
 function reloadPage(e) {
