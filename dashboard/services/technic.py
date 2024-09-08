@@ -149,6 +149,11 @@ def get_supply_technic_list() -> QuerySet[Technic]:
 
 
 def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]) -> dict:
+    """
+    Получить dict {короткое название техники: название техники}
+    :param technic_sheets:
+    :return:
+    """
     technic_titles_list = technic_sheets.values_list('technic__title', flat=True).distinct()
     technic_titles_dict = {str(title).replace(' ', '').replace('.', ''): title
                            for title in technic_titles_list}
