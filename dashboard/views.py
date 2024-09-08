@@ -255,8 +255,12 @@ def edit_application_view(request):
             technic_sheets=technic_sheets.filter()
         )
 
+
         context['technic_titles_dict_for_add'] = TECHNIC_SERVICE.get_dict_short_technic_names(
-            technic_sheets=technic_sheets.filter(status=True)
+            technic_sheets=technic_sheets.filter(
+                status=True,
+                driver_sheet__status=True,
+            )
         )
         context['technic_driver_list_for_add'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
             technic_titles=technic_titles_dict,
