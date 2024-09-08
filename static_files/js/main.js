@@ -252,6 +252,7 @@ function selectAddTechnicDriver(e) {
     const select_technic_sheet = $('.' + technic_title);
     const technic_driver_selects = $('.technic_driver_selects_add');
     technic_driver_selects.hide();
+    $('#span_driver_name').show();
     select_technic_sheet.show();
     const btn_added = $('#btn_add_technic_sheet');
 
