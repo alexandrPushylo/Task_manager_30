@@ -226,6 +226,21 @@ function changeTechnicSheetSelector(e) {
 
 $('.technic_driver_selects > option[selected]').parent().show();
 
+function cancelAddedTechnic(e){
+    const tech_sheet_id = e.id.replace('cancel_', '');
+    const orig_technic_sheet_id = $('#orig_technic_sheet_'+tech_sheet_id).val();
+    const orig_technic_desc = $('#orig_technic_description_'+tech_sheet_id).val();
+
+    let orig_technic_title = $('#orig_technic_title_'+tech_sheet_id).val();
+    orig_technic_title = orig_technic_title.replace(' ','').replace('.','');
+
+    $('#technic_title_'+tech_sheet_id).val(orig_technic_title).change();
+    $('.'+orig_technic_title+'_'+tech_sheet_id).val(orig_technic_sheet_id).change();
+    $('#app_tech_description_'+tech_sheet_id).val(orig_technic_desc)
+
+    $('#div_btn_edit_control_' + tech_sheet_id).hide();
+    $('#btn_options_' + tech_sheet_id).show();
+}
 
 function reloadPage(e) {
     window.location.reload()

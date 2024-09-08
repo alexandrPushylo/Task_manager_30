@@ -81,12 +81,20 @@
                                             {% include 'includes/btn_btns_control_edit_apps.html' %}
                                         </div>
                                     </div>
+                                    <div>
+                                        <input type="hidden" id="orig_technic_title_{{ app_technic.id }}"
+                                               value="{{ app_technic.technic_sheet__technic__title }}">
+                                        <input type="hidden" id="orig_technic_sheet_{{ app_technic.id }}" 
+                                               value="{{ app_technic.technic_sheet_id }}">
+                                        <input type="hidden" id="orig_technic_description_{{ app_technic.id }}" 
+                                               value="{{ app_technic.description }}">
+                                    </div>
                                     <div class="btn-group row m-0 p-1"
                                          id="div_btn_edit_control_{{ app_technic.id }}"
                                          style="display: none"
                                     >
-                                        <button id="reload_{{ app_technic.id }}" type="button"
-                                                onclick="reloadPage(this)"
+                                        <button id="cancel_{{ app_technic.id }}" type="button"
+                                                onclick="cancelAddedTechnic(this)"
                                                 class="btn btn-sm btn-outline-primary button_reload_app_tech w-auto"
                                         >Отмена</button>
                                         <button id="apply_{{ app_technic.id }}" type="button"
