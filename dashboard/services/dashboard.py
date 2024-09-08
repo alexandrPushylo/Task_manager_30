@@ -461,6 +461,13 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         status=True,
         date=current_day,
     )
+
+    supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
+    is_supply_driver = USERS_SERVICE.is_supply_driver(
+        current_technic_sheet.values_list('technic__id', flat=True),
+        supply_technic_list.values_list('id', flat=True)
+    )
+
     applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         select_related=("application_today__construction_site__foreman",),
         isArchive=False,
@@ -482,9 +489,17 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         )
     context["technic_application_list"] = technic_application_list
 
-    application_today_id_list = applications_technic.filter(
-        technic_sheet__in=current_technic_sheet
-    ).values_list("application_today", flat=True)
+
+    if is_supply_driver:
+        application_today_id_list = APP_TODAY_SERVICE.get_apps_today_queryset(
+            date=current_day,
+            isArchive=False,
+            status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
+        ).values_list('id', flat=True)
+    else:
+        application_today_id_list = applications_technic.filter(
+            technic_sheet__in=current_technic_sheet
+        ).values_list("application_today", flat=True)
 
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         id__in=application_today_id_list,
@@ -497,19 +512,29 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         "description",
     )
     for application in applications_today:
-        application[
-            "application_technic"
-        ] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-            application_today__id=application["id"],
-        ).values(
-            "is_cancelled",
-            "technic_sheet__technic__title",
-            "technic_sheet__driver_sheet__status",
-            "technic_sheet__driver_sheet__driver__last_name",
-            "priority",
-            "technic_sheet__count_application",
-            "description",
-        )
+        if is_supply_driver:
+            application["application_material"] = (APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                application_today__id=application["id"],
+                isChecked=True,
+            ).values(
+                'description'
+                )
+            )
+        else:
+            application[
+                "application_technic"
+            ] = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                application_today__id=application["id"],
+            ).values(
+                "is_cancelled",
+                "technic_sheet__technic__title",
+                "technic_sheet__driver_sheet__status",
+                "technic_sheet__driver_sheet__driver__last_name",
+                "priority",
+                "technic_sheet__count_application",
+                "description",
+            )
+
     context["applications_today"] = applications_today
 
     return context
