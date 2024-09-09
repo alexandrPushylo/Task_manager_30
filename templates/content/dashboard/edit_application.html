@@ -4,7 +4,7 @@
         <div><h3><u>{{ title }}</u></h3></div>
         <div>
             <form id="edit_application_form" method="post">{% csrf_token %}
-                <div class="card">                   
+                <div class="card">
                     <div class="card-header">
                         <p class="m-0">
                             <span class="small">Объект:</span>
@@ -32,13 +32,13 @@
                         </label>
                     </div>
                 </div>
-            
+
                 <div>
                     {% if application_today.application_technic %}
                         <div class="p-0">
                             {% for app_technic in application_today.application_technic %}
-                                <div id="{{ app_technic.id }}" class="mt-2 card border" style="box-shadow: 5px 5px 50px">
-                                    
+                                <div id="{{ app_technic.id }}" class="mt-2 card border border-2" style="box-shadow: 5px 5px 50px">
+
                                     <div class="row m-0 p-1 card-header" style="background: #e8ebfa">
                                         <div class="col">
                                         <label class="col-auto p-0" >
@@ -80,7 +80,7 @@
                                             {% include 'includes/btn_btns_control_edit_apps.html' %}
                                         </div>
                                     </div>
-                                
+
                                     <div>
                                         <input type="hidden" id="orig_technic_title_{{ app_technic.id }}"
                                                value="{{ app_technic.technic_sheet__technic__title }}">
@@ -88,7 +88,7 @@
                                                value="{{ app_technic.technic_sheet_id }}">
                                         <input type="hidden" id="orig_technic_description_{{ app_technic.id }}"
                                                value="{{ app_technic.description }}">
-                                    </div>                                    
+                                    </div>
 
                                     <div class="row">
                                         <label>
@@ -104,8 +104,8 @@
                                             >{{ app_technic.description }}</textarea>
                                         </label>
                                     </div>
-                                
-                                    <div class="m-1 p-1 row"                                         
+
+                                    <div class="m-1 p-1 row"
                                          id="div_btn_edit_control_{{ app_technic.id }}"
                                          style="justify-content: space-between; display: none;"
                                     >
@@ -113,13 +113,13 @@
                                                 onclick="cancelAddedTechnic(this)"
                                                 class="btn btn-outline-primary button_reload_app_tech w-auto"
                                         >Отмена</button>
-                                        
+
                                         <button id="apply_{{ app_technic.id }}" type="button"
                                                 onclick="applyChangesAppTechnic(this)"
                                                 class="btn btn-success button_apply_app_tech w-auto"
-                                        >Сохранить изменения</button>                                        
+                                        >Сохранить изменения</button>
                                     </div>
-                                
+
                                 </div>
                             {% endfor %}
                         </div>
@@ -146,7 +146,7 @@
 
     </div>
 
-    <div id="btn_edit_technics_and_materials" 
+    <div id="btn_edit_technics_and_materials"
          class="container position-fixed translate-middle-x bottom-0 start-50"
          style="margin-bottom: 4rem; width: max-content">
         {% include 'includes/btn_edit_technics_and_materials.html' %}
