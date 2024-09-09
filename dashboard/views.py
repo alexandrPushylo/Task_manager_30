@@ -1253,6 +1253,25 @@ def profile_view(request):
             operation = request.POST.get('operation')
             new_password_0 = request.POST.get('new_password_0')
             new_password_1 = request.POST.get('new_password_1')
+
+            username = request.POST.get('username')
+            last_name = request.POST.get('last_name')
+            first_name = request.POST.get('first_name')
+            telephone = request.POST.get('telephone')
+
+            if operation == 'change_profiler':
+                if U.is_valid_get_request(username):
+                    current_user.username = username
+                if U.is_valid_get_request(last_name):
+                    current_user.last_name = last_name
+                if U.is_valid_get_request(first_name):
+                    current_user.first_name = first_name
+                if U.is_valid_get_request(telephone):
+                    current_user.telephone = U.validate_telephone(telephone)
+                current_user.save()
+                return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+
+
             if operation == 'changePassword':
                 if U.is_valid_get_request(new_password_0) and U.is_valid_get_request(new_password_1):
                     if new_password_0 == new_password_1:

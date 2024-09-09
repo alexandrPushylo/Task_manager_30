@@ -4,7 +4,7 @@
     <div id="profile" class="mt-2">
         <div class="card position-relative translate-middle-x start-50" style="width: max-content">
 {#            <form id="profile_form" method="post">{% csrf_token %}#}
-                {% csrf_token %}
+                
 {#                <div>#}
 {#                    <p>{{ current_user.username }}</p>#}
 {#                    <p>{{ current_user.first_name }}</p>#}
@@ -19,35 +19,83 @@
                         <span class="text-info">Telegram подключен</span>
                     </div>
                 {% else %}
-                    <div class="card-header">
-{#                        <span class="form-text">Индивидуальный код пользователя:</span>#}
-{#                        <span class="fw-bolder border border-dark">{{ user_key }}</span>#}
-                        
+                    <div class="card-header">                        
                         <p>
                             Отправьте код <span class="fw-bolder border border-dark">{{ user_key }}</span> Telegram боту, 
                             после нажмите 
                             <span class="fw-bolder">Подключить Telegram</span>
-                        </p>
-                        
+                        </p>                        
                         <p style="text-align: center">
                             <a href="https://t.me/j23jnd3inid3bot">Ссылка на бота</a>
-                        </p>
-                        
+{#                            <a href="https://t.me/hjvgghv_bot">Ссылка на бота</a>#}
+                        </p>                        
                     <p class="m-1 mt-2" style="text-align: center">
                         <button class="btn btn-info" 
                                 onclick="connectTelegramBot(this, {{ user_key }})"
                                 role="button">Подключить Telegram</button>
                     </p>
                     </div>
-                {% endif %}
-
-
-
-                
-
+                {% endif %} 
 {#            </form>#}
         </div>
+
+        <div class="card position-relative translate-middle-x start-50 mt-1" style="width: max-content">
+            <div class="card-header">
+                <p style="text-align: center; margin: 0">
+                    <span>{{ current_user.last_name }}</span>
+                    <span>{{ current_user.first_name }}</span>
+                </p>
+            </div>
+
+            <div class="card-body">
+                <form method="post">{% csrf_token %}
+                    <input type="hidden" name="operation" value="change_profiler">
+                    <div>
+                        <label>Логин:
+                            <input class="form-control" type="text" name="username" value="{{ current_user.username }}">
+                        </label>
+                    </div>
+                    <div class="mt-2" style="text-align: right">
+                        <button class="btn btn-sm btn-primary"
+                                type="button"
+                                data-bs-target="#change_password"
+                                data-bs-toggle="modal">Сменить пароль</button>
+                    </div>
+
+                    <div>
+                        <label>Фамилия:
+                            <input class="form-control" type="text" name="last_name"
+                                   value="{{ current_user.last_name }}">
+                        </label>
+                    </div>
+
+                    <div>
+                        <label>Имя:
+                            <input class="form-control" type="text" name="first_name"
+                                   value="{{ current_user.first_name }}">
+                        </label>
+                    </div>
+
+                    <div>
+                        <label>Телефон:
+                            <input class="form-control" type="text" name="telephone"
+                                   value="{% if current_user.telephone %}{{ current_user.telephone }}{% endif %}">
+                        </label>
+                    </div>
+                    <div class="mt-2" style="text-align: right">
+                        <button class="form-control btn btn-success w-auto" type="submit">Сохранить</button>
+                    </div>
+                </form>
+
+            </div>
+
+
+        </div>
+    
+    
+    
     </div>
+    {% include 'includes/modal_change_password.html' %}
 {% endblock %}
 
 {% block footer %}
