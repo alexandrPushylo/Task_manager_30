@@ -832,3 +832,52 @@ function setTaskDescription(technic_id) {
         }
     })
 }
+
+function checkPassword(){
+    const new_password_0 = $('#new_password_0');
+    const new_password_1 = $('#new_password_1');
+    const span_password_error = $('#span_password_error');
+    const btn_change_password = $('#btn_change_password');
+
+    if(new_password_0.val() !== new_password_1.val()){
+        span_password_error.show();
+        new_password_0.addClass('border border-danger');
+        new_password_1.addClass('border border-danger');
+        btn_change_password.addClass('disabled');
+    }
+    else {
+        span_password_error.hide();
+        new_password_0.removeClass('border border-danger')
+        new_password_1.removeClass('border border-danger')
+        btn_change_password.removeClass('disabled');
+    }
+}
+
+function changePassword() {
+    const operation = "changePassword";
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: window.location,
+        data: {
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            operation: operation,
+            new_password_0: $('input[name="new_password_0"]').val(),
+            new_password_1: $('input[name="new_password_1"]').val(),
+        },
+        success: (response) => {
+            if (response==='accept'){
+                alert('Пароль успешно изменен');
+                reloadPage();
+                // $('#p_status_accept').show()
+                // $('#p_status_error').hide()
+            }
+            else {
+                // $('#p_status_accept').hide()
+                // $('#p_status_error').show()
+                alert('Произошла ошибка');
+                reloadPage();
+            }
+        }
+    })
+}

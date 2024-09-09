@@ -1250,6 +1250,16 @@ def profile_view(request):
         context['user_key'] = current_user_key
 
         if request.method == 'POST':
+            operation = request.POST.get('operation')
+            new_password_0 = request.POST.get('new_password_0')
+            new_password_1 = request.POST.get('new_password_1')
+            if operation == 'changePassword':
+                if U.is_valid_get_request(new_password_0) and U.is_valid_get_request(new_password_1):
+                    if new_password_0 == new_password_1:
+                        current_user.set_password(new_password_0)
+                        current_user.save()
+                        return HttpResponse(b"accept")
+
             _user_key = request.POST.get('user_key')
             if _user_key is not None and _user_key != '':
                 _chat_id = U.T.get_id_chat(key=_user_key, result=U.T.get_result())
