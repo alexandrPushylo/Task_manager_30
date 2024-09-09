@@ -826,9 +826,8 @@ def validate_telephone(telephone: str, length=9) -> str | None:
         pref = '+375'
         out = [sym for sym in telephone if sym in '0123456789']
         out = ''.join(out)
-        if len(out) == length:
-            return pref + out
-        elif len(out) > length:
-            return pref + out[:length]
+
+        if len(out) >= length:
+            return pref + out[-length:]
         else:
             return None
