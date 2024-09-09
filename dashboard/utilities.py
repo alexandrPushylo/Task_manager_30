@@ -815,7 +815,7 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
     return is_accept
 
 
-def validate_telephone(telephone: str, length=9, use_pref=False) -> str | None:
+def validate_telephone(telephone: str, length=9, use_pref=True) -> str | None:
     """
     Валидация номера телефона
     :param use_pref:
