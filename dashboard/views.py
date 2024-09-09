@@ -452,10 +452,15 @@ def login_view(request):
         username = request.POST.get('username')
         username = username.strip()
         password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is None:
-            username = username.capitalize()
+
+        phn_user = USERS_SERVICE.check_user_by_phone(username)
+        if phn_user:
+            user = authenticate(request, username=phn_user.username, password=password)
+        else:
             user = authenticate(request, username=username, password=password)
+            if user is None:
+                username = username.capitalize()
+                user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(ENDPOINTS.ROUTING_DASHBOARD)

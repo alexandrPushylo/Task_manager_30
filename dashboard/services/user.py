@@ -168,3 +168,23 @@ def is_supply_driver(current_technic_sheet_id_list: list, supply_technic_list_id
         return True
     else:
         return False
+
+
+def check_user_by_phone(telephone) -> User|None:
+    """
+    Проверка существования пользователя с телефоном "telephone"
+    :param telephone:
+    :return:
+    """
+    validate_telephone = U.validate_telephone(telephone, length=7, use_pref=False)
+    if validate_telephone:
+        user = get_user_queryset(
+            isArchive=False,
+            telephone__contains=validate_telephone
+        )
+    else:
+        user = User.objects.none()
+    if user.exists() and user.count()==1:
+        return user.first()
+    else:
+        return None
