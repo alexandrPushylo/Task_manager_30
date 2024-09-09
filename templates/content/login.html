@@ -3,8 +3,9 @@
     <div id="login_form" class="translate-middle-x position-relative start-50 mt-5">
         <form method="post" id="form_login">{% csrf_token %}
             <div>
-                <label class="w-100">Логин (Фамилия)
-                    <input type="text" class="form-control" name="username" placeholder="напр: Петров">
+                <label class="w-100">Логин (Фамилия или телефон)
+                    <input type="text" class="form-control" name="username" 
+                           placeholder="напр: Петров или 1234567">
                 </label>
             </div>
             <div>
