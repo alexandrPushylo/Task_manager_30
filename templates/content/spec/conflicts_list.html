@@ -1,33 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
     <div id="conflicts_list" class="container">
-{#        <div><h3><u>{{ title }}</u> {{ current_date.date }}</h3></div>#}
         <div class="mt-3">
             {% for conflict_ts in conflict_technic_sheet %}
                 <div class="card mb-2">
                     <div class="card-header">
-                        <span>Количество необходимой техники:</span><br>
-                        <span class="fw-bolder">{{ conflict_ts.total_count_apps }}</span>
-                        <span>ед.</span>
-                        <span class="fw-bolder">{{ conflict_ts.technic_title }}</span>  
-                        <span class="ms-2"><a href="{% url 'conflict_resolution' %}?conflict_list_id={{ conflict_ts.id_list }}&current_day={{ current_day.date.isoformat }}" role="button" class="btn btn-outline-primary">Редактировать</a></span>
+                        <div>
+                            <span style="">Количество необходимой техники:</span>
+                        </div>
+                        <div class="mt-1 row" style="justify-content: space-between">
+                            <div class="col">
+                                <span class="fw-bolder">{{ conflict_ts.total_count_apps }}</span>
+                                <span>ед.</span>
+                                <span class="fw-bolder">{{ conflict_ts.technic_title }}</span>
+                            </div>
+                            <div class="col">
+                                <a href="{% url 'conflict_resolution' %}?conflict_list_id={{ conflict_ts.id_list }}&current_day={{ current_day.date.isoformat }}"
+                                   role="button" class="btn btn-outline-primary">Редактировать</a>
+                            </div>
+                        </div>
+
                     </div>
                     <div class="card-body p-1 ps-2">
-                        <p class="m-0 p-0"><span>Всего имеется: </span><span>{{ conflict_ts.total_technic_sheet_count }} ед.</span></p>
-                    </div>                
+                        <p class="m-0 p-0"><span>Всего имеется: </span><span>{{ conflict_ts.total_technic_sheet_count }} ед.</span>
+                        </p>
+                    </div>
                 </div>
-                
+
             {% endfor %}
         </div>
     </div>
 {% endblock %}
 {% block footer %}
-<div></div>
-<div>
-    <a href="{% url 'dashboard' %}?current_day={{ current_date.date.isoformat }}" 
-       class="btn btn-sm btn-primary">Назад</a>    
-</div>
-<div></div>
+    <div></div>
+    <div>
+        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}"
+           class="btn btn-sm btn-primary">Назад</a>
+    </div>
+    <div></div>
 {% endblock %}
 
 

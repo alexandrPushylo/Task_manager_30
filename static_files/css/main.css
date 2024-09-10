@@ -209,12 +209,17 @@
 #conflicts_list{
     width: max-content;
 }
-/*#conflict_resolution{*/
-/*    width: max-content;*/
-/*}*/
+#conflict_resolution{
+    /*width: max-content;*/
+    margin-bottom: 8rem;
+}
 
 .conflict_resolution_items{
     width: 18rem;
+}
+
+#technic_application_list{
+    margin-bottom: 8rem;
 }
 
 .general_application_description_font{

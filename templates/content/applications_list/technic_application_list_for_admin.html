@@ -59,7 +59,7 @@
                                 <div class="col-auto input-group-text p-1 {% if application_technic.technic_sheet.id in priority_id_list %}border border-2 border-primary{% endif %}">
                                     <input class="fs-5 fw-bolder p-1"
                                            {% if VIEW_MODE != 'view_mode_archive' %}
-                                           onchange="$('#btn_submit_app_tech').show()"
+                                           onchange="$('#div_submit_for_CR').show()"
                                            {% else %}
                                            disabled
                                            {% endif %}
@@ -77,7 +77,7 @@
 
                                     <textarea class="form-control p-1 general_tech_description_font text_area_description" name="app_technic_description"
                                               {% if VIEW_MODE == 'view_mode_archive' %} disabled {% endif %}
-                                              oninput="autoResize(this);$('#btn_submit_app_tech').show();"                                              
+                                              oninput="autoResize(this);$('#div_submit_for_CR').show();"                                              
                                               aria-label="">{{ application.description }}</textarea>
 
                                 </div>
@@ -93,6 +93,21 @@
     </div>
     
     {% include 'includes/modal_filter.html' %}
+    
+    
+    <div id="div_submit_for_CR"
+         class="container position-fixed translate-middle-x bottom-0 start-50"
+         style="margin-bottom: 4rem; width: max-content; display: none;">
+        <button class="btn btn-warning"
+                type="submit"
+                style=" box-shadow: 2px 2px 10px 2px;"
+                form="technic_application_list_form">Сохранить изменения</button>
+{#        <button id="btn_submit_for_CR" type="submit" form="conflict_resolution_form" #}
+{#                style=" box-shadow: 2px 2px 10px 2px;" #}
+{#                class="btn btn-warning">Сохранить изменения</button>#}
+    </div>
+    
+    
 {% endblock %}
 
 {% block footer %}
@@ -101,11 +116,7 @@
         <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}"            
            class="btn btn-sm btn-primary" type="button">Назад</a>
         <a href="{% url 'material_application_list' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success" type="button">Заявки на материалы</a>
-        <button class="btn btn-sm btn-warning" id="btn_submit_app_tech"
-                style="display: none"
-                type="submit" 
-                form="technic_application_list_form">Сохранить</button>
-        
+                
     </div>
     <div></div>
 {% endblock %}

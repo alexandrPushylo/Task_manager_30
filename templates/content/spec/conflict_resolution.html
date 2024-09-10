@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
     <div id="conflict_resolution" class="container">
-        {#        <div><h3><u>{{ title }}</u> {{ current_date.date }}</h3></div>#}
         <div class="card mt-3 position-relative translate-middle-x start-50"
              style="width: max-content">
 
@@ -35,7 +34,7 @@
                             {% endif %}>
                                 <label class="m-0 p-0 col-auto">
                                     <select id="title_{{ conflict_at.id }}" class="form-control p-1" name="{{ conflict_at.id }}_title"
-                                            onchange="selectTechnicTitleForConflictResolution(this); $('#btn_submit_for_CR').show();">
+                                            onchange="selectTechnicTitleForConflictResolution(this); $('#div_submit_for_CR').show();">
                                         {% for title_short, title in technic_titles_dict.items %}
                                             {% if title == technic_title %}
                                                 <option selected value="{{ title_short }}">{{ title }}</option>
@@ -48,7 +47,7 @@
                                 {% for technic_driver in technic_driver_list %}
                                     <label class="m-0 p-0">
                                         <select id="tech_sheet_{{ conflict_at.id }}" name="{{ conflict_at.id }}_technic_sheet"
-                                                onchange="selectTechnicSheetForConflictResolution(this); $('#btn_submit_for_CR').show();"
+                                                onchange="selectTechnicSheetForConflictResolution(this); $('#div_submit_for_CR').show();"
                                                 style="display: none" disabled
                                                 class="form-control technic_driver_CR {{ technic_driver.title_short }} at_{{ conflict_at.id }} p-1">
                                             <option value="">--Любой--</option>
@@ -78,7 +77,7 @@
                                         {% endif %}>
                                     <input class="fs-5 fw-bolder p-1"
                                            name="{{ conflict_at.id }}_priority"
-                                           onchange="$('#btn_submit_for_CR').show();"
+                                           onchange="$('#div_submit_for_CR').show();"
                                            style="width: 52px"
                                            aria-label=""
                                            type="number" min="1" max="10" value="{{ conflict_at.priority }}">
@@ -92,7 +91,7 @@
 
                                     <textarea class="form-control p-1 text_area_description"
                                               name="{{ conflict_at.id }}_description"
-                                              oninput="autoResize(this);$('#btn_submit_for_CR').show();"
+                                              oninput="autoResize(this);$('#div_submit_for_CR').show();"
                                               aria-label="">{{ conflict_at.description }}</textarea>
                                 </div>
                             </div>
@@ -102,19 +101,26 @@
                 {% endfor %}
             </form>
         </div>
-
-
     </div>
+    
+    
+    <div id="div_submit_for_CR"
+         class="container position-fixed translate-middle-x bottom-0 start-50"
+         style="margin-bottom: 4rem; width: max-content; display: none;">
+        <button id="btn_submit_for_CR" type="submit" form="conflict_resolution_form" 
+                style=" box-shadow: 2px 2px 10px 2px;" 
+                class="btn btn-warning">Сохранить изменения</button>
+    </div>
+    
 {% endblock %}
 
 {% block footer %}
     <div></div>
     <div>
         <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}"
-           class="btn btn-sm btn-success">На главную страницу</a>
+           class="btn btn-success">На главную страницу</a>
         <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}"
-           class="btn btn-sm btn-primary">Назад</a>
-    <button id="btn_submit_for_CR" style="display: none" type="submit" form="conflict_resolution_form" class="btn btn-sm btn-warning">Сохранить</button>
+           class="btn btn-primary">Назад</a>
     </div>
     <div></div>
 {% endblock %}
