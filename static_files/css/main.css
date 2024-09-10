@@ -167,10 +167,6 @@
     width: 20rem;
     margin-bottom: 30px;
 }
-.application_items_saved {
-    width: 20rem;
-    margin-bottom: 30px;
-}
 
 .application_items_border {
     border: 5px solid;
@@ -257,5 +253,4 @@
 .AP-empty-title{
     color: darkorange;
 }
-
 
