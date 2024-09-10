@@ -220,7 +220,6 @@ def get_dashboard_for_foreman_or_master(
         )
 
         if construction_site["application_today"]:
-
             construction_site["application_today"]["application_material"] = (
                 application_material.filter(
                     application_today_id=construction_site["application_today"]["id"]
@@ -382,6 +381,7 @@ def get_dashboard_for_employee(
         status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
         date=current_day,
     )
+
     construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
         isArchive=False, status=True, applicationtoday__in=applications_today
     )
@@ -395,6 +395,7 @@ def get_dashboard_for_employee(
         )
     else:
         applications_technic = ApplicationTechnic.objects.none()
+
     if request.user.is_show_material_app:
         application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
             isArchive=False, application_today__in=applications_today
@@ -403,6 +404,7 @@ def get_dashboard_for_employee(
         application_material = ApplicationMaterial.objects.none()
 
     context["construction_sites"] = construction_sites.values()
+
     for construction_site in context["construction_sites"]:
         foreman_id = construction_site.get("foreman_id")
         construction_site["foreman"] = (
@@ -439,6 +441,9 @@ def get_dashboard_for_employee(
                 "priority",
                 "description",
             )
+    context["construction_sites"] = sorted(
+        context["construction_sites"], key=U.sorting_application_status
+    )
     return context
 
 
@@ -462,8 +467,8 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
 
     supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
     is_supply_driver = USERS_SERVICE.is_supply_driver(
-        current_technic_sheet.values_list('technic__id', flat=True),
-        supply_technic_list.values_list('id', flat=True)
+        current_technic_sheet.values_list("technic__id", flat=True),
+        supply_technic_list.values_list("id", flat=True),
     )
 
     applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
@@ -487,13 +492,12 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         )
     context["technic_application_list"] = technic_application_list
 
-
     if is_supply_driver:
         application_today_id_list = APP_TODAY_SERVICE.get_apps_today_queryset(
             date=current_day,
             isArchive=False,
             status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
-        ).values_list('id', flat=True)
+        ).values_list("id", flat=True)
     else:
         application_today_id_list = applications_technic.filter(
             technic_sheet__in=current_technic_sheet
@@ -511,12 +515,11 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
     )
     for application in applications_today:
         if is_supply_driver:
-            application["application_material"] = (APP_MATERIAL_SERVICE.get_apps_material_queryset(
-                application_today__id=application["id"],
-                isChecked=True,
-            ).values(
-                'description'
-                )
+            application["application_material"] = (
+                APP_MATERIAL_SERVICE.get_apps_material_queryset(
+                    application_today__id=application["id"],
+                    isChecked=True,
+                ).values("description")
             )
         else:
             application[

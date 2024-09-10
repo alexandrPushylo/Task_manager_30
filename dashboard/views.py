@@ -60,10 +60,6 @@ def routing(request):
         elif USERS_SERVICE.is_mechanic(request.user):
             return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         elif USERS_SERVICE.is_driver(request.user):
-            # if next_app_today.filter(
-            #         Q(status=ASSETS.ApplicationTodayStatus.APPROVED.title) |
-            #         Q(status=ASSETS.ApplicationTodayStatus.SEND.title)
-            # ).exists():
             if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
                 return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         elif USERS_SERVICE.is_employee(request.user):
