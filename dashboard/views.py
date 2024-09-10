@@ -60,10 +60,6 @@ def routing(request):
         elif USERS_SERVICE.is_mechanic(request.user):
             return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         elif USERS_SERVICE.is_driver(request.user):
-            # if next_app_today.filter(
-            #         Q(status=ASSETS.ApplicationTodayStatus.APPROVED.title) |
-            #         Q(status=ASSETS.ApplicationTodayStatus.SEND.title)
-            # ).exists():
             if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
                 return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         elif USERS_SERVICE.is_employee(request.user):
@@ -1120,6 +1116,9 @@ def show_technic_application(request):
             technic_sheet_list = technic_sheet_list.order_by('technic_sheet__technic__title')
         elif request.user.sort_by == 'driver':
             technic_sheet_list = technic_sheet_list.order_by('technic_sheet__driver_sheet__driver__last_name')
+        else:
+            technic_sheet_list = technic_sheet_list.order_by('technic_sheet__driver_sheet__driver__last_name')
+
 
         application_technics = []
         for technic_sheet in technic_sheet_list:
