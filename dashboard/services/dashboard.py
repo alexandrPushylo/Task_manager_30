@@ -410,9 +410,7 @@ def get_dashboard_for_employee(
         )
 
         construction_site["application_today"] = (
-            APP_TODAY_SERVICE.get_apps_today_queryset(
-                construction_site_id=construction_site["id"]
-            )
+            applications_today.filter(construction_site_id=construction_site["id"])
             .values()
             .first()
         )
