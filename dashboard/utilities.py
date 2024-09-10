@@ -238,14 +238,18 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
             application_technic.technic_sheet.save()
             application_technic.save()
 
-        str_constr_site = f"{application_technic.application_today.construction_site.address} ({application_technic.application_today.construction_site.foreman.last_name}):\n"
+
+        cs_address = application_technic.application_today.construction_site.address
+        cs_foreman = application_technic.application_today.construction_site.foreman
+        cs_foreman__last_name = cs_foreman.last_name if cs_foreman is not None else None
+
+        str_constr_site = f"> {cs_address} {'('+cs_foreman__last_name+')' if cs_foreman__last_name else ''}:\n".upper()
         str_desc = str_constr_site + application_technic.description + '\n'
 
         if not application_technic.isChecked:
             _new_app_tech, created = ApplicationTechnic.objects.get_or_create(
                 technic_sheet=application_technic.technic_sheet,
-                application_today=application_today,
-                # id_orig_app=application_technic.id
+                application_today=application_today
             )
             _new_app_tech.description = _new_app_tech.description + str_desc if _new_app_tech.description else str_desc
             _new_app_tech.save()
