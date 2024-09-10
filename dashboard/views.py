@@ -1120,6 +1120,9 @@ def show_technic_application(request):
             technic_sheet_list = technic_sheet_list.order_by('technic_sheet__technic__title')
         elif request.user.sort_by == 'driver':
             technic_sheet_list = technic_sheet_list.order_by('technic_sheet__driver_sheet__driver__last_name')
+        else:
+            technic_sheet_list = technic_sheet_list.order_by('technic_sheet__driver_sheet__driver__last_name')
+
 
         application_technics = []
         for technic_sheet in technic_sheet_list:
