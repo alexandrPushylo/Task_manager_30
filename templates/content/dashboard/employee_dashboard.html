@@ -101,6 +101,7 @@
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
                                                 <textarea readonly
+                                                          style="font-size: {{ user.font_size }}pt;"
                                                           class="form-control app_tech_description general_tech_description_font">{{ app_technic.description }}</textarea>
                                                         </label>
                                                     {% endif %}
@@ -117,11 +118,13 @@
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
                                                 <textarea readonly aria-label=""
+                                                          style="font-size: {{ user.font_size }}pt;"
                                                           class="form-control border border-1 border-success material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
                                                 <textarea readonly aria-label=""
+                                                          style="font-size: {{ user.font_size }}pt;"
                                                           class="form-control border border-1 border-danger material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
                                             <hr class="p-0 m-0">

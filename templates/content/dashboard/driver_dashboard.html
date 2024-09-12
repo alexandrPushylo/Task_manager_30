@@ -114,6 +114,7 @@
                                         <label class="w-100"><p class="fw-bolder small m-0" style="text-align: center;">
                                             Примечание к объекту:</p>
                                             <textarea readonly
+                                                      style="font-size: {{ user.font_size }}pt;"
                                                       class="form-control border border-0 app_tech_description general_application_description_font">{{ application_today.description }}
                                     </textarea>
                                         </label>
@@ -146,6 +147,7 @@
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">
                                                 <textarea readonly
+                                                          style="font-size: {{ user.font_size }}pt;"
                                                           class="form-control app_tech_description general_tech_description_font"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}
                                                           style="color: rgba(97,95,95,0.51)"
@@ -166,6 +168,7 @@
                                         <div class="card-body p-0">
                                             <textarea readonly
                                                       aria-label=""
+                                                      style="font-size: {{ user.font_size }}pt;"
                                                       class="form-control material_description general_mat_description_font"
                                             >{{application_today.application_material.0.description}}</textarea>
                                             

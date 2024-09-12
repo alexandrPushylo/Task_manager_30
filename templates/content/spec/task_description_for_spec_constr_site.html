@@ -39,7 +39,9 @@
                     <div class="card w-auto my-1">
                     <div class="card-header">
                         <span>{{ technic.title }}</span>
-                        <span>({{ technic.attached_driver__last_name }})</span>
+                        {% if technic.attached_driver__last_name %}
+                            <span>({{ technic.attached_driver__last_name }})</span>
+                        {% endif %}
                         <button id="btn_technic_id_{{ technic.id }}" 
                             class="btn btn-sm btn-outline-success ms-2"
                                 onclick="setTaskDescription('{{ technic.id }}')"
