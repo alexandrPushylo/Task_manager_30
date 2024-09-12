@@ -17,7 +17,14 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": (
-            "first_name", "last_name", "email", "telephone", "telegram_id_chat", "color_title")}),
+            "first_name",
+            "last_name",
+            "email",
+            "telephone",
+            "telegram_id_chat",
+            "color_title",
+            "font_size"
+        )}),
         (_("Post"), {"fields": ("post", "supervisor_user_id")}),
         (_("Filter"), {"fields": ("is_show_panel",
                                   "is_show_saved_app",

@@ -24,6 +24,7 @@
                         <label class="row">
                             <span class="small">Примечание к объекту:</span>
                             <textarea
+                                    style="font-size: {{ user.font_size }}pt;"
                                     onblur="saveApplicationDescription(this);"
                                     oninput="autoResize(this)"
                                     class="form-control app_tech_description general_application_description_font"
@@ -93,7 +94,7 @@
                                     <div class="row">
                                         <label>
                                             <textarea id="app_tech_description_{{ app_technic.id }}"
-                                                      style="width: 100%;"
+                                                      style="width: 100%; font-size: {{ user.font_size }}pt;"
                                                       class="form-control app_tech_description app_technic_description_{{ app_technic.id }} general_tech_description_font
                                                       {% if app_technic.isChecked %}border border-1 border-success
                                                       {% elif app_technic.is_cancelled %}border border-1 border-danger
@@ -134,6 +135,7 @@
                         <div class="card-body p-0">
                             <textarea readonly
                                       aria-label=""
+                                      style="font-size: {{ user.font_size }}pt;"
                                       class="form-control autoresize material_description general_mat_description_font"
                                       oninput="autoResize(this)"
                             >{{ application_today.application_material.description }}</textarea>

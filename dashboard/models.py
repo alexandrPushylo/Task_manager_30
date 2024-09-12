@@ -25,6 +25,7 @@ class User(AbstractUser):
     sort_by = models.CharField(max_length=100, null=True, blank=True, verbose_name='Сортировать по:')
 
     color_title = models.CharField(max_length=8, null=False, default='#000000', verbose_name='Цвет названия объекта')
+    font_size = models.IntegerField(default=10, verbose_name='Размер шрифта для описания заявки')
 
 
 #   TECHNIC-------------------------------------------------------------------

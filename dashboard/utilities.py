@@ -326,6 +326,15 @@ def set_data_for_filter(request):
     color_title = request.POST.get('color_title')
     color_title = color_title if color_title is not None else '#000000'
 
+    font_size = request.POST.get('font_size')
+    if font_size == '' or font_size is None:
+        font_size = 10
+    else:
+        try:
+            font_size = int(font_size)
+        except Exception as e:
+            log.error("set_data_for_filter(): 'font_size'")
+
     _user = USERS_SERVICE.get_user(pk=request.user.id)
     if _user:
         if is_show_saved_app:
@@ -344,6 +353,8 @@ def set_data_for_filter(request):
             _user.is_show_panel = False if _user.is_show_panel else True
         if color_title:
             _user.color_title = color_title
+        if font_size:
+            _user.font_size = font_size
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
         _user.save()

@@ -42,22 +42,24 @@
             </nav>
         </div>
         
-
         <div style="text-align: center">
-            <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"
-               class="btn  {% if count_not_checked_app_mater %} btn-warning {% else %}btn-success{% endif %}">
-                {% if count_not_checked_app_mater and VIEW_MODE != 'view_mode_archive' %}
-                    <span>Есть {{ count_not_checked_app_mater }} не подтвержденных заявок</span>
-                {% else %}
-                    <span>Заявки на материалы</span>
-                {% endif %}
-            </a>
-            {#                    <button type="button" class="btn btn-sm btn btn-outline-primary">Опции</button>#}
+            {% include 'includes/btn_modal_view_props.html' %}
+        </div>            
+    
+        <div style="text-align: center" class="mt-3">
+            <span style="box-shadow: 2px 2px 30px 2px">
+                <a href="{% url 'material_application_supply' %}?current_day={{ current_day.date.isoformat }}"               
+                   class="btn  {% if count_not_checked_app_mater %} btn-warning {% else %}btn-success{% endif %}">
+                    {% if count_not_checked_app_mater and VIEW_MODE != 'view_mode_archive' %}
+                        <span>Есть {{ count_not_checked_app_mater }} не подтвержденных заявок</span>
+                    {% else %}
+                        <span>Заявки на материалы</span>
+                    {% endif %}
+                </a>
+            </span>            
         </div>
-
+    
         <div id="applications_container" class="mt-3 position-relative translate-middle-x start-50">
-
-            {#            {% for construction_site in construction_sites %}#}
             <div class="application_items">
 
                 <div class="application_items_border border border-2
@@ -84,7 +86,7 @@
                                 <p class="p-0 application_status">Заявка отсутствует</p>
                             {% endif %}
                             <p class="card-title fw-bolder p-0 m-0 text-uppercase"
-                               style="text-align: center">{{ construction_site.address }}</p>
+                               style="text-align: center; color: {{ user.color_title }}">{{ construction_site.address }}</p>
                             <p class="m-0 ms-2" style="text-align: center">
                                 <span class="fw-bolder">{{ weekday }}</span>,
                                 <span>{{ current_day.date }}</span>
@@ -96,6 +98,7 @@
                                     <label class="w-100"><p class="fw-bolder small m-0" style="text-align: center;">
                                         Примечание к объекту:</p>
                                         <textarea readonly
+                                                  style="font-size: {{ user.font_size }}pt;"
                                                   class="form-control border border-0 app_tech_description general_application_description_font">{{ application_today.description }}
                                     </textarea>
                                     </label>
@@ -123,9 +126,11 @@
                                                     </span>
                                                 {% if app_technic.description %}
                                                     <label class="m-0 p-0 row">
-                                                <textarea readonly class="form-control app_tech_description general_tech_description_font"
+                                                <textarea readonly
+                                                          style="font-size: {{ user.font_size }}pt;"
+                                                          class="form-control app_tech_description general_tech_description_font"
                                                         {% if app_technic.is_cancelled %}
-                                                          style="color: rgba(97,95,95,0.51)"
+                                                          style="color: rgba(97,95,95,0.51); font-size: {{ user.font_size }}pt;"
                                                         {% endif %}
                                                           >{{ app_technic.description }}</textarea>
                                                     </label>
@@ -140,13 +145,15 @@
                                         {% if applications_material.isChecked %}
                                             <span class="small fw-bold">Список материалов:</span>
                                             <span style="font-size: small; color: green;">Подтверждено</span>
-                                            <textarea readonly aria-label="" style="font-size: 10pt"
+                                            <textarea readonly aria-label="" 
+                                                      style="font-size: {{ user.font_size }}pt;"
                                                       class="form-control border border-1 border-success material_description general_mat_description_font">{{ applications_material.description }}</textarea>
 
                                         {% else %}
                                             <span class="small fw-bold">Список материалов:</span>
                                             <span style="font-size: small; color: red;">Не подтверждено</span>
                                             <textarea readonly aria-label=""
+                                                      style="font-size: {{ user.font_size }}pt;"
                                                       class="form-control border border-1 border-danger material_description general_mat_description_font">{{ applications_material.description }}</textarea>
                                         {% endif %}
                                         <hr class="p-0 m-0">
@@ -227,10 +234,12 @@
 
                                             <div class="">
                                         <textarea 
+                                                style="font-size: {{ user.font_size }}pt;"
                                                 class="general_tech_description_font form-control {% if app_tech.isChecked %} border border-2 border-success{% elif app_tech.is_cancelled %} border border-2 border-danger {% endif %}"
                                                 readonly {% if app_tech.is_cancelled or app_tech.isChecked %}
                                                 disabled{% endif %}
-                                                aria-label="">{{ app_tech.description }}</textarea>
+                                                aria-label=""
+                                        >{{ app_tech.description }}</textarea>
                                             </div>
 
                                             <div class="m-1 btn-group position-relative translate-middle-x start-50">
@@ -280,7 +289,7 @@
     {#    ------------------------------------------------------------------------------------------------------------#}
 
     {% csrf_token %}
-    {#    {% include 'includes/modal_view_props.html' %}#}
+        {% include 'includes/modal_view_props.html' %}
 
     {#    ------------------------------------------------------------------------------------------------------------#}
 

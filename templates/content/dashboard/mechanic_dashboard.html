@@ -36,6 +36,7 @@
             {% include 'includes/label_archive.html' %}
         {% endif %}
         {% include 'includes/weekday_current_day.html' %}
+        {% include 'includes/btn_modal_view_props.html' %}
         {% include 'includes/btn_add_driver_and_technic.html' %}
     </div>
     
@@ -82,8 +83,10 @@
                                             <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
                                         {% endif %}
 
-                                        <textarea class="form-control p-1 text_area_description general_tech_description_font"
-                                                  aria-label="With textarea"
+                                        <textarea
+                                                style="font-size: {{ user.font_size }}pt;"
+                                                class="form-control p-1 text_area_description general_tech_description_font"
+                                                aria-label="With textarea"
                                         >{{ app_tech.description }}</textarea>
                                     </div>
                                 {% endif %}
@@ -97,8 +100,9 @@
         </div>
 
     </div>
+    
+    {% include 'includes/modal_view_props.html' %}
 {% endblock %}
-
 
 {% block footer %}
     <div></div>
