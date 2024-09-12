@@ -337,23 +337,23 @@ def set_data_for_filter(request):
 
     _user = USERS_SERVICE.get_user(pk=request.user.id)
     if _user:
-        if is_show_saved_app:
+        if is_show_saved_app is not None:
             _user.is_show_saved_app = is_show_saved_app
-        if is_show_absent_app:
+        if is_show_absent_app is not None:
             _user.is_show_absent_app = is_show_absent_app
-        if is_show_technic_app:
+        if is_show_technic_app is not None:
             _user.is_show_technic_app = is_show_technic_app
-        if is_show_material_app:
+        if is_show_material_app is not None:
             _user.is_show_material_app = is_show_material_app
-        if filter_construction_site:
+        if filter_construction_site is not None:
             _user.filter_construction_site = filter_construction_site
-        if filter_foreman:
+        if filter_foreman is not None:
             _user.filter_foreman = filter_foreman
-        if _hide_panel:
+        if _hide_panel is not None:
             _user.is_show_panel = False if _user.is_show_panel else True
-        if color_title:
+        if color_title is not None:
             _user.color_title = color_title
-        if font_size:
+        if font_size is not None:
             _user.font_size = font_size
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
