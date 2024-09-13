@@ -256,9 +256,16 @@
 
 #edit_application{
     margin-bottom: 7rem;
-    /*width: max-content;*/
-    min-width: max-content;
-    max-width: 20vw;
+}
+@media (min-width: 990px) {
+    #edit_application{
+        width: 45rem;
+    }
+}
+@media (max-width: 450px) {
+    #edit_application{
+        width: 100vw;
+    }
 }
 
 
