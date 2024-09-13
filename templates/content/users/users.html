@@ -3,18 +3,20 @@
     {% include 'includes/btn_dashboard.html' %}
 {% endblock %}
 {% block content %}
-    <div id="users" class="container">
+    <div id="users" class="container-sm">
         <div><h3><u>{{ title }}</u></h3></div>
-        <table class="table table-hover w-auto">
+        <table class="table table-hover" style="width: min-content">
             <thead>
                 <tr>
                     <th>№</th>
-                    <th>Username</th>
+                    <th class="for_user_hide">Username</th>
                     <th>Фамилия</th>
                     <th>Имя</th>
-                    <th class="for_hide">Должность</th>
+                    <th class="for_user_hide">Должность</th>
                     <th>Телефон</th>
-                    <th class="for_hide">Последний вход</th>
+                    {% if user.is_staff %}
+                    <th class="for_user_hide">Последний вход</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -25,15 +27,14 @@
                     {% endif %}
                 >
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ user_item.username }}</td>
+                    <td class="for_user_hide">{{ user_item.username }}</td>
                     <td>{{ user_item.last_name }}</td>
                     <td>{{ user_item.first_name }}</td>
-                    <td class="for_hide">{% for title, post in user_post.items %}
-                        {% if title == user_item.post %}{{ post }}{% endif %}
-                    {% endfor %}
-                    </td>
+                    <td class="for_user_hide">{% for title, post in user_post.items %}{% if title == user_item.post %}{{ post }}{% endif %}{% endfor %}</td>
                     <td>{% if user_item.telephone %}{{ user_item.telephone }}{% endif %}</td>
-                    <td class="for_hide">{% if user_item.last_login %}{{ user_item.last_login }}{% endif %}</td>
+                    {% if user.is_staff %}
+                    <td class="for_user_hide">{% if user_item.last_login %}{{ user_item.last_login }}{% endif %}</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
 
@@ -47,7 +48,7 @@
 {% block footer %}
     <div></div>
     <div>
-        <a href="{% url 'edit_user' %}" class="btn btn-sm btn-success" type="button">Добавить пользователя</a>
+        <a href="{% url 'edit_user' %}" class="btn btn-success" type="button">Добавить пользователя</a>
     </div>
     <div></div>
 {% endblock %}
