@@ -17,32 +17,21 @@ const selectPost = (e) => {
     }
 }
 
-const toggleWorkdayStatus = (e) => {
-    const csrf = $('input[name="csrfmiddlewaretoken"]').val();
-    const pathname = window.location;
-    const [id, status] = e
-    // console.log(id, status)
-    const workDayStatus = $('.status_' + id);
-    // console.log(workDayStatus)
-    if (workDayStatus.is(':checked')) {
-        workDayStatus.prop('checked', false);
-    } else {
-        workDayStatus.prop('checked', true);
-    }
-    // console.log(workDayStatus.checked)
+const toggleWorkdayStatus = (e, workday_id) => {
+    const operation = "toggleWorkdayStatus";
+    $.ajax({
+        type: 'POST',
+        mode: 'same-origin',
+        url: window.location,
+        data: {
+            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            workday_id: workday_id,
+            operation: operation
+        },
+        success: (response) => {
 
-    // $.ajax({
-    //         type: 'POST',
-    //         mode: 'same-origin',
-    //         url: pathname,
-    //         data: {
-    //             csrfmiddlewaretoken: csrf,
-    //             id_day: id,
-    //             status: status
-    //         }
-    //     }).done((d)=>{
-    //         console.log(d)
-    // })
+        }
+    })
 
 }
 
