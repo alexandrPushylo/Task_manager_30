@@ -243,7 +243,7 @@ function cancelAddedTechnic(e){
     $('#main_footer').show();
 }
 
-function reloadPage(e) {
+function reloadPage() {
     window.location.reload()
 }
 

@@ -1,4 +1,3 @@
-from django.http import HttpResponseRedirect
 from config.creds import USE_TELEGRAM
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite, ApplicationMaterial
 from django.db.models.query import QuerySet
