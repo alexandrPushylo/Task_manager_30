@@ -5,33 +5,35 @@
 {% block content %}
     <div id="users" class="container">
         <div><h3><u>{{ title }}</u></h3></div>
-        <table class="table table-hover">
+        <table class="table table-hover w-auto">
             <thead>
-            <tr>
-                <th>№</th>
-                <th>Username</th>
-                <th>Фамилия</th>
-                <th>Имя</th>
-                <th>Должность</th>
-                <th>Телефон</th>
-                <th>Последний вход</th>
-            </tr>
+                <tr>
+                    <th>№</th>
+                    <th>Username</th>
+                    <th>Фамилия</th>
+                    <th>Имя</th>
+                    <th class="for_hide">Должность</th>
+                    <th>Телефон</th>
+                    <th class="for_hide">Последний вход</th>
+                </tr>
             </thead>
             <tbody>
-            {% for user in users_list %}
-                <tr id="{{ user.id }}" 
+            {% for user_item in users_list %}
+                <tr id="{{ user_item.id }}" 
+                    {% if user.post in 'administrator mechanic' %}
                     onclick=" location.href = `/edit_user/?user_id=${this.id}`"
+                    {% endif %}
                 >
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.last_name }}</td>
-                    <td>{{ user.first_name }}</td>
-                    <td>{% for title, post in user_post.items %}
-                        {% if title == user.post %}{{ post }}{% endif %}
+                    <td>{{ user_item.username }}</td>
+                    <td>{{ user_item.last_name }}</td>
+                    <td>{{ user_item.first_name }}</td>
+                    <td class="for_hide">{% for title, post in user_post.items %}
+                        {% if title == user_item.post %}{{ post }}{% endif %}
                     {% endfor %}
                     </td>
-                    <td>{% if user.telephone %}{{ user.telephone }}{% endif %}</td>
-                    <td>{% if user.last_login %}{{ user.last_login }}{% endif %}</td>
+                    <td>{% if user_item.telephone %}{{ user_item.telephone }}{% endif %}</td>
+                    <td class="for_hide">{% if user_item.last_login %}{{ user_item.last_login }}{% endif %}</td>
                 </tr>
             {% endfor %}
 
