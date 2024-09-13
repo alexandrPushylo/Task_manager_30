@@ -1,6 +1,6 @@
-<div class="nav-logo ms-2">
+<div class="nav-logo m-0 ms-2 p-0" style="text-align: center;">
     {% if user.is_authenticated and today %}
-        <span>{{ today.day }} . {{ today.month }}</span>
+        <span style=" font-size: 14pt">{{ today.day }}</span>
         <hr class="m-0">
         <span>{{ current_weekday }}</span>
     {% endif %}

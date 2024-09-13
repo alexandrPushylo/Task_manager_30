@@ -1,25 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
-    <div id="conflict_resolution" class="container">
-        <div class="card mt-3 position-relative translate-middle-x start-50"
+    <div id="conflict_resolution" class="container-sm">
+        <div class="card mt-3 mx-auto"
              style="width: max-content">
-
             <div class="card-header">
                 <p class="m-0 fw-bolder">{{ technic_title }}</p>
                 <p class="m-0 text-success">
                     <span class="form-text me-1">Всего ед. техники:</span>
                     <span>{{ conflict_technic_sheet.total_technic_sheet_count }}</span>
                 </p>
-                <p class="m-0 text-danger">
-                    <span class="form-text me-1">Количество необходимой техники:</span>
-                    <span>{{ conflict_technic_sheet.total_count_apps }}</span>
-                </p>
+                <p class="m-0 text-danger"
+                ><span class="form-text me-1">Количество необходимой техники:</span><span>{{ conflict_technic_sheet.total_count_apps }}</span></p>
             </div>
         </div>
-        <div id="conflict_resolution_container" class="mt-3">
+        <div id="conflict_resolution_container" class="mt-3 mx-auto">
             <form id="conflict_resolution_form" method="post">{% csrf_token %}
                 {% for conflict_at in applications_technic %}
-                    <div class="card m-3 ">
+                    <div class="card m-1">
                         <div class="card-header">
                             <input type="hidden" name="application_technic_id" value="{{ conflict_at.id  }}">
                             <div {% if conflict_at.technic_sheet.id in priority_id_list %}
@@ -84,9 +81,10 @@
                                 </div>
 
                                 <div class="col ms-1">
-                                    <span class="fw-bolder small ms-2">{{ conflict_at.application_today.construction_site.address }}</span>
-                                    {% if conflict_at.application_today.construction_site.foreman %}
-                                        <span class="small">({{ conflict_at.application_today.construction_site.foreman }})</span>
+                                    <span class="fw-bolder small ms-2"
+                                    >{{ conflict_at.application_today.construction_site.address }}</span>
+                                    {% if conflict_at.application_today.construction_site.foreman %}<span class="small"
+                                    >({{ conflict_at.application_today.construction_site.foreman }})</span>
                                     {% endif %}
 
                                     <textarea class="form-control p-1 text_area_description"
