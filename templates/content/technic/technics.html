@@ -16,7 +16,11 @@
             </thead>
             <tbody>
             {% for technic in technics %}
-                <tr id="{{ technic.id }}" onclick=" location.href = `/edit_technic/?tech_id=${this.id}`">
+                <tr id="{{ technic.id }}"
+                    {% if user.post in 'administrator mechanic' %}
+                    onclick=" location.href = `/edit_technic/?tech_id=${this.id}`"
+                    {% endif %}
+                >
                     <td>{{ forloop.counter }}</td>
                     <td><p class="m-0 fw-bolder">{{ technic.title }}</p><p class="m-0 fw-bolder small">[ {{ technic.id_information }} ]</p></td>
                     <td><p class="m-0 small">{{ technic.type }}</p><hr class="m-0"><p class="m-0 small">{{ technic.description }}</p></td>
