@@ -8,7 +8,7 @@
         <table class="table table-hover" style="width: min-content">
             <thead>
                 <tr>
-                    <th>№</th>
+                    <th class="for_user_hide">№</th>
                     <th class="for_user_hide">Username</th>
                     <th>Фамилия</th>
                     <th>Имя</th>
@@ -26,7 +26,7 @@
                     onclick=" location.href = `/edit_user/?user_id=${this.id}`"
                     {% endif %}
                 >
-                    <td>{{ forloop.counter }}</td>
+                    <td class="for_user_hide">{{ forloop.counter }}</td>
                     <td class="for_user_hide">{{ user_item.username }}</td>
                     <td>{{ user_item.last_name }}</td>
                     <td>{{ user_item.first_name }}</td>
