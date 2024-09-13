@@ -96,18 +96,19 @@
         display: none;
     }
 }
-/*@media (max-width: 900px) {*/
-/*    #technics {*/
-/*        width: min-content;*/
-/*    }*/
-/*}*/
 
 #edit_technic {
     margin-top: 20px;
+    max-width: max-content;
     padding: 15px;
     border: 1px solid black;
-    border-radius: 2%;
+    /*border-radius: 5% 5% 5% 5%;*/
     box-shadow: 5px 5px 20px 5px;
+}
+@media (max-width: 500px) {
+    #edit_technic {
+        max-width: 90vw;
+    }
 }
 
 #users {
@@ -201,6 +202,10 @@
     font-size: small;
     text-align: center;
     font-weight: bolder;
+}
+
+.application_foreman_name {
+    text-align: center;
 }
 
 .technic_driver_selects {
