@@ -14,7 +14,9 @@
                 {% if user.post == 'administrator' %}
                 <div>
                     <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
-                           name="is_show_saved_app" {% if user.is_show_saved_app %}checked{% endif %}/>
+                           onchange="changeViewProps(this)"
+                           name="is_show_saved_app" 
+                           {% if user.is_show_saved_app %}checked{% endif %}/>
                     <span>Показывать сохраненные заявки</span>
                 </div>{% endif %}
             
@@ -22,6 +24,7 @@
                 <div>
                     <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
                            name="is_show_absent_app"
+                           onchange="changeViewProps(this)"
                            {% if user.is_show_absent_app %}checked{% endif %}/>
                     <span>Показывать отсутствующие заявки</span>
                 </div>{% endif %}
@@ -29,6 +32,7 @@
                 <div>
                     <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
                            name="is_show_technic_app"
+                           onchange="changeViewProps(this)"
                            value="{{ user.is_show_technic_app }}"
                            {% if user.is_show_technic_app %}checked{% endif %}/>
                     <span>Показывать заявки на технику</span>
@@ -37,6 +41,7 @@
                 <div>
                     <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
                            name="is_show_material_app"
+                           onchange="changeViewProps(this)"
                            value="{{ user.is_show_material_app }}"
                            {% if user.is_show_material_app %}checked{% endif %}/>
                     <span>Показывать заявки на материалы</span>
@@ -50,16 +55,20 @@
                 <input aria-label="" type="color" class="form-control-color ms-3 p-0"
                        name="io_color_title"
                        value="{{ user.color_title }}"
+                       onchange="changeViewProps(this)"
                 />                
                 <span>Цвет названия объекта</span>
             </div>
+        
+        
             <div class="mb-1">
-                    <input id="qqqq" aria-label="" type="number" class="form-control ms-3"
-                       style="width: max-content; display: inline"
-                       min="6"
-                       max="20"
-                       name="io_font_size"
-                       value="{{ user.font_size }}"
+                    <input aria-label="" type="number" class="form-control ms-3"
+                           style="width: max-content; display: inline"
+                           min="6"
+                           max="20"
+                           name="io_font_size"
+                           value="{{ user.font_size }}"
+                           onchange="changeViewProps(this)"
                     />
                 <span class="">Размер шрифта для описания заявки</span>  
             </div>
@@ -67,7 +76,7 @@
             
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" onclick="setViewProps(this)">Сохранить</button>
+                <button type="button" class="btn btn-primary" onclick="reloadPage()//setViewProps(this)">Сохранить</button>
             </div>
         </div>
     </div>

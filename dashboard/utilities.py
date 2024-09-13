@@ -1,4 +1,3 @@
-from django.http import HttpResponseRedirect
 from config.creds import USE_TELEGRAM
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite, ApplicationMaterial
 from django.db.models.query import QuerySet
@@ -288,28 +287,62 @@ def get_table_working_technic_sheet(current_day: WorkDaySheet):
     return _technic_sheet.order_by('technic__title', 'driver_sheet__driver__last_name')
 
 
+def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bool:
+    if io_status == 'true':
+        status = True
+    elif io_status == 'false':
+        status = False
+    else:
+        status = None
+
+    if status is not None:
+        match io_name:
+            case 'is_show_saved_app':
+                user.is_show_saved_app = status
+                user.save(update_fields=['is_show_saved_app'])
+                return True
+            case 'is_show_absent_app':
+                user.is_show_absent_app = status
+                user.save(update_fields=['is_show_absent_app'])
+                return True
+            case 'is_show_technic_app':
+                user.is_show_technic_app = status
+                user.save(update_fields=['is_show_technic_app'])
+                return True
+            case 'is_show_material_app':
+                user.is_show_material_app = status
+                user.save(update_fields=['is_show_material_app'])
+                return True
+            case 'io_color_title':
+                color = io_value if io_value is not None else '#000000'
+                user.color_title = color
+                user.save(update_fields=['color_title'])
+                return True
+            case 'io_font_size':
+                if io_value == '' or io_value is None:
+                    font_size = 10
+                else:
+                    try:
+                        font_size = int(io_value)
+                    except Exception as e:
+                        log.error("set_data_for_filter(): 'font_size'")
+                        font_size = 10
+                user.font_size = font_size
+                user.save(update_fields=['font_size'])
+                return True
+
+            case _:
+                return False
+
+
+
+
 def set_data_for_filter(request):
     """
     Установка параметров фильтрации
     :param request:
     :return:
     """
-    if request.POST.get('operation') == 'hide':
-        _hide_panel = 'change'
-    else:
-        _hide_panel = None
-
-    is_show_saved_app = request.POST.get('is_show_saved_app')
-    is_show_saved_app = is_show_saved_app.capitalize() if is_show_saved_app else None
-
-    is_show_absent_app = request.POST.get('is_show_absent_app')
-    is_show_absent_app = is_show_absent_app.capitalize() if is_show_absent_app else None
-
-    is_show_technic_app = request.POST.get('is_show_technic_app')
-    is_show_technic_app = is_show_technic_app.capitalize() if is_show_technic_app else None
-
-    is_show_material_app = request.POST.get('is_show_material_app')
-    is_show_material_app = is_show_material_app.capitalize() if is_show_material_app else None
 
     filter_construction_site = request.POST.get('filter_construction_site')
     filter_construction_site = filter_construction_site if filter_construction_site is not None else 0
@@ -323,38 +356,14 @@ def set_data_for_filter(request):
     sort_by = request.POST.get('sort_by')
     sort_by = sort_by if sort_by != '' else None
 
-    color_title = request.POST.get('color_title')
-    color_title = color_title if color_title is not None else '#000000'
-
-    font_size = request.POST.get('font_size')
-    if font_size == '' or font_size is None:
-        font_size = 10
-    else:
-        try:
-            font_size = int(font_size)
-        except Exception as e:
-            log.error("set_data_for_filter(): 'font_size'")
-
     _user = USERS_SERVICE.get_user(pk=request.user.id)
     if _user:
-        if is_show_saved_app is not None:
-            _user.is_show_saved_app = is_show_saved_app
-        if is_show_absent_app is not None:
-            _user.is_show_absent_app = is_show_absent_app
-        if is_show_technic_app is not None:
-            _user.is_show_technic_app = is_show_technic_app
-        if is_show_material_app is not None:
-            _user.is_show_material_app = is_show_material_app
+
         if filter_construction_site is not None:
             _user.filter_construction_site = filter_construction_site
         if filter_foreman is not None:
             _user.filter_foreman = filter_foreman
-        if _hide_panel is not None:
-            _user.is_show_panel = False if _user.is_show_panel else True
-        if color_title is not None:
-            _user.color_title = color_title
-        if font_size is not None:
-            _user.font_size = font_size
+
         _user.filter_technic = filter_technic
         _user.sort_by = sort_by
         _user.save()
