@@ -203,6 +203,10 @@
     font-weight: bolder;
 }
 
+.application_foreman_name {
+    text-align: center;
+}
+
 .technic_driver_selects {
     display: none;
 }
