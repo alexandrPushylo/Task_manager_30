@@ -1,5 +1,7 @@
 <div class="nav-logo ms-2">
-    <span>{{ today.day }} . {{ today.month }}</span>    
-    <hr class="m-0">
-    <span>{{ weekday }}</span>    
+    {% if user.is_authenticated %}
+        <span>{{ today.day }} . {{ today.month }}</span>
+        <hr class="m-0">
+        <span>{{ weekday }}</span>
+    {% endif %}
 </div>
