@@ -8,13 +8,13 @@
                         <div>
                             <span style="">Количество необходимой техники:</span>
                         </div>
-                        <div class="mt-1 row" style="justify-content: space-between">
-                            <div class="col">
+                        <div class="mt-1 nav" style="justify-content: space-between">
+                            <div class="">
                                 <span class="fw-bolder">{{ conflict_ts.total_count_apps }}</span>
                                 <span>ед.</span>
                                 <span class="fw-bolder">{{ conflict_ts.technic_title }}</span>
                             </div>
-                            <div class="col">
+                            <div class=" ">
                                 <a href="{% url 'conflict_resolution' %}?conflict_list_id={{ conflict_ts.id_list }}&current_day={{ current_day.date.isoformat }}"
                                    role="button" class="btn btn-outline-primary">Редактировать</a>
                             </div>

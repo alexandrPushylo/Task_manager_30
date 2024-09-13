@@ -232,13 +232,13 @@
 #conflicts_list{
     width: max-content;
 }
+
 #conflict_resolution{
     /*width: max-content;*/
     margin-bottom: 8rem;
 }
-
-.conflict_resolution_items{
-    width: 18rem;
+#conflict_resolution_container {
+    max-width: 45rem;
 }
 
 #technic_application_list{
@@ -261,10 +261,20 @@
     #edit_application{
         width: 45rem;
     }
+    #conflicts_list {
+        width: 45rem;
+    }
 }
 @media (max-width: 450px) {
     #edit_application{
         width: 100vw;
+    }
+    #conflicts_list {
+        width: 95vw;
+    }
+    #conflict_resolution_container {
+        width: 95vw;
+
     }
 }
 
