@@ -38,17 +38,15 @@
 
 /* LOGIN FORM ************/
 #login_form {
-    min-width: max-content;
-    max-width: 30vw;
+    max-width: 20rem;
     padding: 5px 5px 5px 10px;
-    /*border: 1px solid black;*/
-    /*border-left: 5px solid #494f54;*/
     border-radius: 10px;
     box-shadow: 5px 5px 20px 5px;
 }
-/*#form_login div, label, input{*/
-/*    width: 100%;*/
-/*}*/
+
+
+
+
 #form_login label{
     font-weight: bolder;
 }
@@ -257,6 +255,8 @@
 #edit_application{
     margin-bottom: 7rem;
 }
+
+
 @media (min-width: 990px) {
     #edit_application{
         width: 45rem;
