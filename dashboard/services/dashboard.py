@@ -461,7 +461,6 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         select_related=("driver_sheet__driver", "technic"),
         driver_sheet__driver=current_driver,
         isArchive=False,
-        status=True,
         date=current_day,
     )
 
@@ -470,7 +469,6 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
         current_technic_sheet.values_list("technic__id", flat=True),
         supply_technic_list.values_list("id", flat=True),
     )
-
     applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         select_related=("application_today__construction_site__foreman",),
         isArchive=False,
