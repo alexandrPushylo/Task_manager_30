@@ -18,20 +18,22 @@
             </tr>
             </thead>
             <tbody>
-            {% for user in users_list %}
-                <tr id="{{ user.id }}" 
+            {% for user_item in users_list %}
+                <tr id="{{ user_item.id }}" 
+                    {% if user.post in 'administrator mechanic' %}
                     onclick=" location.href = `/edit_user/?user_id=${this.id}`"
+                    {% endif %}
                 >
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.last_name }}</td>
-                    <td>{{ user.first_name }}</td>
+                    <td>{{ user_item.username }}</td>
+                    <td>{{ user_item.last_name }}</td>
+                    <td>{{ user_item.first_name }}</td>
                     <td>{% for title, post in user_post.items %}
-                        {% if title == user.post %}{{ post }}{% endif %}
+                        {% if title == user_item.post %}{{ post }}{% endif %}
                     {% endfor %}
                     </td>
-                    <td>{% if user.telephone %}{{ user.telephone }}{% endif %}</td>
-                    <td>{% if user.last_login %}{{ user.last_login }}{% endif %}</td>
+                    <td>{% if user_item.telephone %}{{ user_item.telephone }}{% endif %}</td>
+                    <td>{% if user_item.last_login %}{{ user_item.last_login }}{% endif %}</td>
                 </tr>
             {% endfor %}
 
