@@ -95,6 +95,16 @@ def dashboard_view(request):
     if request.method == 'POST':
         operation = request.POST.get('operation')
 
+        if operation == 'change_props_for_view':
+            io_name = request.POST.get('io_name')
+            io_status = request.POST.get('io_isChecked')
+            io_value = request.POST.get('io_value')
+            status = U.change_view_props(io_name, io_status, io_value, request.user)
+            if status:
+                return HttpResponse(b'ok')
+            else:
+                return HttpResponse(b'error')
+
         if operation == 'copy':
             target_day = request.POST.get('target_day')
             application_id = request.POST.get('application_id')

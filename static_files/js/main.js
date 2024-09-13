@@ -525,34 +525,26 @@ $('#technic_sheet_list').masonry({
 // опции анимации - очередь и продолжительность анимации
 });
 
-function setViewProps(e) {
-    const operation = "set_props_for_view";
-    const is_show_saved_app = $('input[name="is_show_saved_app"]').is(':checked');
-    const is_show_absent_app = $('input[name="is_show_absent_app"]').is(':checked');
-    const is_show_technic_app = $('input[name="is_show_technic_app"]').is(':checked');
-    const is_show_material_app = $('input[name="is_show_material_app"]').is(':checked');
-    const color_title = $('input[name="io_color_title"]').val();
-    const io_font_size = $('input[name="io_font_size"]').val();
-
+function changeViewProps(io){
+    const operation = "change_props_for_view";
+    const io_name = io.name;
+    const io_isChecked = io.checked;
+    const io_value = io.value;
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            is_show_saved_app: is_show_saved_app,
-            is_show_absent_app: is_show_absent_app,
-            is_show_technic_app: is_show_technic_app,
-            is_show_material_app: is_show_material_app,
-            color_title: color_title,
-            font_size: io_font_size,
+            io_name: io_name,
+            io_isChecked: io_isChecked,
+            io_value: io_value,
             operation: operation,
         },
-        success: (d) => {
-            window.location.reload()
-        }
+        success: (response) => {}
     })
 }
+
 
 function setFilterProps(e) {
     const operation = "set_props_for_filter";
