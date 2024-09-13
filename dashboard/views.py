@@ -228,6 +228,8 @@ def edit_application_view(request):
         context['current_day'] = current_day
         context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
 
+        context = U.get_prepared_data(context, current_day)
+
         context['is_changeable_material'] = U.get_accept_to_change_materials_app(current_workday=current_day)
 
         if not current_day.status:
@@ -652,6 +654,11 @@ def technic_sheet_view(request):
 def technic_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Техника'}
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context, current_day)
+        context['current_day'] = current_day
+
         technics = TECHNIC_SERVICE.get_technics_queryset(
             select_related=('attached_driver',),
             order_by=('title',),
@@ -737,6 +744,11 @@ def users_view(request):
             'users_list': [],
             'user_post': ASSETS.UserPosts.get_dict()
         }
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context, current_day)
+        context['current_day'] = current_day
+
         if USERS_SERVICE.is_administrator(request.user):
             users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',))
         elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
@@ -798,6 +810,10 @@ def construction_site_view(request):
     if request.user.is_authenticated:
         context = {
             'title': 'Строительные объекты'}
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context, current_day)
+        context['current_day'] = current_day
 
         construction_site_list = None
         if USERS_SERVICE.is_administrator(request.user):
@@ -1247,6 +1263,10 @@ def profile_view(request):
         template = 'content/profile.html'
         context = {}
 
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context, current_day)
+        context['current_day'] = current_day
+
         user_id = request.GET.get('user_id')
         if user_id is not None and user_id != '':
             current_user = User.objects.get(pk=user_id)
@@ -1303,6 +1323,9 @@ def profile_view(request):
 
 def def_test(request):  # TODO: def TEST
     context = {}
+    current_day = WORK_DAY_SERVICE.get_current_day(request)
+    context = U.get_prepared_data(context, current_day)
+    context['current_day'] = current_day
     # _current_day = request.GET.get('current_day')
     # if _current_day:
     #     current_day = WorkDaySheet.objects.get(date=_current_day)
@@ -1311,7 +1334,7 @@ def def_test(request):  # TODO: def TEST
     # work_days = U.get_work_days().values()
     # for work_day in work_days:
     #     work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
-    template = 'content/tests/change_workday.html'
+
 
     if request.GET.get('chat_id'):
         chat_id = request.GET.get('chat_id')
@@ -1327,11 +1350,24 @@ def def_test(request):  # TODO: def TEST
     #     # 'weekday': ASSETS.WEEKDAY
     # }
 
-    # U.send_application_for_driver(current_day)
-    # U.send_application_for_foreman(current_day)
-    # U.send_application_for_admin(current_day)
+    driver_mess = request.POST.get('driver')
+    foreman_mess = request.POST.get('foreman')
+    admin_mess = request.POST.get('admin')
 
-    return render(request, template, context)
+    wd = WORK_DAY_SERVICE.get_current_day(request)
+
+    if U.is_valid_get_request(driver_mess):
+        U.send_application_by_telegram_for_driver(wd, messages=driver_mess)
+
+    if U.is_valid_get_request(foreman_mess):
+        U.send_application_by_telegram_for_foreman(wd, messages=foreman_mess)
+
+    if U.is_valid_get_request(admin_mess):
+        U.send_application_by_telegram_for_admin(wd, messages=admin_mess)
+
+
+
+    return render(request, 'content/tests/change_workday.html', context)
 
 
 def maintenance_view(request):

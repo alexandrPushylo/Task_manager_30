@@ -103,6 +103,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['work_days'] = workdays
 
     context['today'] = TODAY
+    context['current_weekday'] = get_weekday(TODAY)
     context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_workday.date)
     context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
     context['weekday'] = get_weekday(current_workday.date)
