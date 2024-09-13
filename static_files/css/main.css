@@ -181,6 +181,14 @@
     width: 20rem;
     margin-bottom: 30px;
 }
+@media (max-width: 450px) {
+    .application_items{
+        width: 90vw;
+    }
+
+}
+
+
 
 .application_items_border {
     border: 5px solid;
@@ -189,7 +197,7 @@
 }
 
 .application_status {
-    margin: -5px 0 0;
+    margin: 0 0 0;
     font-size: small;
     text-align: center;
     font-weight: bolder;
