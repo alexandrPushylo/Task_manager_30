@@ -24,7 +24,7 @@
                         <td class="form-switch">
                             <input type="checkbox" role="switch" class="form-check-input status_{{ workday.id }} m-1 p-0"
                                    aria-label=""
-                                   onchange="toggleButtonStatus(this, {{ workday.id }})"
+                                   onchange="toggleWorkdayStatus(this, '{{ workday.id }}')"
                                    name="status_{{ workday.id }}" {% if workday.status %}checked{% endif %}
                                    {% if today > workday.date %}disabled {% endif %}
                             />
