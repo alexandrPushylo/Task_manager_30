@@ -3,7 +3,7 @@
     {% include 'includes/btn_dashboard.html' %}
 {% endblock %}
 {% block content %}
-    <div id="technics" class="container">
+    <div id="technics" class="container-sm w-auto">
         <div><h3><u>{{ title }}</u></h3></div>
         <table class="table table-hover">
             <thead>
@@ -40,7 +40,7 @@
 {% block footer %}
     <div></div>
     <div>
-        <a href="{% url 'edit_technic' %}" class="btn btn-sm btn-success" type="button">Добавить технику</a>
+        <a href="{% url 'edit_technic' %}" class="btn btn-success" type="button">Добавить технику</a>
     </div>
     <div></div>
 {% endblock %}

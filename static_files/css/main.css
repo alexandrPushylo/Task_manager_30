@@ -3,7 +3,8 @@
     max-height: max-content;
     z-index: 1000;
 
-    width: 100%;
+    /*width: 100vw;*/
+    /*width: 100%;*/
     background-color: rgba(52, 58, 64, 0.89);
     color: aliceblue;
 }
@@ -87,10 +88,12 @@
 
 #technics {
     margin-top: 20px;
-    width: max-content;
-    /*box-shadow: 5px 5px 20px 5px;*/
     border: 1px solid black;
-    /*border-radius: 10px;*/
+}
+@media (max-width: 900px) {
+    #technics {
+        width: min-content;
+    }
 }
 
 #edit_technic {
@@ -103,10 +106,15 @@
 
 #users {
     margin-top: 20px;
-    width: min-content;
+    max-width: min-content;
     /*box-shadow: 5px 5px 20px 5px;*/
     border: 1px solid black;
     /*border-radius: 10px;*/
+}
+@media (max-width: 900px) {
+    .for_hide {
+        display: none;
+    }
 }
 
 #edit_user {
