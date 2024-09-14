@@ -261,6 +261,9 @@
     #edit_application{
         width: 45rem;
     }
+    #div_profile_boot_header {
+        width: 45rem;
+    }
     #conflicts_list {
         width: 45rem;
     }
@@ -269,6 +272,7 @@
     #edit_application{
         width: 100vw;
     }
+
     #conflicts_list {
         width: 95vw;
     }
@@ -276,6 +280,12 @@
         width: 95vw;
 
     }
+}
+@media (max-width: 630px) {
+    #div_profile_boot_header {
+        width: 95vw;
+    }
+
 }
 
 
