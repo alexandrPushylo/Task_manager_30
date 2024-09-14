@@ -33,6 +33,9 @@
             </nav>
         </div>
         {% include 'includes/weekday_current_day.html' %}
+        <div style="text-align: center">
+            {% include 'includes/btn_modal_view_props.html' %}
+        </div>
         <div class="mt-2">
             {% for application_technic in technic_application_list %}
                 <div class="card mb-3">
@@ -64,6 +67,7 @@
                                         {#                                    {% endif %}#}
 
                                         <textarea class="form-control p-1 text_area_description" readonly
+                                                  style="font-size: {{ user.font_size }}pt;"
                                                   aria-label="">{{ application.description }}</textarea>
                                     </div>
                                 </div>
@@ -95,7 +99,7 @@
                             <div class="card-header p-0">
 
                                 <p class="card-title fw-bolder p-0 m-0 text-uppercase"
-                                   style="text-align: center">{{ application_today.construction_site__address }}</p>
+                                   style="text-align: center; color: {{ user.color_title }}">{{ application_today.construction_site__address }}</p>
                                 <p class="m-0 ms-2" style="text-align: center">
                                     <span class="fw-bolder">{{ weekday }}</span>,
                                     <span>{{ current_day.date }}</span>
@@ -190,6 +194,8 @@
         </div>
     
     </div>
+    {% csrf_token %}
+    {% include 'includes/modal_view_props.html' %}
 {% endblock %}
 
 {% block footer %}

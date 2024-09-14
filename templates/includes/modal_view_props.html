@@ -8,9 +8,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             
-        {% if user.post in 'administrator foreman master driver employee' %}
-            <div class="modal-body form-switch">
-            
+        {% if user.post in 'administrator foreman master employee' %}
+            <div class="modal-body form-switch">            
                 {% if user.post == 'administrator' %}
                 <div>
                     <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
@@ -28,38 +27,38 @@
                            {% if user.is_show_absent_app %}checked{% endif %}/>
                     <span>Показывать отсутствующие заявки</span>
                 </div>{% endif %}
-            
-                <div>
-                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
-                           name="is_show_technic_app"
-                           onchange="changeViewProps(this)"
-                           value="{{ user.is_show_technic_app }}"
-                           {% if user.is_show_technic_app %}checked{% endif %}/>
-                    <span>Показывать заявки на технику</span>
-                </div>
-            
-                <div>
-                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
-                           name="is_show_material_app"
-                           onchange="changeViewProps(this)"
-                           value="{{ user.is_show_material_app }}"
-                           {% if user.is_show_material_app %}checked{% endif %}/>
-                    <span>Показывать заявки на материалы</span>
-                </div>
+                
+                {% if user.post in 'administrator foreman master employee' %}
+                    <div>
+                        <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                               name="is_show_technic_app"
+                               onchange="changeViewProps(this)"
+                               value="{{ user.is_show_technic_app }}"
+                               {% if user.is_show_technic_app %}checked{% endif %}/>
+                        <span>Показывать заявки на технику</span>
+                    </div>
+                
+                    <div>
+                        <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                               name="is_show_material_app"
+                               onchange="changeViewProps(this)"
+                               value="{{ user.is_show_material_app }}"
+                               {% if user.is_show_material_app %}checked{% endif %}/>
+                        <span>Показывать заявки на материалы</span>
+                    </div>
+{#                    <hr class="">#}
+                {% endif %}
             </div>
-        
-            <hr class="">
         {% endif %}
         
-            <div class="mb-1">
+            <div class="mb-1 mt-1">
                 <input aria-label="" type="color" class="form-control-color ms-3 p-0"
                        name="io_color_title"
                        value="{{ user.color_title }}"
                        onchange="changeViewProps(this)"
                 />                
                 <span>Цвет названия объекта</span>
-            </div>
-        
+            </div>       
         
             <div class="mb-1">
                     <input aria-label="" type="number" class="form-control ms-3"
