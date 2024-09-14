@@ -21,16 +21,33 @@
                         <input type="hidden" name="construction_site_id" value="{{ construction_site.id }}">
                         <input type="hidden" name="app_material_id"
                                value="{{ application_today.application_material.id }}"/>
+                        <input type="hidden" 
+                               id="orig_application_description"
+                               value="{% if application_today.description %}{{ application_today.description }}{% endif %}">
                         <label class="row">
-                            <span class="small">Примечание к объекту:</span>
+                            <span class="small">Примечание к объекту:</span>                            
                             <textarea
                                     style="font-size: {{ user.font_size }}pt;"
-                                    onblur="saveApplicationDescription(this);"
-                                    oninput="autoResize(this)"
+{#                                    onblur="saveApplicationDescription2(this);"#}
+                                    oninput="autoResize(this); $('#div_btn_edit_application_description').show();"
                                     class="form-control app_tech_description general_application_description_font"
                                     name="application_description"
                             >{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
                         </label>
+                    </div>
+                    <div class="m-1 p-1 row"
+                         id="div_btn_edit_application_description"
+                         style="justify-content: space-between; display: none;"
+                    >
+                        <button type="button"
+                                onclick="cancelEditedAppDescr()"
+                                class="btn btn-outline-primary button_reload_app_tech w-auto"
+                        >Отмена</button>
+
+                        <button type="button"
+                                onclick="saveApplicationDescription()"
+                                class="btn btn-success w-auto"
+                        >Сохранить изменения</button>
                     </div>
                 </div>
 

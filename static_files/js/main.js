@@ -265,7 +265,7 @@ function addTechnicSheetToApp(e) {
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
             app_today_id: $('input[name="application_id"]').val(),
-            construction_site_id: $('input[name="construction_site_id"]').val(),
+            // construction_site_id: $('input[name="construction_site_id"]').val(),
             technic_title_shrt: select_add_tech_title.val(),
             technic_sheet_id: technic_driver_selects_add.val(),
             app_tech_desc: app_technic_description.val(),
@@ -328,7 +328,8 @@ $('.button_delete_app_tech').click(function () {
         },
         success: (response) => {
             if (response==="success"){
-                $('#'+applicationTechnicId).hide()
+                $('#'+applicationTechnicId).hide();
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
             }
         }
     })
@@ -361,7 +362,7 @@ function applyChangesAppTechnic(e) {
     })
 }
 
-function saveApplicationDescription(el) {
+function saveApplicationDescription(){
     const operation = "save_application_description";
     $.ajax({
         type: 'POST',
@@ -369,27 +370,38 @@ function saveApplicationDescription(el) {
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            // changed_desc_app: true,
             app_today_id: $('input[name="application_id"]').val(),
-            construction_site_id: $('input[name="construction_site_id"]').val(),
             application_today_description: $('textarea[name="application_description"]').val(),
             operation: operation
         },
-        success: (d) => {
-            window.location.reload()
+        success: (response) => {
+            if(response === 'success'){
+                reloadPage()
+            } else {
+                cancelEditedAppDescr()
+            }
         }
     })
 }
 
-function saveApplicationTechnic(el) {
-    const app_today_id = $('input[name="application_id"]').val();
-    const app_description = $('textarea[name="application_description"]').val();
-    const app_material_description = $('.material_description').val();
+function cancelEditedAppDescr(){
+    const orig_application_description_value = $('#orig_application_description').val();
+    const application_description = $('textarea[name="application_description"]');
+    application_description.val(orig_application_description_value);
 
-    console.log(app_today_id)
-    console.log(app_description)
-    console.log(app_material_description)
+    $('#div_btn_edit_application_description').hide();
 }
+
+
+// function saveApplicationTechnic(el) {
+//     const app_today_id = $('input[name="application_id"]').val();
+//     const app_description = $('textarea[name="application_description"]').val();
+//     const app_material_description = $('.material_description').val();
+//
+//     console.log(app_today_id)
+//     console.log(app_description)
+//     console.log(app_material_description)
+// }
 
 function saveApplicationMaterials(el) {
     const operation = "save_application_materials";
