@@ -3,31 +3,21 @@
 {% block content %}
     <div id="profile" class="mt-2">
         <div class="card position-relative translate-middle-x start-50" style="width: max-content">
-{#            <form id="profile_form" method="post">{% csrf_token %}#}
-                
-{#                <div>#}
-{#                    <p>{{ current_user.username }}</p>#}
-{#                    <p>{{ current_user.first_name }}</p>#}
-{#                    <p>{{ current_user.last_name }}</p>#}
-{#                    <p>{{ current_user.telegram_id_chat }}</p>#}
-{#                    <p></p>#}
-{#                </div>#}
-
 
                 {% if current_user.telegram_id_chat %}
                     <div class="card-header">
                         <span class="text-info">Telegram подключен</span>
                     </div>
                 {% else %}
-                    <div class="card-header">                        
+                    <div class="card-header" id="div_profile_boot_header">                        
                         <p>
                             Отправьте код <span class="fw-bolder border border-dark">{{ user_key }}</span> Telegram боту, 
                             после нажмите 
                             <span class="fw-bolder">Подключить Telegram</span>
                         </p>                        
                         <p style="text-align: center">
-                            <a href="https://t.me/j23jnd3inid3bot">Ссылка на бота</a>
-{#                            <a href="https://t.me/hjvgghv_bot">Ссылка на бота</a>#}
+{#                            <a href="https://t.me/j23jnd3inid3bot">Ссылка на бота</a>#}
+                            <a href="https://t.me/hjvgghv_bot">Ссылка на бота</a>
                         </p>                        
                     <p class="m-1 mt-2" style="text-align: center">
                         <button class="btn btn-info" 
