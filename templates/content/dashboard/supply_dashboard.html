@@ -169,9 +169,13 @@
                                     {#                                    {% if not ACCEPT_MODE %}#}
 
                                     {% if application_today and applications_technic or application_today and applications_material %}
-                                        <a href="{% url 'clear_application' %}?app_today_id={{ application_today.id }}"
-                                           class="btn btn-outline-danger" aria-current="page"><i
-                                                class="fa-solid fa-trash"></i></a>
+
+                                        <button type="button" class="btn btn-outline-danger"
+                                                    onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ application_today.id }}')"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i>
+                                            </button>                                       
+                                        
                                         <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
                                            class="btn btn-outline-primary" aria-current="page"><i
                                                 class="fa-regular fa-pen-to-square"></i></a>
@@ -290,6 +294,7 @@
 
     {% csrf_token %}
         {% include 'includes/modal_view_props.html' %}
+        {% include 'includes/modal_delete_app.html' %}
 
     {#    ------------------------------------------------------------------------------------------------------------#}
 
