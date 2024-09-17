@@ -199,7 +199,13 @@ function selectTechnicTitle(e) {
     $('#div_btn_edit_control_' + technic_title_id).show();
     $('#btn_options_' + technic_title_id).hide();
     technic_driver_selects.hide();
-    select_technic_sheet.show();
+    if (select_technic_sheet.children().length!==0){
+        select_technic_sheet.show();
+        $('#span_missing_driver_'+application_technic_id).hide();
+    }else {
+        $('#span_missing_driver_'+application_technic_id).show();
+    }
+
 }
 
 function changeTechnicSheetSelector(e) {
