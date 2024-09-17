@@ -410,16 +410,6 @@ function cancelEditedAppDescr(){
 }
 
 
-// function saveApplicationTechnic(el) {
-//     const app_today_id = $('input[name="application_id"]').val();
-//     const app_description = $('textarea[name="application_description"]').val();
-//     const app_material_description = $('.material_description').val();
-//
-//     console.log(app_today_id)
-//     console.log(app_description)
-//     console.log(app_material_description)
-// }
-
 function saveApplicationMaterials(el) {
     const operation = "save_application_materials";
     const add_materials_desc = $('#add_materials_desc');
@@ -942,3 +932,4 @@ function changePassword() {
 
 ///////////////////////////////////////////////////////////////////////////////////
 // })
+
