@@ -305,24 +305,40 @@ function autoResize(elem) {
     elem.style.height = (elem.scrollHeight - 4) + 'px';
 }
 
-$('.button_reject_app_tech').click(function () {
+function reject_or_accept_app_tech(appTechnicId){
     const operation = "reject_application_technic";
+    const app_tech_description = $('#app_tech_description_'+appTechnicId);
     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
     const pathname = window.location;
-    const applicationTechnicId = this.id.replace('reject_', '')
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: pathname,
         data: {
             csrfmiddlewaretoken: csrf,
-            application_technic_id: applicationTechnicId,
+            application_technic_id: appTechnicId,
             app_today_id: $('input[name="application_id"]').val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             operation: operation
         },
-        success: (d) => {
-            window.location.reload()
+        success: (response) => {
+            if (response==='reject'){
+                $('#technic_title_'+appTechnicId).prop('disabled', true);
+                $('#technic_sheet_'+appTechnicId).prop('disabled', true);
+                app_tech_description.prop('disabled', true);
+                app_tech_description.addClass('border border-1 border-danger');
+                MESS_STATUS_OK();
+            }else if (response==='accept'){
+                $('#technic_title_'+appTechnicId).prop('disabled', false);
+                $('#technic_sheet_'+appTechnicId).prop('disabled', false);
+                app_tech_description.prop('disabled', false);
+                app_tech_description.removeClass('border border-1 border-danger');
+                app_tech_description.val(app_tech_description.val().replace('ОТКЛОНЕНА\n',''));
+                MESS_STATUS_OK();
+            }
+            else {
+                MESS_STATUS_FAIL();
+            }
         }
     })
 }

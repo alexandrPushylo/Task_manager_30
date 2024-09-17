@@ -340,10 +340,15 @@ def edit_application_view(request):
 
                 case 'reject_application_technic':
                     log.info('reject_application_technic')
-                    application_today = _prepare_app_today(post_application_today_id)
-                    if U.is_valid_get_request(post_application_technic_id):
-                        APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
-                        application_today.make_edited()
+                    try:
+                        application_today = _prepare_app_today(post_application_today_id)
+                        if U.is_valid_get_request(post_application_technic_id):
+                            status = APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+                            application_today.make_edited()
+                            return HttpResponse(status)
+                    except Exception as e:
+                        log.error("ERROR: edit_application_view(): reject_application_technic")
+                        return HttpResponse(b'fail')
 
                 case 'delete_application_technic':
                     log.info('delete_application_technic')
