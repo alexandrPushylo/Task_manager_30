@@ -350,13 +350,15 @@ $('.button_delete_app_tech').click(function () {
     })
 })
 
-function applyChangesAppTechnic(e) {
+function applyChangesAppTechnic(app_technic_id) {
     const operation = "apply_changes_application_technic";
-    const appTechId = e.id.replace('apply_', '')
-    const technic_title = $('#technic_title_' + appTechId + ' > option:checked').val();
+    const appTechId = app_technic_id// e.id.replace('apply_', '')
+    const technic_title = $('#technic_title_' + appTechId +' > option:checked').val();
     const technic_sheet_id = $('.' + technic_title + '_' + appTechId + ' > option:checked').val();
     const app_tech_description = $('#app_tech_description_' + appTechId).val();
     const div_btn_edit_control = $('#div_btn_edit_control_'+appTechId);
+    const btn_options = $('#btn_options_'+appTechId);
+    const btn_edit_technics_and_materials = $('#btn_edit_technics_and_materials');
 
     $.ajax({
         type: 'POST',
@@ -375,9 +377,15 @@ function applyChangesAppTechnic(e) {
         success: (response) => {
             if (response==='ok'){
                 div_btn_edit_control.hide()
+                btn_options.show()
+                btn_edit_technics_and_materials.show()
+                $('#main_footer').show();
                 MESS_STATUS_OK()
             }else {
                 div_btn_edit_control.hide()
+                btn_options.show()
+                btn_edit_technics_and_materials.show()
+                $('#main_footer').show();
                 MESS_STATUS_FAIL()
             }
         }
