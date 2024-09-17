@@ -25,8 +25,9 @@
         </li>
         <li>
             <button id="delete_{{ app_technic.id }}" type="button"
-                    class="dropdown-item fw-bolder text-danger button_delete_app_tech">Удалить заявку
-            </button>
+                    class="dropdown-item fw-bolder text-danger button_delete_app_tech"
+                    onclick="deleteAppTechnic('{{ app_technic.id }}')"
+            >Удалить заявку</button>
         </li>
     </ul>
 </div>
