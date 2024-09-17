@@ -204,6 +204,7 @@ function selectTechnicTitle(e) {
         $('#span_missing_driver_'+application_technic_id).hide();
     }else {
         $('#span_missing_driver_'+application_technic_id).show();
+        $('#div_btn_edit_control_'+application_technic_id).hide();
     }
 
 }
@@ -403,6 +404,7 @@ function applyChangesAppTechnic(app_technic_id) {
                 btn_options.show()
                 btn_edit_technics_and_materials.show()
                 $('#main_footer').show();
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
                 MESS_STATUS_OK()
             }else {
                 div_btn_edit_control.hide()
