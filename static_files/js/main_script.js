@@ -69,13 +69,18 @@ const toggleDriverSheetStatus = (e, itemId) => {
             if (response === 'true') {
                 row.css('color', '#018349')
                 row.css('text-decoration-line', 'none')
+                MESS_STATUS_OK()
             }
             if (response === 'false') {
                 row.css('color', 'black')
                 row.css('text-decoration-line', 'line-through')
+                MESS_STATUS_OK()
+
             }
             if (response === 'none') {
                 row.css('color', 'red')
+                MESS_STATUS_FAIL()
+
             }
         }
     })
