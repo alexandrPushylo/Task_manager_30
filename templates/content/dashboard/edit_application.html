@@ -33,7 +33,6 @@
                             <span class="small">Примечание к объекту:</span>                           
                             <textarea
                                     style="font-size: {{ user.font_size }}pt;"
-{#                                    onblur="saveApplicationDescription2(this);"#}
                                     oninput="autoResize(this); $('#div_btn_edit_application_description').show();"
                                     class="form-control app_tech_description general_application_description_font"
                                     name="application_description"
@@ -62,7 +61,7 @@
             
                 <div>                
                     {% if application_today.application_technic %}
-                        <div class="p-0">
+                        <div class="p-0">                            
                             {% for app_technic in application_today.application_technic %}
                                 <div id="{{ app_technic.id }}" class="mt-2 card border border-2" style="box-shadow: 5px 5px 50px">
 
@@ -97,9 +96,7 @@
                                                                 {% if app_technic.technic_sheet_id == technic_sheet.id %}
                                                                     selected {% endif %}
                                                                     value="{{ technic_sheet.id }}"
-                                                        >{% if not technic_sheet.driver_sheet.status %}Не
-                                                            назначен{% else %}
-                                                            {{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
+                                                        >{% if not technic_sheet.driver_sheet__status %}Не назначен{% else %}{{ technic_sheet.driver_sheet__driver__last_name }}{% endif %}</option>
                                                     {% endfor %}
                                                 </select>
                                             {% endfor %}
