@@ -863,13 +863,6 @@ function changeReadOnlyMode(readOnly) {
     })
 }
 
-function checkChangesForEditApplication() {
-    const btn_cancel_for_edit_app = $('#btn_cancel_for_edit_app');
-    const btn_apply_for_edit_app = $('#btn_apply_for_edit_app');
-    btn_cancel_for_edit_app.hide();
-    btn_apply_for_edit_app.show();
-}
-
 function prepareModalDeleteApplication(url) {
     $('#btn_delete_app').attr('href', url);
 }
