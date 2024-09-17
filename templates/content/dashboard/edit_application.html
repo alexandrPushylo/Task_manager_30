@@ -17,8 +17,6 @@
                         </p>
                     </div>
 
-
-
                     <div class="card-header">
                         <input type="hidden" name="application_id" value="{{ application_today.id }}">
                         <input type="hidden" name="construction_site_id" value="{{ construction_site.id }}">
@@ -27,7 +25,6 @@
                         <input type="hidden" 
                                id="orig_application_description"
                                value="{% if application_today.description %}{{ application_today.description }}{% endif %}">
-
 
                         <label class="row">
                             <span class="small">Примечание к объекту:</span>
@@ -39,7 +36,6 @@
                             >{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
                         </label>
                     </div>
-
 
                     <div class="m-1 p-1 row"
                          id="div_btn_edit_application_description"
@@ -56,8 +52,6 @@
                         >Сохранить изменения</button>
                     </div>
                 </div>
-
-
 
                 <div>
                     {% if application_today.application_technic %}
@@ -84,8 +78,7 @@
                                         </label>
 
                                         <label class="col-auto p-0">
-
-
+                                            
                                             {% for technic_driver in technic_driver_list %}
                                                 <select id="technic_sheet_{{ app_technic.id }}"
                                                         onchange="changeTechnicSheetSelector(this)"
@@ -99,10 +92,7 @@
                                                         >{% if not technic_sheet.driver_sheet.status %}Не назначен{% else %}{{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
                                                     {% endfor %}
                                                 </select>
-                                            {% endfor %}
-
-
-
+                                            {% endfor %}  
                                         </label>
                                         </div>
                                         <div class="col-auto" id="btn_options_{{ app_technic.id }}">
@@ -211,7 +201,4 @@
     </div>
     <div></div>
 {% endblock %}
-
-
-
 

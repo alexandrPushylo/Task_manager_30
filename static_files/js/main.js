@@ -20,8 +20,6 @@ function parseResponse(response){
 
 
 const selectPost = (e) => {
-    // console.log(e.value)
-    // alert(e.value)
     const post = e.value
     const foreman_select = $('#foreman_select');
     const foreman_select_div = $('#foreman_select_div');
@@ -46,10 +44,8 @@ const toggleWorkdayStatus = (e, workday_id) => {
             operation: operation
         },
         success: (response) => {
-
         }
     })
-
 }
 
 const toggleDriverSheetStatus = (e, itemId) => {
@@ -173,24 +169,6 @@ $('#applications_container').masonry({
     }
 // опции анимации - очередь и продолжительность анимации
 });
-// $('#applications_container_saved').masonry({
-// // указываем элемент-контейнер в котором расположены блоки для динамической верстки
-//     itemSelector: '.application_items_saved',
-//     // columnWidth: 200,
-//     gutter: 20,
-// // указываем класс элемента являющегося блоком в нашей сетке
-//     singleMode: true,
-// // true - если у вас все блоки одинаковой ширины
-//     isResizable: true,
-// // перестраивает блоки при изменении размеров окна
-//     isAnimated: true,
-// // анимируем перестроение блоков
-//     animationOptions: {
-//         queue: false,
-//         duration: 500
-//     }
-// // опции анимации - очередь и продолжительность анимации
-// });
 
 $('#construction_site_container').masonry({
 // указываем элемент-контейнер в котором расположены блоки для динамической верстки
@@ -209,6 +187,7 @@ $('#construction_site_container').masonry({
     }
 // опции анимации - очередь и продолжительность анимации
 });
+
 
 function selectTechnicTitle(e) {
     const technic_title_id = e.id.replace('technic_title_', '')
@@ -280,9 +259,10 @@ function addTechnicSheetToApp(e) {
         mode: 'same-origin',
         url: window.location,
         data: {
+            operation: operation,
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            app_today_id: $('input[name="application_id"]').val(),
-            // construction_site_id: $('input[name="construction_site_id"]').val(),
+
+            app_today_id: application_id.val(),
             technic_title_shrt: select_add_tech_title.val(),
             technic_sheet_id: technic_driver_selects_add.val(),
             app_tech_desc: app_technic_description.val(),
@@ -298,7 +278,6 @@ function addTechnicSheetToApp(e) {
     $('.select_add_tech_title').val('')
     app_technic_description.val('')
 }
-
 
 function autoResize(elem) {
     elem.style.height = 'auto';
@@ -342,28 +321,6 @@ function reject_or_accept_app_tech(appTechnicId){
         }
     })
 }
-
-// $('.button_reject_app_tech').click(function () {
-//     const operation = "reject_application_technic";
-//     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
-//     const pathname = window.location;
-//     const applicationTechnicId = this.id.replace('reject_', '')
-//     $.ajax({
-//         type: 'POST',
-//         mode: 'same-origin',
-//         url: pathname,
-//         data: {
-//             csrfmiddlewaretoken: csrf,
-//             application_technic_id: applicationTechnicId,
-//             app_today_id: $('input[name="application_id"]').val(),
-//             construction_site_id: $('input[name="construction_site_id"]').val(),
-//             operation: operation
-//         },
-//         success: (d) => {
-//             window.location.reload()
-//         }
-//     })
-// })
 
 $('.button_delete_app_tech').click(function () {
     const operation = "delete_application_technic";
@@ -537,10 +494,7 @@ function cancelAppMaterial(){
 
 $('.io_choice_day').change(function () {
     const current_day = this.value;
-    // console.log(current_day)
     location.search = "?current_day=" + current_day
-    // const dd = location.search;
-    // console.log(dd)
 })
 
 
@@ -593,9 +547,7 @@ function applyChangesForConflictResolution(e) {
     const technic_title_short = $('#title_' + appTechnicId).val();
     const technic_sheet_id = $('.' + technic_title_short + '.at_' + appTechnicId).val();
     const technic_description = $('#app_tech_description_' + appTechnicId).val();
-    // console.log(technic_title_short)
-    // console.log(technic_sheet_id)
-    // console.log(technic_description)
+
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -880,23 +832,6 @@ function changeReadOnlyMode(readOnly) {
     })
 }
 
-// function validateApplicationToday(app_today_id, current_day) {
-//     // console.log(app_today_id)
-//     // console.log(current_day)
-//     $.ajax({
-//         type: 'POST',
-//         mode: 'same-origin',
-//         url: window.location,
-//         data: {
-//             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-//             app_today_id: app_today_id,
-//             current_day: current_day,
-//             operation: 'validate_application_today'
-//         }
-//     })
-// }
-
-//&&???
 function checkChangesForEditApplication() {
     const btn_cancel_for_edit_app = $('#btn_cancel_for_edit_app');
     const btn_apply_for_edit_app = $('#btn_apply_for_edit_app');
