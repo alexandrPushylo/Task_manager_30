@@ -54,8 +54,8 @@
                 </div>
 
                 <div>
-                    {% if application_today.application_technic %}
-                        <div class="p-0">
+{#                    {% if application_today.application_technic %}#}
+                        <div class="p-0" id="app_tech_container">
                             {% for app_technic in application_today.application_technic %}
                                 <div id="{{ app_technic.id }}" class="mt-2 card border border-2" style="box-shadow: 5px 5px 50px">
 
@@ -98,6 +98,9 @@
                                         <div class="col-auto" id="btn_options_{{ app_technic.id }}">
                                             {% include 'includes/btn_btns_control_edit_apps.html' %}
                                         </div>
+                                    <span id="span_missing_driver_{{ app_technic.id }}"
+                                          style="display: none"
+                                          class="small text-warning">На данный момент водитель отсутствует</span>
                                     </div>
 
                                     <div>
@@ -134,7 +137,7 @@
                                         >Отмена</button>
 
                                         <button id="apply_{{ app_technic.id }}" type="button"
-                                                onclick="applyChangesAppTechnic(this)"
+                                                onclick="applyChangesAppTechnic('{{ app_technic.id }}')"
                                                 class="btn btn-success button_apply_app_tech w-auto"
                                         >Сохранить изменения</button>
                                     </div>
@@ -142,7 +145,7 @@
                                 </div>
                             {% endfor %}
                         </div>
-                    {% endif %}
+{#                    {% endif %}#}
                 </div>
 
                     <div id="div_application_materials" class="card shadow-lg mt-4"
