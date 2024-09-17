@@ -663,9 +663,10 @@ def set_spec_task(technic_sheet_id):
             description = TECHNIC_SERVICE.get_task_description(
                 technic__id=technic_sheet.technic.id).description
         case ASSETS.TaskDescriptionMode.AUTO:
+            prev_workday = WORK_DAY_SERVICE.get_prev_workday(current_day.date)
             task_description = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
                 application_today__construction_site__address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value,
-                application_today__date__date=current_day.date - timedelta(days=1),
+                application_today__date=prev_workday,
                 technic_sheet__technic=technic_sheet.technic,
             )
             if task_description.exists():
