@@ -369,6 +369,9 @@ $('.button_delete_app_tech').click(function () {
             if (response==="success"){
                 $('#'+applicationTechnicId).hide();
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                MESS_STATUS_OK()
+            }else {
+                MESS_STATUS_FAIL()
             }
         }
     })
