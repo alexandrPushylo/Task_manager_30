@@ -253,6 +253,10 @@ function addTechnicSheetToApp(e) {
     const select_add_tech_title = $('.select_add_tech_title > option:checked');
     const technic_driver_selects_add = $('.' + select_add_tech_title.val() + ' > option:checked');
     const app_technic_description = $('.app_technic_description');
+    const application_id = $('input[name="application_id"]');
+
+    const app_tech_container = $('#app_tech_container');
+    const app_tech_inst = $('#app_tech_inst');
 
     $.ajax({
         type: 'POST',
