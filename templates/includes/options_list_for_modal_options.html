@@ -4,11 +4,15 @@
     </button>
 </li>
 {% if user.post == 'administrator' %}
-<li>
-    <a class="dropdown-item" href="{% url 'tasks_for_spec_constr_site' %}">
-        <span>Настройка заданий для "спец. объекта"</span></a>
-</li>
+    <li>
+        <a class="dropdown-item" href="{% url 'tasks_for_spec_constr_site' %}">
+            <span>Настройка заданий для "спец. объекта"</span></a>
+    </li>
+    
 {% endif %}
-{#<li>#}
-{#    <a class="dropdown-item" href="#">3</a>#}
-{#</li>#}
+{% if user.is_active %}
+    <li>
+        <a class="dropdown-item" href="{% url 'calculate_all_applications' %}?current_day={{ current_day.date.isoformat }}">
+            <span>Пересчитать кол-во заданий</span></a>
+    </li>
+{% endif %}

@@ -313,3 +313,12 @@ def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):
         count_applications_technic = applications_technic.count()
     technic_sheet.count_application = count_applications_technic
     technic_sheet.save(update_fields=['count_application'])
+
+
+def calculate_all_applications_for_ts(workday: WorkDaySheet):
+    technic_sheet_list = get_technic_sheet_queryset(
+        date=workday,
+        isArchive=False,
+    )
+    for technic_sheet in technic_sheet_list:
+        calculate_count_applications(technic_sheet.id)

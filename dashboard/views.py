@@ -319,7 +319,7 @@ def edit_application_view(request):
             post_application_material_id = request.POST.get('app_material_id')
             post_application_material_description = request.POST.get('material_description')
 
-            technic_driver_list_t2 = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+            technic_driver_list_json = ADD_EDIT_APP_SERVICE.get_technic_driver_list_for_json(
                 technic_titles=technic_titles_dict,
                 technic_sheets=technic_sheets
             )
@@ -331,7 +331,7 @@ def edit_application_view(request):
                     data = {
                         "status": "fail",
                         "app_today_id": application_today.id,
-                        "technic_driver_list": json.dumps(technic_driver_list_t2, ensure_ascii=False)
+                        "technic_driver_list": json.dumps(technic_driver_list_json, ensure_ascii=False)
                     }
                     if U.is_valid_get_request(post_technic_title_shrt):
 
@@ -1506,4 +1506,12 @@ def task_desc_for_spec_constr_site_view(request):
 
         return render(request, 'content/spec/task_description_for_spec_constr_site.html', context)
 
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def calculate_all_applications(request):
+    if request.user.is_authenticated:
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        TECHNIC_SHEET_SERVICE.calculate_all_applications_for_ts(current_day)
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={ current_day.date }")
     return HttpResponseRedirect(ENDPOINTS.LOGIN)

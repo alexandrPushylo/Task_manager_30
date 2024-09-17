@@ -1,3 +1,5 @@
+import json
+
 from dashboard.models import TechnicSheet
 from logger import getLogger
 
@@ -16,5 +18,23 @@ def get_technic_driver_list(technic_titles: dict, technic_sheets: TechnicSheet.o
             'title_short': title_short,
             'title': title,
             'technic_sheets': technic_sheets.filter(technic__title=title).order_by('driver_sheet__driver__last_name')
+        })
+    return technic_driver_list
+
+def get_technic_driver_list_for_json(technic_titles: dict, technic_sheets: TechnicSheet.objects) -> list:
+    """
+    :param technic_titles: {technic.title_short: technic.title}
+    :param technic_sheets: TechnicSheet.objects
+    :return:
+    """
+    technic_driver_list = []
+    for title_short, title in technic_titles.items():
+        technic_driver_list.append({
+            'title_short': title_short,
+            'title': title,
+            'technic_sheets': json.dumps(list(technic_sheets.filter(technic__title=title).values(
+                'id',
+                'driver_sheet__driver__last_name',
+            )))
         })
     return technic_driver_list
