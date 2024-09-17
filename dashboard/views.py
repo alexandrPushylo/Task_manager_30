@@ -279,10 +279,6 @@ def edit_application_view(request):
         technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(
             technic_sheets=technic_sheets
         )
-        context['technic_driver_list'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
-            technic_titles=technic_titles_dict,
-            technic_sheets=technic_sheets
-        )
 
         context['technic_titles_dict'] = TECHNIC_SERVICE.get_dict_short_technic_names(
             technic_sheets=technic_sheets.filter()
@@ -302,6 +298,13 @@ def edit_application_view(request):
                 status=True,
             )
         )
+        if USERS_SERVICE.is_administrator(request.user):
+            context['technic_driver_list'] = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
+                technic_titles=technic_titles_dict,
+                technic_sheets=technic_sheets
+            )
+        else:
+            context['technic_driver_list'] = context['technic_driver_list_for_add']
 
         if request.method == 'POST':
             operation = request.POST.get('operation')  # операция
@@ -316,11 +319,22 @@ def edit_application_view(request):
             post_application_material_id = request.POST.get('app_material_id')
             post_application_material_description = request.POST.get('material_description')
 
+            technic_driver_list_t2 = ADD_EDIT_APP_SERVICE.get_technic_driver_list_t2(
+                technic_titles=technic_titles_dict,
+                technic_sheets=technic_sheets
+            )
+
             match operation:
                 case 'add_technic_to_application':
                     log.info('add_technic_to_application')
                     application_today = _prepare_app_today(post_application_today_id)
+                    data = {
+                        "status": "fail",
+                        "app_today_id": application_today.id,
+                        "technic_driver_list": json.dumps(technic_driver_list_t2, ensure_ascii=False)
+                    }
                     if U.is_valid_get_request(post_technic_title_shrt):
+
                         if not U.is_valid_get_request(post_technic_sheet_id):
                             technic_title = technic_titles_dict.get(post_technic_title_shrt)
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
@@ -329,7 +343,7 @@ def edit_application_view(request):
                         else:
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
                         description = post_application_technic_description if post_application_technic_description else ''
-                        APP_TECHNIC_SERVICE.create_app_technic(
+                        application_technic = APP_TECHNIC_SERVICE.create_app_technic(
                             application_today=application_today,
                             technic_sheet=some_technic_sheet,
                             description=description
@@ -337,6 +351,16 @@ def edit_application_view(request):
                         if some_technic_sheet:
                             some_technic_sheet.increment_count_application()
                         application_today.make_edited()
+
+                        data['status']='ok'
+                        data['technic_title_shrt']=post_technic_title_shrt
+                        data['technic_title']=some_technic_sheet.technic.title
+                        data['technic_sheet_id']=some_technic_sheet.id
+                        data['app_technic_id']=application_technic.id
+                        data['isChecked']=application_technic.isChecked
+                        data['is_cancelled']=application_technic.is_cancelled
+                        data['app_tech_desc']=description
+                    return HttpResponse(json.dumps(data))
 
                 case 'reject_application_technic':
                     log.info('reject_application_technic')
