@@ -263,12 +263,12 @@ function selectAddTechnicDriver(e) {
     technic_driver_selects.hide();
     $('#span_driver_name').show();
     select_technic_sheet.show();
-    const btn_added = $('#btn_add_technic_sheet');
+    const btn_add_tech = $('#btn_add_tech');
 
     if (e.value === "none") {
-        btn_added.hide()
+        btn_add_tech.attr('disabled', true);
     } else {
-        btn_added.show()
+        btn_add_tech.attr('disabled', false);
     }
 }
 
@@ -364,11 +364,11 @@ function reject_or_accept_app_tech(appTechnicId){
     })
 }
 
-$('.button_delete_app_tech').click(function () {
+function deleteAppTechnic(appTechnicId){
     const operation = "delete_application_technic";
     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
     const pathname = window.location;
-    const applicationTechnicId = this.id.replace('delete_', '')
+    const applicationTechnicId = appTechnicId
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -390,7 +390,7 @@ $('.button_delete_app_tech').click(function () {
             }
         }
     })
-})
+}
 
 function applyChangesAppTechnic(app_technic_id) {
     const operation = "apply_changes_application_technic";
@@ -1040,8 +1040,9 @@ function creatAppTechnicInst(data){
     }
 
     const li3 = $('<li/>').append($('<hr class=" dropdown-divider">'))
-    const li4 = $('<li/>').append($('<button id="delete_'+app_technic_id+'" type="button" class="dropdown-item fw-bolder text-danger button_delete_app_tech">Удалить заявку</button>'))
-
+    const button_del = $('<button id="delete_'+app_technic_id+'" type="button" class="dropdown-item fw-bolder text-danger button_delete_app_tech">Удалить заявку</button>')
+    button_del.click(function (e){deleteAppTechnic(app_technic_id)})
+    const li4 = $('<li/>').append(button_del)
     ul1.append(li2, li3, li4)
     divIn1.append(buttonIn3, ul1)
     div8.append(divIn1)
