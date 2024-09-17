@@ -16,6 +16,9 @@
                             <span class="fw-bold">{{ weekday }}</span>
                         </p>
                     </div>
+                
+                
+                
                     <div class="card-header">
                         <input type="hidden" name="application_id" value="{{ application_today.id }}">
                         <input type="hidden" name="construction_site_id" value="{{ construction_site.id }}">
@@ -24,17 +27,20 @@
                         <input type="hidden" 
                                id="orig_application_description"
                                value="{% if application_today.description %}{{ application_today.description }}{% endif %}">
-                        <label class="row">
-                            <span class="small">Примечание к объекту:</span>                            
+                        
+                        
+                        <label class="row">                            
+                            <span class="small">Примечание к объекту:</span>                           
                             <textarea
                                     style="font-size: {{ user.font_size }}pt;"
-{#                                    onblur="saveApplicationDescription2(this);"#}
                                     oninput="autoResize(this); $('#div_btn_edit_application_description').show();"
                                     class="form-control app_tech_description general_application_description_font"
                                     name="application_description"
                             >{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
-                        </label>
+                        </label>                    
                     </div>
+                
+                
                     <div class="m-1 p-1 row"
                          id="div_btn_edit_application_description"
                          style="justify-content: space-between; display: none;"
@@ -51,9 +57,11 @@
                     </div>
                 </div>
 
-                <div>
+            
+            
+                <div>                
                     {% if application_today.application_technic %}
-                        <div class="p-0">
+                        <div class="p-0">                            
                             {% for app_technic in application_today.application_technic %}
                                 <div id="{{ app_technic.id }}" class="mt-2 card border border-2" style="box-shadow: 5px 5px 50px">
 
@@ -76,7 +84,9 @@
                                         </label>
 
                                         <label class="col-auto p-0">
-                                            {% for technic_driver in technic_driver_list %}
+                                        
+                                        
+                                            {% for technic_driver in technic_driver_list %}  
                                                 <select id="technic_sheet_{{ app_technic.id }}"
                                                         onchange="changeTechnicSheetSelector(this)"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}disabled=""{% endif %}
@@ -86,12 +96,13 @@
                                                                 {% if app_technic.technic_sheet_id == technic_sheet.id %}
                                                                     selected {% endif %}
                                                                     value="{{ technic_sheet.id }}"
-                                                        >{% if not technic_sheet.driver_sheet.status %}Не
-                                                            назначен{% else %}
-                                                            {{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
+                                                        >{% if not technic_sheet.driver_sheet__status %}Не назначен{% else %}{{ technic_sheet.driver_sheet__driver__last_name }}{% endif %}</option>
                                                     {% endfor %}
                                                 </select>
                                             {% endfor %}
+                                        
+                                        
+                                        
                                         </label>
                                         </div>
                                         <div class="col-auto" id="btn_options_{{ app_technic.id }}">
@@ -144,22 +155,25 @@
                     {% endif %}
                 </div>
 
-                {% if application_today.application_material.description %}
-                    <div class="card shadow-lg mt-4">
+                    <div id="div_application_materials" class="card shadow-lg mt-4"
+                         {% if not application_today.application_material.description %}
+                             style="display: none"
+                         {% endif %}
+                    >
                         <div class="card-header p-1">
                             <span class="fw-bolder ms-2">Список материалов:</span>
                         </div>
                         <div class="card-body p-0">
-                            <textarea readonly
+                            <textarea id="app_material_desc" 
+                                      readonly
                                       aria-label=""
                                       style="font-size: {{ user.font_size }}pt;"
-                                      class="form-control autoresize material_description general_mat_description_font"
-                                      oninput="autoResize(this)"
+                                      class="form-control material_description general_mat_description_font"
+                                      onchange="autoResize(this)"
+                                      onclick="autoResize(this);"
                             >{{ application_today.application_material.description }}</textarea>
                         </div>
                     </div>
-                {% endif %}
-
             </form>
         </div>
 
@@ -176,6 +190,8 @@
 
     {% include 'includes/modal_edit_materials.html' %}
     {% include 'includes/modal_edit_technics.html' %}
+    {% include 'includes/mess_status_ok.html' %}
+    {% include 'includes/mess_status_fail.html' %}
 
     <!------- Modal ----------------------------------------------------------------------->
 

@@ -1,3 +1,4 @@
+import json
 from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
@@ -339,10 +340,15 @@ def edit_application_view(request):
 
                 case 'reject_application_technic':
                     log.info('reject_application_technic')
-                    application_today = _prepare_app_today(post_application_today_id)
-                    if U.is_valid_get_request(post_application_technic_id):
-                        APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
-                        application_today.make_edited()
+                    try:
+                        application_today = _prepare_app_today(post_application_today_id)
+                        if U.is_valid_get_request(post_application_technic_id):
+                            status = APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+                            application_today.make_edited()
+                            return HttpResponse(status)
+                    except Exception as e:
+                        log.error("ERROR: edit_application_view(): reject_application_technic")
+                        return HttpResponse(b'fail')
 
                 case 'delete_application_technic':
                     log.info('delete_application_technic')
@@ -361,28 +367,34 @@ def edit_application_view(request):
                     log.info('apply_changes_application_technic')
                     application_today = _prepare_app_today(post_application_today_id)
                     if U.is_valid_get_request(post_technic_title_shrt):
-                        application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
+                        try:
+                            application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
 
-                        if not U.is_valid_get_request(post_technic_sheet_id):
-                            technic_title = technic_titles_dict.get(post_technic_title_shrt)
-                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
-                                technic_title=technic_title, workday=current_day
-                            )
-                        else:
-                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
-                        description = post_application_technic_description if post_application_technic_description else ''
+                            if not U.is_valid_get_request(post_technic_sheet_id):
+                                technic_title = technic_titles_dict.get(post_technic_title_shrt)
+                                some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                                    technic_title=technic_title, workday=current_day
+                                )
+                            else:
+                                some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
+                            description = post_application_technic_description if post_application_technic_description else ''
 
-                        if some_technic_sheet:
-                            if application_technic.technic_sheet != some_technic_sheet:
-                                if application_technic.technic_sheet is not None:
-                                    application_technic.technic_sheet.decrement_count_application()
-                                application_technic.technic_sheet = some_technic_sheet
-                                some_technic_sheet.increment_count_application()
-                        else:
-                            application_technic.technic_sheet = None
-                        application_technic.description = description
-                        application_technic.save(update_fields=['technic_sheet', 'description'])
-                        application_today.make_edited()
+                            if some_technic_sheet:
+                                if application_technic.technic_sheet != some_technic_sheet:
+                                    if application_technic.technic_sheet is not None:
+                                        application_technic.technic_sheet.decrement_count_application()
+                                    application_technic.technic_sheet = some_technic_sheet
+                                    some_technic_sheet.increment_count_application()
+                            else:
+                                application_technic.technic_sheet = None
+                            application_technic.description = description
+                            application_technic.save(update_fields=['technic_sheet', 'description'])
+                            application_today.make_edited()
+                            return HttpResponse(b'ok')
+                        except Exception as e:
+                            log.error("ERROR: edit_application_view(): apply_changes_application_technic")
+                            return HttpResponse(b'fail')
+
 
                 case 'save_application_description':
                     log.info('save_application_description')
@@ -395,31 +407,45 @@ def edit_application_view(request):
                         application_today.description = ''
                     application_today.is_edited = True
                     application_today.save()
-                    return HttpResponse(b"success")
+                    return HttpResponse(json.dumps({
+                        "status": "ok",
+                        "app_today_id": application_today.pk
+                    }))
 
                 case 'save_application_materials':
                     log.info('save_application_materials')
                     application_today = _prepare_app_today(post_application_today_id)
-                    if U.is_valid_get_request(
-                            post_application_material_id) and post_application_material_description == '':
-                        APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id).delete()
+                    application_material = APP_MATERIAL_SERVICE.get_app_material(application_today=application_today)
+
+                    data = {
+                        "status": None,
+                        "app_today_id": application_today.id,
+                        "app_material_id": None
+                    }
+
+                    if application_material and post_application_material_description == '':
+                        application_material.delete()
                         application_today.make_edited()
-                    elif not U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
-                            post_application_material_description) and U.is_valid_get_request(
-                        post_application_today_id):
-                        APP_MATERIAL_SERVICE.create_app_material(
-                            application_today_id=post_application_today_id,
+                        data['status'] = 'deleted'
+
+                    elif not application_material and U.is_valid_get_request(post_application_material_description):
+                        application_material = APP_MATERIAL_SERVICE.create_app_material(
+                            application_today=application_today,
                             description=post_application_material_description
                         )
-                        # APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
                         application_today.make_edited()
-                    elif U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
-                            post_application_material_description):
-                        application_material = APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id)
+                        data['status'] = 'created'
+                        data['app_material_id'] = application_material.id
+
+                    elif application_material and U.is_valid_get_request(post_application_material_description):
                         application_material.description = post_application_material_description
                         application_material.isChecked = False
                         application_material.save(update_fields=['description', 'isChecked'])
                         application_today.make_edited()
+                        data['status'] = 'updated'
+                        data['app_material_id'] = application_material.id
+
+                    return HttpResponse(json.dumps(data))
 
                 case _:
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
