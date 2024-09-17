@@ -307,6 +307,7 @@ function addTechnicSheetToApp(e) {
                 const APP = creatAppTechnicInst(data)
                 app_tech_container.append(APP)
                 MESS_STATUS_OK();
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
             }else {
                 $('#modalApplicationTechnic').modal('hide');
                 MESS_STATUS_FAIL();
