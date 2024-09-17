@@ -927,3 +927,102 @@ function changePassword() {
 ///////////////////////////////////////////////////////////////////////////////////
 // })
 
+function creatAppTechnicInst(data){
+    const app_technic_id =data.app_technic_id
+    const is_cancelled =data.is_cancelled
+    const technic_title_shrt =data.technic_title_shrt
+    const isChecked =data.isChecked
+    const technic_title =data.technic_title
+    const technic_sheet_id =data.technic_sheet_id
+    const app_tech_desc =data.app_tech_desc
+    const status =data.status
+    let technic_driver_list = parseResponse(data.technic_driver_list)
+    for (const i in technic_driver_list){
+                technic_driver_list[i].technic_sheets = parseResponse(technic_driver_list[i].technic_sheets)
+            }
+
+    const app_tech_container = $('#app_tech_container');
+    const div1 = $('<div id="'+app_technic_id+'" class="mt-2 card border border-2" style="box-shadow: 5px 5px 50px"/>');
+
+    const div2 = $('<div class="row m-0 p-1 card-header" style="background: #e8ebfa"/>');
+    const div3 = $('<div class="col"/>');
+
+    const label4 = $('<label class="col-auto p-0"/>');
+
+    const select5 = $('<select id="technic_title_'+app_technic_id+'" class="form-control p-1" />');
+
+    select5.change(function (e){selectTechnicTitle(e.target)})
+
+    for (const idx in technic_driver_list){
+        //technic_driver_list[item].
+        if (technic_title===technic_driver_list[idx].title){
+            select5.append($('<option selected value="'+technic_driver_list[idx].title_short+'">'+technic_driver_list[idx].title+'</option>'))
+        }else {
+            select5.append($('<option value="'+technic_driver_list[idx].title_short+'">'+technic_driver_list[idx].title+'</option>'))
+        }
+    }
+    label4.append(select5)
+
+    const label6 = $('<label class="col-auto p-0"/>');
+    for (const i in technic_driver_list){
+        const select7 = $('<select id="technic_sheet_'+app_technic_id+'" class="'+technic_driver_list[i].title_short+'_'+app_technic_id+' technic_driver_selects000 technic_driver_selects_'+app_technic_id+' form-control p-1"/>');
+        if (technic_title_shrt!==technic_driver_list[i].title_short){select7.hide()}
+        select7.change(function (e){changeTechnicSheetSelector(e.target)})
+        for (const j in technic_driver_list[i].technic_sheets){
+            const item = technic_driver_list[i].technic_sheets[j]
+            if (technic_sheet_id===item.id){
+                select7.append($('<option selected value="'+item.id+'" >'+item.driver_sheet__driver__last_name+'</option>'));
+            }else {
+                select7.append($('<option value="'+item.id+'" >'+item.driver_sheet__driver__last_name+'</option>'));
+            }
+        }
+        label6.append(select7);
+    }
+    div3.append(label4, label6)
+    const div8 = $('<div class="col-auto" id="btn_options_'+app_technic_id+'"/>');
+    const divIn1 = $('<div class="dropdown" style="margin-top: 0.1rem">')
+    const buttonIn3 = $('<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i></button>')
+    const ul1 = $('<ul class="dropdown-menu dropdown-menu-end">')
+
+    const li2 = $('<li/>')
+    if (is_cancelled || isChecked){
+        const buttonIn5 = $('<button type="button" class="dropdown-item fw-bolder text-success">Принять заявку</button>')
+        buttonIn5.click(function (e){reject_or_accept_app_tech(app_technic_id)})
+        li2.append(buttonIn5)
+    }else {
+        const buttonIn5 = $('<button type="button" class="dropdown-item fw-bolder text-primary">Отменить заявку</button>')
+        buttonIn5.click(function (e){reject_or_accept_app_tech(app_technic_id)})
+        li2.append(buttonIn5)
+    }
+
+    const li3 = $('<li/>').append($('<hr class=" dropdown-divider">'))
+    const li4 = $('<li/>').append($('<button id="delete_'+app_technic_id+'" type="button" class="dropdown-item fw-bolder text-danger button_delete_app_tech">Удалить заявку</button>'))
+
+    ul1.append(li2, li3, li4)
+    divIn1.append(buttonIn3, ul1)
+    div8.append(divIn1)
+    div2.append(div3, div8)
+
+    const div9 = $('<div/>');
+    const input10 = $('<input type="hidden" id="orig_technic_title_'+app_technic_id+'" value="'+technic_title+'"/>');
+    const input11 = $('<input type="hidden" id="orig_technic_sheet_'+app_technic_id+'" value="'+technic_sheet_id+'"/>');
+    const input12 = $('<input type="hidden" id="orig_technic_description_'+app_technic_id+'" value="'+app_tech_desc+'"/>');
+    div9.append(input10, input11, input12)
+
+    const divDesc1 = $('<div class="row"/>')
+    const labelDesc2 = $('<label/>')
+    const textareaDesc3 = $('<textarea id="app_tech_description_'+app_technic_id+'" style="width: 100%;" class="form-control app_tech_description app_technic_description_'+app_technic_id+' general_tech_description_font">'+app_tech_desc+'</textarea>')
+    textareaDesc3.on('input',function (e){onInput_tech_description(e.target); autoResize(e.target);})
+    labelDesc2.append(textareaDesc3)
+    divDesc1.append(labelDesc2)
+
+    const div13 = $('<div class="m-1 p-1 row" id="div_btn_edit_control_'+app_technic_id+'" style="justify-content: space-between; display: none;"/>');
+    const button14 = $('<button id="cancel_'+app_technic_id+'" type="button" class="btn btn-outline-primary button_reload_app_tech w-auto">Отмена</button>');
+    button14.click(function (e){cancelAddedTechnic(e.target)})
+    const button15 = $('<button id="apply_'+app_technic_id+'" type="button" class="btn btn-success button_apply_app_tech w-auto">Сохранить изменения</button>');
+    button15.click(function (e){applyChangesAppTechnic(app_technic_id)})
+
+    div13.append(button14, button15)
+    div1.append(div2, div9, divDesc1, div13)
+    return div1
+}
