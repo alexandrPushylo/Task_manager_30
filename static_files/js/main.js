@@ -265,11 +265,24 @@ function addTechnicSheetToApp(e) {
             app_today_id: application_id.val(),
             technic_title_shrt: select_add_tech_title.val(),
             technic_sheet_id: technic_driver_selects_add.val(),
-            app_tech_desc: app_technic_description.val(),
-            operation: operation
+            app_tech_desc: app_technic_description.val()
+
         },
-        success: (d) => {
-            window.location.reload()
+        success: (response) => {
+            let data = parseResponse(response)
+
+            if (data.app_today_id){
+                application_id.val(data.app_today_id)
+            }
+            if (data.status==='ok'){
+                $('#modalApplicationTechnic').modal('hide');
+                const APP = creatAppTechnicInst(data)
+                app_tech_container.append(APP)
+                MESS_STATUS_OK();
+            }else {
+                $('#modalApplicationTechnic').modal('hide');
+                MESS_STATUS_FAIL();
+            }
         }
     })
 
