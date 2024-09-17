@@ -422,22 +422,67 @@ function cancelEditedAppDescr(){
 
 function saveApplicationMaterials(el) {
     const operation = "save_application_materials";
+    const add_materials_desc = $('#add_materials_desc');
+    const app_material_desc = $('#app_material_desc');
+
+    const application_id = $('input[name="application_id"]')
+    const app_material_id = $('input[name="app_material_id"]')
+
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            app_today_id: $('input[name="application_id"]').val(),
+            app_today_id: application_id.val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
-            app_material_id: $('input[name="app_material_id"]').val(),
+            app_material_id: app_material_id.val(),
             material_description: $('textarea[name="app_material_desc"]').val(),
             operation: operation
         },
-        success: (d) => {
-            window.location.reload()
+        success: (response) => {
+            let data = JSON.parse(response)
+            if (data.app_today_id){
+               application_id.val(data.app_today_id)
+            }
+            if (data.app_material_id){
+               app_material_id.val(data.app_material_id)
+            }
+
+            if (data.status==='created'){
+                $('#modalMaterials').modal('hide');
+                $('#div_application_materials').show();
+                app_material_desc.val(add_materials_desc.val());
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                MESS_STATUS_OK()
+            }else if(data.status==='updated') {
+                $('#modalMaterials').modal('hide');
+                $('#div_application_materials').show();
+                app_material_desc.val(add_materials_desc.val());
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                MESS_STATUS_OK()
+            }else if (data.status==='deleted'){
+                $('#modalMaterials').modal('hide');
+                $('#div_application_materials').hide();
+                add_materials_desc.val('')
+                app_material_desc.val('')
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                MESS_STATUS_OK()
+            }else {
+                MESS_STATUS_FAIL()
+            }
         }
     })
+}
+function cancelAppMaterial(){
+    const app_material_desc = $('#app_material_desc');
+    const add_materials_desc = $('#add_materials_desc');
+    $('#modalMaterials').modal('hide');
+    if (app_material_desc.val()){
+        add_materials_desc.val(app_material_desc.val())
+    }else {
+        add_materials_desc.val('')
+    }
 }
 
 

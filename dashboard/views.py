@@ -400,26 +400,37 @@ def edit_application_view(request):
                 case 'save_application_materials':
                     log.info('save_application_materials')
                     application_today = _prepare_app_today(post_application_today_id)
-                    if U.is_valid_get_request(
-                            post_application_material_id) and post_application_material_description == '':
-                        APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id).delete()
+                    application_material = APP_MATERIAL_SERVICE.get_app_material(application_today=application_today)
+
+                    data = {
+                        "status": None,
+                        "app_today_id": application_today.id,
+                        "app_material_id": None
+                    }
+
+                    if application_material and post_application_material_description == '':
+                        application_material.delete()
                         application_today.make_edited()
-                    elif not U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
-                            post_application_material_description) and U.is_valid_get_request(
-                        post_application_today_id):
-                        APP_MATERIAL_SERVICE.create_app_material(
-                            application_today_id=post_application_today_id,
+                        data['status'] = 'deleted'
+
+                    elif not application_material and U.is_valid_get_request(post_application_material_description):
+                        application_material = APP_MATERIAL_SERVICE.create_app_material(
+                            application_today=application_today,
                             description=post_application_material_description
                         )
-                        # APP_TODAY_SERVICE.get_apps_today(pk=post_application_today_id).make_edited()
                         application_today.make_edited()
-                    elif U.is_valid_get_request(post_application_material_id) and U.is_valid_get_request(
-                            post_application_material_description):
-                        application_material = APP_MATERIAL_SERVICE.get_app_material(pk=post_application_material_id)
+                        data['status'] = 'created'
+                        data['app_material_id'] = application_material.id
+
+                    elif application_material and U.is_valid_get_request(post_application_material_description):
                         application_material.description = post_application_material_description
                         application_material.isChecked = False
                         application_material.save(update_fields=['description', 'isChecked'])
                         application_today.make_edited()
+                        data['status'] = 'updated'
+                        data['app_material_id'] = application_material.id
+
+                    return HttpResponse(json.dumps(data))
 
                 case _:
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)

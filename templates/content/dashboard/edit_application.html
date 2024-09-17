@@ -144,22 +144,25 @@
                     {% endif %}
                 </div>
 
-                {% if application_today.application_material.description %}
-                    <div class="card shadow-lg mt-4">
+                    <div id="div_application_materials" class="card shadow-lg mt-4"
+                         {% if not application_today.application_material.description %}
+                             style="display: none"
+                         {% endif %}
+                    >
                         <div class="card-header p-1">
                             <span class="fw-bolder ms-2">Список материалов:</span>
                         </div>
                         <div class="card-body p-0">
-                            <textarea readonly
+                            <textarea id="app_material_desc" 
+                                      readonly
                                       aria-label=""
                                       style="font-size: {{ user.font_size }}pt;"
-                                      class="form-control autoresize material_description general_mat_description_font"
-                                      oninput="autoResize(this)"
+                                      class="form-control material_description general_mat_description_font"
+                                      onchange="autoResize(this)"
+                                      onclick="autoResize(this);"
                             >{{ application_today.application_material.description }}</textarea>
                         </div>
                     </div>
-                {% endif %}
-
             </form>
         </div>
 
@@ -176,6 +179,8 @@
 
     {% include 'includes/modal_edit_materials.html' %}
     {% include 'includes/modal_edit_technics.html' %}
+    {% include 'includes/mess_status_ok.html' %}
+    {% include 'includes/mess_status_fail.html' %}
 
     <!------- Modal ----------------------------------------------------------------------->
 
