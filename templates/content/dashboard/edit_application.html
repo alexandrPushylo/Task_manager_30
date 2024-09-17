@@ -16,6 +16,9 @@
                             <span class="fw-bold">{{ weekday }}</span>
                         </p>
                     </div>
+                
+                
+                
                     <div class="card-header">
                         <input type="hidden" name="application_id" value="{{ application_today.id }}">
                         <input type="hidden" name="construction_site_id" value="{{ construction_site.id }}">
@@ -24,8 +27,10 @@
                         <input type="hidden" 
                                id="orig_application_description"
                                value="{% if application_today.description %}{{ application_today.description }}{% endif %}">
-                        <label class="row">
-                            <span class="small">Примечание к объекту:</span>                            
+                        
+                        
+                        <label class="row">                            
+                            <span class="small">Примечание к объекту:</span>                           
                             <textarea
                                     style="font-size: {{ user.font_size }}pt;"
 {#                                    onblur="saveApplicationDescription2(this);"#}
@@ -33,8 +38,10 @@
                                     class="form-control app_tech_description general_application_description_font"
                                     name="application_description"
                             >{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
-                        </label>
+                        </label>                    
                     </div>
+                
+                
                     <div class="m-1 p-1 row"
                          id="div_btn_edit_application_description"
                          style="justify-content: space-between; display: none;"
@@ -51,7 +58,9 @@
                     </div>
                 </div>
 
-                <div>
+            
+            
+                <div>                
                     {% if application_today.application_technic %}
                         <div class="p-0">
                             {% for app_technic in application_today.application_technic %}
@@ -76,7 +85,9 @@
                                         </label>
 
                                         <label class="col-auto p-0">
-                                            {% for technic_driver in technic_driver_list %}
+                                        
+                                        
+                                            {% for technic_driver in technic_driver_list %}  
                                                 <select id="technic_sheet_{{ app_technic.id }}"
                                                         onchange="changeTechnicSheetSelector(this)"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}disabled=""{% endif %}
@@ -92,6 +103,9 @@
                                                     {% endfor %}
                                                 </select>
                                             {% endfor %}
+                                        
+                                        
+                                        
                                         </label>
                                         </div>
                                         <div class="col-auto" id="btn_options_{{ app_technic.id }}">
