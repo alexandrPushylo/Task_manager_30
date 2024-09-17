@@ -303,13 +303,13 @@ function reject_or_accept_app_tech(appTechnicId){
         success: (response) => {
             if (response==='reject'){
                 $('#technic_title_'+appTechnicId).prop('disabled', true);
-                $('#technic_sheet_'+appTechnicId).prop('disabled', true);
+                $('.technic_driver_selects_'+appTechnicId).prop('disabled', true);
                 app_tech_description.prop('disabled', true);
                 app_tech_description.addClass('border border-1 border-danger');
                 MESS_STATUS_OK();
             }else if (response==='accept'){
                 $('#technic_title_'+appTechnicId).prop('disabled', false);
-                $('#technic_sheet_'+appTechnicId).prop('disabled', false);
+                $('.technic_driver_selects_'+appTechnicId).prop('disabled', false);
                 app_tech_description.prop('disabled', false);
                 app_tech_description.removeClass('border border-1 border-danger');
                 app_tech_description.val(app_tech_description.val().replace('ОТКЛОНЕНА\n',''));
