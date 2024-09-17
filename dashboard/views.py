@@ -319,7 +319,7 @@ def edit_application_view(request):
             post_application_material_id = request.POST.get('app_material_id')
             post_application_material_description = request.POST.get('material_description')
 
-            technic_driver_list_t2 = ADD_EDIT_APP_SERVICE.get_technic_driver_list_t2(
+            technic_driver_list_t2 = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
                 technic_titles=technic_titles_dict,
                 technic_sheets=technic_sheets
             )
