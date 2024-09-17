@@ -263,12 +263,12 @@ function selectAddTechnicDriver(e) {
     technic_driver_selects.hide();
     $('#span_driver_name').show();
     select_technic_sheet.show();
-    const btn_added = $('#btn_add_technic_sheet');
+    const btn_add_tech = $('#btn_add_tech');
 
     if (e.value === "none") {
-        btn_added.hide()
+        btn_add_tech.attr('disabled', true);
     } else {
-        btn_added.show()
+        btn_add_tech.attr('disabled', false);
     }
 }
 
