@@ -20,8 +20,6 @@ function parseResponse(response){
 
 
 const selectPost = (e) => {
-    // console.log(e.value)
-    // alert(e.value)
     const post = e.value
     const foreman_select = $('#foreman_select');
     const foreman_select_div = $('#foreman_select_div');
@@ -46,10 +44,8 @@ const toggleWorkdayStatus = (e, workday_id) => {
             operation: operation
         },
         success: (response) => {
-
         }
     })
-
 }
 
 const toggleDriverSheetStatus = (e, itemId) => {
@@ -173,24 +169,6 @@ $('#applications_container').masonry({
     }
 // опции анимации - очередь и продолжительность анимации
 });
-// $('#applications_container_saved').masonry({
-// // указываем элемент-контейнер в котором расположены блоки для динамической верстки
-//     itemSelector: '.application_items_saved',
-//     // columnWidth: 200,
-//     gutter: 20,
-// // указываем класс элемента являющегося блоком в нашей сетке
-//     singleMode: true,
-// // true - если у вас все блоки одинаковой ширины
-//     isResizable: true,
-// // перестраивает блоки при изменении размеров окна
-//     isAnimated: true,
-// // анимируем перестроение блоков
-//     animationOptions: {
-//         queue: false,
-//         duration: 500
-//     }
-// // опции анимации - очередь и продолжительность анимации
-// });
 
 $('#construction_site_container').masonry({
 // указываем элемент-контейнер в котором расположены блоки для динамической верстки
@@ -210,6 +188,7 @@ $('#construction_site_container').masonry({
 // опции анимации - очередь и продолжительность анимации
 });
 
+
 function selectTechnicTitle(e) {
     const technic_title_id = e.id.replace('technic_title_', '')
     const technic_title = e.value;
@@ -220,7 +199,13 @@ function selectTechnicTitle(e) {
     $('#div_btn_edit_control_' + technic_title_id).show();
     $('#btn_options_' + technic_title_id).hide();
     technic_driver_selects.hide();
-    select_technic_sheet.show();
+    if (select_technic_sheet.children().length!==0){
+        select_technic_sheet.show();
+        $('#span_missing_driver_'+application_technic_id).hide();
+    }else {
+        $('#span_missing_driver_'+application_technic_id).show();
+    }
+
 }
 
 function changeTechnicSheetSelector(e) {
@@ -274,22 +259,40 @@ function addTechnicSheetToApp(e) {
     const select_add_tech_title = $('.select_add_tech_title > option:checked');
     const technic_driver_selects_add = $('.' + select_add_tech_title.val() + ' > option:checked');
     const app_technic_description = $('.app_technic_description');
+    const application_id = $('input[name="application_id"]');
+
+    const app_tech_container = $('#app_tech_container');
+    const app_tech_inst = $('#app_tech_inst');
 
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
+            operation: operation,
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            app_today_id: $('input[name="application_id"]').val(),
-            // construction_site_id: $('input[name="construction_site_id"]').val(),
+
+            app_today_id: application_id.val(),
             technic_title_shrt: select_add_tech_title.val(),
             technic_sheet_id: technic_driver_selects_add.val(),
-            app_tech_desc: app_technic_description.val(),
-            operation: operation
+            app_tech_desc: app_technic_description.val()
+
         },
-        success: (d) => {
-            window.location.reload()
+        success: (response) => {
+            let data = parseResponse(response)
+
+            if (data.app_today_id){
+                application_id.val(data.app_today_id)
+            }
+            if (data.status==='ok'){
+                $('#modalApplicationTechnic').modal('hide');
+                const APP = creatAppTechnicInst(data)
+                app_tech_container.append(APP)
+                MESS_STATUS_OK();
+            }else {
+                $('#modalApplicationTechnic').modal('hide');
+                MESS_STATUS_FAIL();
+            }
         }
     })
 
@@ -298,7 +301,6 @@ function addTechnicSheetToApp(e) {
     $('.select_add_tech_title').val('')
     app_technic_description.val('')
 }
-
 
 function autoResize(elem) {
     elem.style.height = 'auto';
@@ -324,13 +326,13 @@ function reject_or_accept_app_tech(appTechnicId){
         success: (response) => {
             if (response==='reject'){
                 $('#technic_title_'+appTechnicId).prop('disabled', true);
-                $('#technic_sheet_'+appTechnicId).prop('disabled', true);
+                $('.technic_driver_selects_'+appTechnicId).prop('disabled', true);
                 app_tech_description.prop('disabled', true);
                 app_tech_description.addClass('border border-1 border-danger');
                 MESS_STATUS_OK();
             }else if (response==='accept'){
                 $('#technic_title_'+appTechnicId).prop('disabled', false);
-                $('#technic_sheet_'+appTechnicId).prop('disabled', false);
+                $('.technic_driver_selects_'+appTechnicId).prop('disabled', false);
                 app_tech_description.prop('disabled', false);
                 app_tech_description.removeClass('border border-1 border-danger');
                 app_tech_description.val(app_tech_description.val().replace('ОТКЛОНЕНА\n',''));
@@ -342,28 +344,6 @@ function reject_or_accept_app_tech(appTechnicId){
         }
     })
 }
-
-// $('.button_reject_app_tech').click(function () {
-//     const operation = "reject_application_technic";
-//     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
-//     const pathname = window.location;
-//     const applicationTechnicId = this.id.replace('reject_', '')
-//     $.ajax({
-//         type: 'POST',
-//         mode: 'same-origin',
-//         url: pathname,
-//         data: {
-//             csrfmiddlewaretoken: csrf,
-//             application_technic_id: applicationTechnicId,
-//             app_today_id: $('input[name="application_id"]').val(),
-//             construction_site_id: $('input[name="construction_site_id"]').val(),
-//             operation: operation
-//         },
-//         success: (d) => {
-//             window.location.reload()
-//         }
-//     })
-// })
 
 $('.button_delete_app_tech').click(function () {
     const operation = "delete_application_technic";
@@ -393,13 +373,15 @@ $('.button_delete_app_tech').click(function () {
     })
 })
 
-function applyChangesAppTechnic(e) {
+function applyChangesAppTechnic(app_technic_id) {
     const operation = "apply_changes_application_technic";
-    const appTechId = e.id.replace('apply_', '')
-    const technic_title = $('#technic_title_' + appTechId + ' > option:checked').val();
+    const appTechId = app_technic_id// e.id.replace('apply_', '')
+    const technic_title = $('#technic_title_' + appTechId +' > option:checked').val();
     const technic_sheet_id = $('.' + technic_title + '_' + appTechId + ' > option:checked').val();
     const app_tech_description = $('#app_tech_description_' + appTechId).val();
     const div_btn_edit_control = $('#div_btn_edit_control_'+appTechId);
+    const btn_options = $('#btn_options_'+appTechId);
+    const btn_edit_technics_and_materials = $('#btn_edit_technics_and_materials');
 
     $.ajax({
         type: 'POST',
@@ -418,9 +400,15 @@ function applyChangesAppTechnic(e) {
         success: (response) => {
             if (response==='ok'){
                 div_btn_edit_control.hide()
+                btn_options.show()
+                btn_edit_technics_and_materials.show()
+                $('#main_footer').show();
                 MESS_STATUS_OK()
             }else {
                 div_btn_edit_control.hide()
+                btn_options.show()
+                btn_edit_technics_and_materials.show()
+                $('#main_footer').show();
                 MESS_STATUS_FAIL()
             }
         }
@@ -537,10 +525,7 @@ function cancelAppMaterial(){
 
 $('.io_choice_day').change(function () {
     const current_day = this.value;
-    // console.log(current_day)
     location.search = "?current_day=" + current_day
-    // const dd = location.search;
-    // console.log(dd)
 })
 
 
@@ -593,9 +578,7 @@ function applyChangesForConflictResolution(e) {
     const technic_title_short = $('#title_' + appTechnicId).val();
     const technic_sheet_id = $('.' + technic_title_short + '.at_' + appTechnicId).val();
     const technic_description = $('#app_tech_description_' + appTechnicId).val();
-    // console.log(technic_title_short)
-    // console.log(technic_sheet_id)
-    // console.log(technic_description)
+
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -880,30 +863,6 @@ function changeReadOnlyMode(readOnly) {
     })
 }
 
-// function validateApplicationToday(app_today_id, current_day) {
-//     // console.log(app_today_id)
-//     // console.log(current_day)
-//     $.ajax({
-//         type: 'POST',
-//         mode: 'same-origin',
-//         url: window.location,
-//         data: {
-//             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-//             app_today_id: app_today_id,
-//             current_day: current_day,
-//             operation: 'validate_application_today'
-//         }
-//     })
-// }
-
-//&&???
-function checkChangesForEditApplication() {
-    const btn_cancel_for_edit_app = $('#btn_cancel_for_edit_app');
-    const btn_apply_for_edit_app = $('#btn_apply_for_edit_app');
-    btn_cancel_for_edit_app.hide();
-    btn_apply_for_edit_app.show();
-}
-
 function prepareModalDeleteApplication(url) {
     $('#btn_delete_app').attr('href', url);
 }
@@ -992,3 +951,102 @@ function changePassword() {
 ///////////////////////////////////////////////////////////////////////////////////
 // })
 
+function creatAppTechnicInst(data){
+    const app_technic_id =data.app_technic_id
+    const is_cancelled =data.is_cancelled
+    const technic_title_shrt =data.technic_title_shrt
+    const isChecked =data.isChecked
+    const technic_title =data.technic_title
+    const technic_sheet_id =data.technic_sheet_id
+    const app_tech_desc =data.app_tech_desc
+    const status =data.status
+    let technic_driver_list = parseResponse(data.technic_driver_list)
+    for (const i in technic_driver_list){
+                technic_driver_list[i].technic_sheets = parseResponse(technic_driver_list[i].technic_sheets)
+            }
+
+    const app_tech_container = $('#app_tech_container');
+    const div1 = $('<div id="'+app_technic_id+'" class="mt-2 card border border-2" style="box-shadow: 5px 5px 50px"/>');
+
+    const div2 = $('<div class="row m-0 p-1 card-header" style="background: #e8ebfa"/>');
+    const div3 = $('<div class="col"/>');
+
+    const label4 = $('<label class="col-auto p-0"/>');
+
+    const select5 = $('<select id="technic_title_'+app_technic_id+'" class="form-control p-1" />');
+
+    select5.change(function (e){selectTechnicTitle(e.target)})
+
+    for (const idx in technic_driver_list){
+        //technic_driver_list[item].
+        if (technic_title===technic_driver_list[idx].title){
+            select5.append($('<option selected value="'+technic_driver_list[idx].title_short+'">'+technic_driver_list[idx].title+'</option>'))
+        }else {
+            select5.append($('<option value="'+technic_driver_list[idx].title_short+'">'+technic_driver_list[idx].title+'</option>'))
+        }
+    }
+    label4.append(select5)
+
+    const label6 = $('<label class="col-auto p-0"/>');
+    for (const i in technic_driver_list){
+        const select7 = $('<select id="technic_sheet_'+app_technic_id+'" class="'+technic_driver_list[i].title_short+'_'+app_technic_id+' technic_driver_selects000 technic_driver_selects_'+app_technic_id+' form-control p-1"/>');
+        if (technic_title_shrt!==technic_driver_list[i].title_short){select7.hide()}
+        select7.change(function (e){changeTechnicSheetSelector(e.target)})
+        for (const j in technic_driver_list[i].technic_sheets){
+            const item = technic_driver_list[i].technic_sheets[j]
+            if (technic_sheet_id===item.id){
+                select7.append($('<option selected value="'+item.id+'" >'+item.driver_sheet__driver__last_name+'</option>'));
+            }else {
+                select7.append($('<option value="'+item.id+'" >'+item.driver_sheet__driver__last_name+'</option>'));
+            }
+        }
+        label6.append(select7);
+    }
+    div3.append(label4, label6)
+    const div8 = $('<div class="col-auto" id="btn_options_'+app_technic_id+'"/>');
+    const divIn1 = $('<div class="dropdown" style="margin-top: 0.1rem">')
+    const buttonIn3 = $('<button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i></button>')
+    const ul1 = $('<ul class="dropdown-menu dropdown-menu-end">')
+
+    const li2 = $('<li/>')
+    if (is_cancelled || isChecked){
+        const buttonIn5 = $('<button type="button" class="dropdown-item fw-bolder text-success">Принять заявку</button>')
+        buttonIn5.click(function (e){reject_or_accept_app_tech(app_technic_id)})
+        li2.append(buttonIn5)
+    }else {
+        const buttonIn5 = $('<button type="button" class="dropdown-item fw-bolder text-primary">Отменить заявку</button>')
+        buttonIn5.click(function (e){reject_or_accept_app_tech(app_technic_id)})
+        li2.append(buttonIn5)
+    }
+
+    const li3 = $('<li/>').append($('<hr class=" dropdown-divider">'))
+    const li4 = $('<li/>').append($('<button id="delete_'+app_technic_id+'" type="button" class="dropdown-item fw-bolder text-danger button_delete_app_tech">Удалить заявку</button>'))
+
+    ul1.append(li2, li3, li4)
+    divIn1.append(buttonIn3, ul1)
+    div8.append(divIn1)
+    div2.append(div3, div8)
+
+    const div9 = $('<div/>');
+    const input10 = $('<input type="hidden" id="orig_technic_title_'+app_technic_id+'" value="'+technic_title+'"/>');
+    const input11 = $('<input type="hidden" id="orig_technic_sheet_'+app_technic_id+'" value="'+technic_sheet_id+'"/>');
+    const input12 = $('<input type="hidden" id="orig_technic_description_'+app_technic_id+'" value="'+app_tech_desc+'"/>');
+    div9.append(input10, input11, input12)
+
+    const divDesc1 = $('<div class="row"/>')
+    const labelDesc2 = $('<label/>')
+    const textareaDesc3 = $('<textarea id="app_tech_description_'+app_technic_id+'" style="width: 100%;" class="form-control app_tech_description app_technic_description_'+app_technic_id+' general_tech_description_font">'+app_tech_desc+'</textarea>')
+    textareaDesc3.on('input',function (e){onInput_tech_description(e.target); autoResize(e.target);})
+    labelDesc2.append(textareaDesc3)
+    divDesc1.append(labelDesc2)
+
+    const div13 = $('<div class="m-1 p-1 row" id="div_btn_edit_control_'+app_technic_id+'" style="justify-content: space-between; display: none;"/>');
+    const button14 = $('<button id="cancel_'+app_technic_id+'" type="button" class="btn btn-outline-primary button_reload_app_tech w-auto">Отмена</button>');
+    button14.click(function (e){cancelAddedTechnic(e.target)})
+    const button15 = $('<button id="apply_'+app_technic_id+'" type="button" class="btn btn-success button_apply_app_tech w-auto">Сохранить изменения</button>');
+    button15.click(function (e){applyChangesAppTechnic(app_technic_id)})
+
+    div13.append(button14, button15)
+    div1.append(div2, div9, divDesc1, div13)
+    return div1
+}

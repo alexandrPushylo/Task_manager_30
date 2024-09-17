@@ -1,4 +1,4 @@
-from dashboard.models import TechnicSheet, ConstructionSite, ApplicationToday, ApplicationTechnic, ApplicationMaterial
+from dashboard.models import TechnicSheet
 from logger import getLogger
 
 log = getLogger(__name__)
