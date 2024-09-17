@@ -367,28 +367,34 @@ def edit_application_view(request):
                     log.info('apply_changes_application_technic')
                     application_today = _prepare_app_today(post_application_today_id)
                     if U.is_valid_get_request(post_technic_title_shrt):
-                        application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
+                        try:
+                            application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
 
-                        if not U.is_valid_get_request(post_technic_sheet_id):
-                            technic_title = technic_titles_dict.get(post_technic_title_shrt)
-                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
-                                technic_title=technic_title, workday=current_day
-                            )
-                        else:
-                            some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
-                        description = post_application_technic_description if post_application_technic_description else ''
+                            if not U.is_valid_get_request(post_technic_sheet_id):
+                                technic_title = technic_titles_dict.get(post_technic_title_shrt)
+                                some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
+                                    technic_title=technic_title, workday=current_day
+                                )
+                            else:
+                                some_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(pk=post_technic_sheet_id)
+                            description = post_application_technic_description if post_application_technic_description else ''
 
-                        if some_technic_sheet:
-                            if application_technic.technic_sheet != some_technic_sheet:
-                                if application_technic.technic_sheet is not None:
-                                    application_technic.technic_sheet.decrement_count_application()
-                                application_technic.technic_sheet = some_technic_sheet
-                                some_technic_sheet.increment_count_application()
-                        else:
-                            application_technic.technic_sheet = None
-                        application_technic.description = description
-                        application_technic.save(update_fields=['technic_sheet', 'description'])
-                        application_today.make_edited()
+                            if some_technic_sheet:
+                                if application_technic.technic_sheet != some_technic_sheet:
+                                    if application_technic.technic_sheet is not None:
+                                        application_technic.technic_sheet.decrement_count_application()
+                                    application_technic.technic_sheet = some_technic_sheet
+                                    some_technic_sheet.increment_count_application()
+                            else:
+                                application_technic.technic_sheet = None
+                            application_technic.description = description
+                            application_technic.save(update_fields=['technic_sheet', 'description'])
+                            application_today.make_edited()
+                            return HttpResponse(b'ok')
+                        except Exception as e:
+                            log.error("ERROR: edit_application_view(): apply_changes_application_technic")
+                            return HttpResponse(b'fail')
+
 
                 case 'save_application_description':
                     log.info('save_application_description')
