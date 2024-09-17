@@ -325,7 +325,29 @@ $('.button_reject_app_tech').click(function () {
             window.location.reload()
         }
     })
-})
+}
+
+// $('.button_reject_app_tech').click(function () {
+//     const operation = "reject_application_technic";
+//     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
+//     const pathname = window.location;
+//     const applicationTechnicId = this.id.replace('reject_', '')
+//     $.ajax({
+//         type: 'POST',
+//         mode: 'same-origin',
+//         url: pathname,
+//         data: {
+//             csrfmiddlewaretoken: csrf,
+//             application_technic_id: applicationTechnicId,
+//             app_today_id: $('input[name="application_id"]').val(),
+//             construction_site_id: $('input[name="construction_site_id"]').val(),
+//             operation: operation
+//         },
+//         success: (d) => {
+//             window.location.reload()
+//         }
+//     })
+// })
 
 $('.button_delete_app_tech').click(function () {
     const operation = "delete_application_technic";
