@@ -44,6 +44,11 @@ const toggleWorkdayStatus = (e, workday_id) => {
             operation: operation
         },
         success: (response) => {
+            if (response==='ok'){
+                MESS_STATUS_OK()
+            }else {
+                MESS_STATUS_FAIL()
+            }
         }
     })
 }
@@ -64,13 +69,18 @@ const toggleDriverSheetStatus = (e, itemId) => {
             if (response === 'true') {
                 row.css('color', '#018349')
                 row.css('text-decoration-line', 'none')
+                MESS_STATUS_OK()
             }
             if (response === 'false') {
                 row.css('color', 'black')
                 row.css('text-decoration-line', 'line-through')
+                MESS_STATUS_OK()
+
             }
             if (response === 'none') {
                 row.css('color', 'red')
+                MESS_STATUS_FAIL()
+
             }
         }
     })
@@ -91,12 +101,15 @@ const toggleTechnicSheetStatus = (e, itemId) => {
             const row = $('#technic_sheet_id__' + itemId)
             if (response === 'true') {
                 row.css('background-color', '#effdf6')
+                MESS_STATUS_OK()
             }
             if (response === 'false') {
                 row.css('background-color', '#fdefef')
+                MESS_STATUS_OK()
             }
             if (response === 'none') {
                 row.css('color', 'red')
+                MESS_STATUS_FAIL()
             }
         }
     })
@@ -119,12 +132,16 @@ function changeDriverForTechnic(e, techSheetId) {
         success: (response) => {
             if (response === 'true') {
                 selectName.css('border', 'none')
+                MESS_STATUS_OK()
             }
             if (response === 'false') {
                 selectName.css('border', 'red 1px solid')
+                MESS_STATUS_OK()
+
             }
             if (response === 'none') {
                 selectName.css('border', 'none')
+
             }
         }
     })
@@ -204,6 +221,7 @@ function selectTechnicTitle(e) {
         $('#span_missing_driver_'+application_technic_id).hide();
     }else {
         $('#span_missing_driver_'+application_technic_id).show();
+        $('#div_btn_edit_control_'+application_technic_id).hide();
     }
 
 }
@@ -403,6 +421,7 @@ function applyChangesAppTechnic(app_technic_id) {
                 btn_options.show()
                 btn_edit_technics_and_materials.show()
                 $('#main_footer').show();
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
                 MESS_STATUS_OK()
             }else {
                 div_btn_edit_control.hide()

@@ -319,7 +319,7 @@ def edit_application_view(request):
             post_application_material_id = request.POST.get('app_material_id')
             post_application_material_description = request.POST.get('material_description')
 
-            technic_driver_list_t2 = ADD_EDIT_APP_SERVICE.get_technic_driver_list_t2(
+            technic_driver_list_t2 = ADD_EDIT_APP_SERVICE.get_technic_driver_list(
                 technic_titles=technic_titles_dict,
                 technic_sheets=technic_sheets
             )
@@ -607,7 +607,12 @@ def workday_sheet_view(request):
         if request.method == 'POST' and request.POST.get('operation') == 'toggleWorkdayStatus':
             workday_id = request.POST.get('workday_id')
             if U.is_valid_get_request(workday_id):
-                WORK_DAY_SERVICE.change_status(work_day_id=workday_id)
+                status = WORK_DAY_SERVICE.change_status(work_day_id=workday_id)
+                if status:
+                    return HttpResponse(b'ok')
+                else:
+                    return HttpResponse(b'fail')
+
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context=context, current_workday=current_day)
         current_date = current_day.date
@@ -1284,6 +1289,7 @@ def material_application_supply_view(request):
         if U.is_valid_get_request(_is_print):
             application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
                 select_related=('application_today__construction_site__foreman',),
+                application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
                 isArchive=False,
                 application_today__date=current_day,
                 isChecked=True
@@ -1313,6 +1319,7 @@ def material_application_supply_view(request):
 
         application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
             select_related=('application_today__construction_site__foreman',),
+            application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
             isArchive=False,
             application_today__date=current_day
         )
