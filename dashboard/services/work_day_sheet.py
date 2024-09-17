@@ -121,7 +121,10 @@ def change_status(work_day_id):
             workday.status = True
             log.info(f"work_day {workday.date} установлен как рабочий")
         workday.save(update_fields=['status'])
+        return True
     except WorkDaySheet.DoesNotExist:
         log.error(f"Workday с id {work_day_id} не существует")
+        return False
     except ValueError:
         log.error('change_status(): ValueError')
+        return False

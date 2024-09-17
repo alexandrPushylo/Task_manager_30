@@ -44,6 +44,11 @@ const toggleWorkdayStatus = (e, workday_id) => {
             operation: operation
         },
         success: (response) => {
+            if (response==='ok'){
+                MESS_STATUS_OK()
+            }else {
+                MESS_STATUS_FAIL()
+            }
         }
     })
 }

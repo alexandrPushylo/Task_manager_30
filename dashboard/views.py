@@ -607,7 +607,12 @@ def workday_sheet_view(request):
         if request.method == 'POST' and request.POST.get('operation') == 'toggleWorkdayStatus':
             workday_id = request.POST.get('workday_id')
             if U.is_valid_get_request(workday_id):
-                WORK_DAY_SERVICE.change_status(work_day_id=workday_id)
+                status = WORK_DAY_SERVICE.change_status(work_day_id=workday_id)
+                if status:
+                    return HttpResponse(b'ok')
+                else:
+                    return HttpResponse(b'fail')
+
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context=context, current_workday=current_day)
         current_date = current_day.date
