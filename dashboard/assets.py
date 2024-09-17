@@ -20,6 +20,10 @@ ApplicationTodayStatus = ApplicationTodayType(
     TitleDescriptionType('send', 'Отправлена')
 )
 SHOW_APPLICATIONS_WITH_STATUSES = (ApplicationTodayStatus.APPROVED.title, ApplicationTodayStatus.SEND.title)
+SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES = (
+    ApplicationTodayStatus.SUBMITTED.title,
+    ApplicationTodayStatus.APPROVED.title,
+    ApplicationTodayStatus.SEND.title)
 
 SORT_BY = {'driver': 'Водителю', 'technic': 'Технике'}
 

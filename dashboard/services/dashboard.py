@@ -330,7 +330,10 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
             U.accept_app_tech_to_supply(application_technic_id, application_today_id)
 
     count_not_checked_app_mater = APP_MATERIAL_SERVICE.get_apps_material_queryset(
-        isArchive=False, application_today__date=current_day, isChecked=False
+        application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
+        isArchive=False,
+        application_today__date=current_day,
+        isChecked=False
     ).count()
     if count_not_checked_app_mater > 0:
         context["count_not_checked_app_mater"] = count_not_checked_app_mater

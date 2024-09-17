@@ -1284,6 +1284,7 @@ def material_application_supply_view(request):
         if U.is_valid_get_request(_is_print):
             application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
                 select_related=('application_today__construction_site__foreman',),
+                application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
                 isArchive=False,
                 application_today__date=current_day,
                 isChecked=True
@@ -1313,6 +1314,7 @@ def material_application_supply_view(request):
 
         application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
             select_related=('application_today__construction_site__foreman',),
+            application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
             isArchive=False,
             application_today__date=current_day
         )
