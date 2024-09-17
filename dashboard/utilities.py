@@ -428,7 +428,7 @@ def get_user_key(user_id) -> str:
 
 def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=None, application_today_id=None):
     all_already_send = current_day.is_all_application_send
-    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
     driver_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
         date=current_day,
         status=True,
@@ -491,7 +491,7 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
 
 def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages=None, application_today_id=None):
     all_already_send = current_day.is_all_application_send
-    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
     foreman_list = USERS_SERVICE.get_user_queryset(
         isArchive=False,
         post__in=(ASSETS.UserPosts.FOREMAN.title, ASSETS.UserPosts.MASTER.title, ASSETS.UserPosts.SUPPLY.title)
@@ -544,7 +544,7 @@ def send_application_by_telegram_for_foreman(current_day: WorkDaySheet, messages
 
 
 def send_application_by_telegram_for_admin(current_day: WorkDaySheet, messages=None, application_today_id=None):
-    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS[current_day.date.month - 1]}'
+    template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
     administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.UserPosts.ADMINISTRATOR.title)
 
     if current_day.is_all_application_send:
