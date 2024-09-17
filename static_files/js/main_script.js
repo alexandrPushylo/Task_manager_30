@@ -101,12 +101,15 @@ const toggleTechnicSheetStatus = (e, itemId) => {
             const row = $('#technic_sheet_id__' + itemId)
             if (response === 'true') {
                 row.css('background-color', '#effdf6')
+                MESS_STATUS_OK()
             }
             if (response === 'false') {
                 row.css('background-color', '#fdefef')
+                MESS_STATUS_OK()
             }
             if (response === 'none') {
                 row.css('color', 'red')
+                MESS_STATUS_FAIL()
             }
         }
     })
@@ -129,12 +132,16 @@ function changeDriverForTechnic(e, techSheetId) {
         success: (response) => {
             if (response === 'true') {
                 selectName.css('border', 'none')
+                MESS_STATUS_OK()
             }
             if (response === 'false') {
                 selectName.css('border', 'red 1px solid')
+                MESS_STATUS_OK()
+
             }
             if (response === 'none') {
                 selectName.css('border', 'none')
+
             }
         }
     })
