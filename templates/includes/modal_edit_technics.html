@@ -9,9 +9,11 @@
             </div>
             <div class="modal-body m-0">
                 <div>
+                    
                     <div class="input-group row">
+                        
                         <label class="col-12"> Название техники
-                            <select class="form-control select_add_tech_title"
+                            <select id="select_add_tech_title" class="form-control select_add_tech_title"
                                     onchange="selectAddTechnicDriver(this)">
                                 <option value="none">---</option>
                                 {% for title_short, title in technic_titles_dict_for_add.items %}
@@ -20,9 +22,12 @@
                                 {% endfor %}
                             </select>
                         </label>
+                        
                         <label class="mt-2 col-12">
                             <span id="span_driver_name" style="display: none">Водитель</span>
+                            
                             {% for technic_driver in technic_driver_list_for_add %}
+                                
                                 <select class="form-control technic_driver_selects_add {{ technic_driver.title_short }}">
                                     <option value="">--Любой--</option>
                                     {% for technic_sheet in technic_driver.technic_sheets %}
@@ -35,8 +40,11 @@
                                     {% endfor %}
                                 </select>
                             {% endfor %}
+                            
+                        
                         </label>
                     </div>
+                    
                     <label class="row mt-2">
                             <textarea class="form-control app_technic_description"
                                       placeholder="Описания задания"
