@@ -1,3 +1,4 @@
+import json
 from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
@@ -395,7 +396,10 @@ def edit_application_view(request):
                         application_today.description = ''
                     application_today.is_edited = True
                     application_today.save()
-                    return HttpResponse(b"success")
+                    return HttpResponse(json.dumps({
+                        "status": "ok",
+                        "app_today_id": application_today.pk
+                    }))
 
                 case 'save_application_materials':
                     log.info('save_application_materials')

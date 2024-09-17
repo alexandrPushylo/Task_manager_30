@@ -381,21 +381,32 @@ function applyChangesAppTechnic(e) {
 
 function saveApplicationDescription(){
     const operation = "save_application_description";
+    const orig_application_description = $('#orig_application_description');
+    const application_today_description = $('textarea[name="application_description"]');
+    const application_id = $('input[name="application_id"]');
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
         data: {
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-            app_today_id: $('input[name="application_id"]').val(),
-            application_today_description: $('textarea[name="application_description"]').val(),
+            app_today_id: application_id.val(),
+            application_today_description: application_today_description.val(),
             operation: operation
         },
         success: (response) => {
-            if(response === 'success'){
-                reloadPage()
+            let data = parseResponse(response)
+            if (data.app_today_id){
+                application_id.val(data.app_today_id)
+            }
+            if(data.status === 'ok'){
+                MESS_STATUS_OK()
+                $('#div_btn_edit_application_description').hide();
+                orig_application_description.val(application_today_description.val());
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
             } else {
                 cancelEditedAppDescr()
+                MESS_STATUS_FAIL()
             }
         }
     })
