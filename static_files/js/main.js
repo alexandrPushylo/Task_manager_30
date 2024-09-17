@@ -358,6 +358,7 @@ function applyChangesAppTechnic(e) {
     const technic_title = $('#technic_title_' + appTechId + ' > option:checked').val();
     const technic_sheet_id = $('.' + technic_title + '_' + appTechId + ' > option:checked').val();
     const app_tech_description = $('#app_tech_description_' + appTechId).val();
+    const div_btn_edit_control = $('#div_btn_edit_control_'+appTechId);
 
     $.ajax({
         type: 'POST',
@@ -373,8 +374,14 @@ function applyChangesAppTechnic(e) {
             app_tech_desc: app_tech_description,
             operation: operation
         },
-        success: (d) => {
-            window.location.reload()
+        success: (response) => {
+            if (response==='ok'){
+                div_btn_edit_control.hide()
+                MESS_STATUS_OK()
+            }else {
+                div_btn_edit_control.hide()
+                MESS_STATUS_FAIL()
+            }
         }
     })
 }
