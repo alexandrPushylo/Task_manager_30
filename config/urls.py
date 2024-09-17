@@ -37,6 +37,7 @@ from dashboard.views import maintenance_view
 from dashboard.views import def_test
 from dashboard.views import routing
 from dashboard.views import task_desc_for_spec_constr_site_view
+from dashboard.views import calculate_all_applications
 
 urlpatterns = [
                   path('', include('dashboard.urls')),
@@ -48,6 +49,7 @@ urlpatterns = [
                   path('restore_pwd/', restore_password_view, name='restore_password'),
                   path('settings/', settings_view, name='settings'),
                   path('templates_for_spec_constr_site/', task_desc_for_spec_constr_site_view, name='tasks_for_spec_constr_site'),
+                  path('calculate_all_applications/', calculate_all_applications, name='calculate_all_applications'),
 
                   path('change_app_status/', change_status_application_today, name='change_app_status'),
                   path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),

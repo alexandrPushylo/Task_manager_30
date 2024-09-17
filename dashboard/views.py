@@ -1507,3 +1507,11 @@ def task_desc_for_spec_constr_site_view(request):
         return render(request, 'content/spec/task_description_for_spec_constr_site.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def calculate_all_applications(request):
+    if request.user.is_authenticated:
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        TECHNIC_SHEET_SERVICE.calculate_all_applications_for_ts(current_day)
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={ current_day.date }")
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
