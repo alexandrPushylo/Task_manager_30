@@ -42,12 +42,12 @@
             </li>
             <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
 
-            {% if user.is_staff %}
-                <li>
-                    <hr class="m-0">
-                </li>
-                <li><a class="dropdown-item" href="{% url 'test' %}">test</a></li>
-            {% endif %}
+{#            {% if user.is_staff %}#}
+{#                <li>#}
+{#                    <hr class="m-0">#}
+{#                </li>#}
+{#                <li><a class="dropdown-item" href="{% url 'test' %}">test</a></li>#}
+{#            {% endif %}#}
         </ul>
 
     {% elif user.post == 'foreman' or user.post == 'master' %}
