@@ -543,6 +543,9 @@ function saveApplicationMaterials(el) {
     })
     }else {
         $('#div_application_materials').hide();
+        $('#div_btn_edit_material').hide();
+        $('#btn_edit_technics_and_materials').show();
+        $('#main_footer').show();
     }
 
 }
@@ -554,11 +557,7 @@ function createAppMater(){
 }
 
 function blurAppMaterial(){
-    if (!$('#app_material_desc').val()){
-        $('#div_application_materials').hide()
-    }else {
-        $('#btn_create_app_mater').hide()
-    }
+    $('#btn_create_app_mater').hide();
     $('#btn_edit_technics_and_materials').show();
     $('#main_footer').show();
 }
@@ -575,13 +574,15 @@ function cancelAddedMaterial(){
     const orig_material_description = $('#orig_material_description');
     if (orig_material_description.val()){
         app_material_desc.val(orig_material_description.val())
+        $('#btn_create_app_mater').hide();
     }else {
         app_material_desc.val('')
         $('#div_application_materials').hide()
+        $('#btn_create_app_mater').show();
     }
     app_material_desc.css('height', 'auto');
     $('#div_btn_edit_material').hide();
-    $('#btn_create_app_mater').show();
+
     $('#btn_edit_technics_and_materials').show();
     $('#main_footer').show();
 }
