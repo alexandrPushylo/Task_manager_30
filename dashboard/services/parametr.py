@@ -1,6 +1,7 @@
 from django.core.handlers.wsgi import WSGIRequest
 
 from dashboard.models import Parameter
+from dashboard import variables as VAR
 import dashboard.assets as ASSETS
 from django.db.models import QuerySet  # type: ignore
 
@@ -81,4 +82,12 @@ def set_parameters(request_data: WSGIRequest.POST):
                 parameter.save()
 
 
-
+def get_parameters_for_supply() -> QuerySet[Parameter]:
+    """
+    Получить параметры для supply
+    :return:
+    """
+    parameters_list = get_parameter_queryset(
+        title=VAR.VAR_TIME_RECEPTION_OF_MATERIALS['title']
+    )
+    return parameters_list

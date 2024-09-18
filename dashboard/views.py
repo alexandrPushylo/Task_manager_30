@@ -1504,8 +1504,12 @@ def settings_view(request):
         if request.method == 'POST':
             PARAMETER_SERVICE.set_parameters(request.POST)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-
-        parameter_list = PARAMETER_SERVICE.get_parameter_queryset()
+        if USERS_SERVICE.is_administrator(request.user):
+            parameter_list = PARAMETER_SERVICE.get_parameter_queryset()
+        elif USERS_SERVICE.is_supply(request.user):
+            parameter_list = PARAMETER_SERVICE.get_parameters_for_supply()
+        else:
+            parameter_list = None
         context['parameter_list'] = parameter_list
         return render(request, 'content/spec/settings.html', context)
 
