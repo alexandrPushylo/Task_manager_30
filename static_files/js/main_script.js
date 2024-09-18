@@ -265,6 +265,9 @@ function selectAddTechnicDriver(e) {
     select_technic_sheet.show();
     const btn_add_tech = $('#btn_add_tech');
 
+    if (select_technic_sheet.children().length===2) {
+        select_technic_sheet.children().last().prop('selected', true)
+    }
     if (e.value === "none") {
         btn_add_tech.attr('disabled', true);
     } else {
@@ -280,7 +283,7 @@ function addTechnicSheetToApp(e) {
     const app_technic_description = $('.app_technic_description');
     const application_id = $('input[name="application_id"]');
 
-    const app_tech_container = $('#app_tech_container');  
+    const app_tech_container = $('#app_tech_container');
 
     $.ajax({
         type: 'POST',
