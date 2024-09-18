@@ -985,6 +985,7 @@ function creatAppTechnicInst(data){
     const technic_sheet_id = data.technic_sheet_id
     const app_tech_desc = data.app_tech_desc
     const status = data.status
+    const font_size = data.font_size
     let technic_driver_list = parseResponse(data.technic_driver_list)
     for (const i in technic_driver_list){
                 technic_driver_list[i].technic_sheets = parseResponse(technic_driver_list[i].technic_sheets)
@@ -1061,7 +1062,7 @@ function creatAppTechnicInst(data){
 
     const divDesc1 = $('<div class="row"/>')
     const labelDesc2 = $('<label/>')
-    const textareaDesc3 = $('<textarea id="app_tech_description_'+app_technic_id+'" style="width: 100%;" class="form-control app_tech_description app_technic_description_'+app_technic_id+' general_tech_description_font">'+app_tech_desc+'</textarea>')
+    const textareaDesc3 = $('<textarea id="app_tech_description_'+app_technic_id+'" style="width: 100%; font-size: '+font_size+'pt;" class="form-control app_tech_description app_technic_description_'+app_technic_id+' general_tech_description_font">'+app_tech_desc+'</textarea>')
     textareaDesc3.on('input',function (e){onInput_tech_description(e.target); autoResize(e.target);})
     labelDesc2.append(textareaDesc3)
     divDesc1.append(labelDesc2)

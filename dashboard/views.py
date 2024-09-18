@@ -360,6 +360,7 @@ def edit_application_view(request):
                         data['isChecked']=application_technic.isChecked
                         data['is_cancelled']=application_technic.is_cancelled
                         data['app_tech_desc']=description
+                        data['font_size']=request.user.font_size
                     return HttpResponse(json.dumps(data))
 
                 case 'reject_application_technic':
