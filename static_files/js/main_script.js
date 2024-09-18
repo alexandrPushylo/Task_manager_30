@@ -275,12 +275,12 @@ function selectAddTechnicDriver(e) {
 function addTechnicSheetToApp(e) {
     const operation = "add_technic_to_application";
     const select_add_tech_title = $('.select_add_tech_title > option:checked');
+    const select_add_tech_driver = $('.' + select_add_tech_title.val());
     const technic_driver_selects_add = $('.' + select_add_tech_title.val() + ' > option:checked');
     const app_technic_description = $('.app_technic_description');
     const application_id = $('input[name="application_id"]');
 
-    const app_tech_container = $('#app_tech_container');
-    const app_tech_inst = $('#app_tech_inst');
+    const app_tech_container = $('#app_tech_container');  
 
     $.ajax({
         type: 'POST',
@@ -303,6 +303,7 @@ function addTechnicSheetToApp(e) {
                 application_id.val(data.app_today_id)
             }
             if (data.status==='ok'){
+
                 $('#modalApplicationTechnic').modal('hide');
                 const APP = creatAppTechnicInst(data)
                 app_tech_container.append(APP)
@@ -319,6 +320,7 @@ function addTechnicSheetToApp(e) {
     $('#btn_add_technic_sheet').hide()
     $('.select_add_tech_title').val('')
     app_technic_description.val('')
+    select_add_tech_driver.val('')
 }
 
 function autoResize(elem) {

@@ -31,12 +31,7 @@
                                 <select class="form-control technic_driver_selects_add {{ technic_driver.title_short }}">
                                     <option value="">--Любой--</option>
                                     {% for technic_sheet in technic_driver.technic_sheets %}
-                                        <option value="{{ technic_sheet.id }}">
-                                            {{ technic_sheet.driver_sheet.driver.last_name }}
-                                            {% if technic_sheet.count_application > 0 %} (Занят)
-                                            {% elif not technic_sheet.status %} (Не работает)    
-                                            {% else %}(Свободен)
-                                            {% endif %}</option>
+                                        <option value="{{ technic_sheet.id }}">{{ technic_sheet.driver_sheet.driver.last_name }}{% if technic_sheet.count_application > 0 %} (Занят){% elif not technic_sheet.status %} (Не работает){% else %} (Свободен){% endif %}</option>
                                     {% endfor %}
                                 </select>
                             {% endfor %}
