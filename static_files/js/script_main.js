@@ -977,14 +977,14 @@ function changePassword() {
 // })
 
 function creatAppTechnicInst(data){
-    const app_technic_id =data.app_technic_id
-    const is_cancelled =data.is_cancelled
-    const technic_title_shrt =data.technic_title_shrt
-    const isChecked =data.isChecked
-    const technic_title =data.technic_title
-    const technic_sheet_id =data.technic_sheet_id
-    const app_tech_desc =data.app_tech_desc
-    const status =data.status
+    const app_technic_id = data.app_technic_id
+    const is_cancelled = data.is_cancelled
+    const technic_title_shrt = data.technic_title_shrt
+    const isChecked = data.isChecked
+    const technic_title = data.technic_title
+    const technic_sheet_id = data.technic_sheet_id
+    const app_tech_desc = data.app_tech_desc
+    const status = data.status
     let technic_driver_list = parseResponse(data.technic_driver_list)
     for (const i in technic_driver_list){
                 technic_driver_list[i].technic_sheets = parseResponse(technic_driver_list[i].technic_sheets)
