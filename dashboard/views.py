@@ -360,6 +360,7 @@ def edit_application_view(request):
                         data['isChecked']=application_technic.isChecked
                         data['is_cancelled']=application_technic.is_cancelled
                         data['app_tech_desc']=description
+                        data['font_size']=request.user.font_size
                     return HttpResponse(json.dumps(data))
 
                 case 'reject_application_technic':
@@ -1329,6 +1330,54 @@ def material_application_supply_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
+def application_for_driver_view(request):
+    if request.user.is_authenticated:
+        context = {}
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context, current_day)
+        context['current_day'] = current_day
+
+        technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            select_related=("technic__attached_driver", "driver_sheet__driver"),
+            order_by=('driver_sheet__driver',),
+            date=current_day,
+            isArchive=False,
+        )
+
+        if not technic_sheet_list.exists():
+            U.prepare_sheets(current_day)
+
+        context["technic_sheet_list"] = technic_sheet_list
+
+        application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            select_related=("application_today__construction_site__foreman",),
+            application_today__date=current_day,
+            isArchive=False,
+            is_cancelled=False,
+        )
+        applications_technic = []
+        for technic_sheet in technic_sheet_list:
+            applications_technic.append(
+                {
+                    "technic_sheet_id": technic_sheet.id,
+                    "applications": application_technic_list.filter(
+                        technic_sheet=technic_sheet
+                    )
+                    .values(
+                        "application_today__construction_site__address",
+                        "application_today__construction_site__foreman__last_name",
+                        "description",
+                    )
+                    .order_by("priority"),
+                }
+            )
+        context["applications_technic"] = applications_technic
+
+        return render(request, 'content/applications_list/application_for_drivers.html', context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
 def profile_view(request):
     if request.user.is_authenticated:
         template = 'content/profile.html'
@@ -1455,8 +1504,12 @@ def settings_view(request):
         if request.method == 'POST':
             PARAMETER_SERVICE.set_parameters(request.POST)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-
-        parameter_list = PARAMETER_SERVICE.get_parameter_queryset()
+        if USERS_SERVICE.is_administrator(request.user):
+            parameter_list = PARAMETER_SERVICE.get_parameter_queryset()
+        elif USERS_SERVICE.is_supply(request.user):
+            parameter_list = PARAMETER_SERVICE.get_parameters_for_supply()
+        else:
+            parameter_list = None
         context['parameter_list'] = parameter_list
         return render(request, 'content/spec/settings.html', context)
 

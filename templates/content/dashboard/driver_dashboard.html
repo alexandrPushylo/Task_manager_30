@@ -130,23 +130,23 @@
                                     {% if application_today.application_technic %}
                                         <div class="mt-1">
                                             {% for app_technic in application_today.application_technic %}
-                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"
+                                                <div class="mt-2" style="background-color: #e7eefa; text-align: center;"                                                     
                                                         {% if app_technic.is_cancelled %}
                                                      style="color: rgba(97,95,95,0.51)"
                                                         {% elif app_technic.isChecked %}
                                                      style="color: rgba(97,95,95,0.51)"
                                                         {% endif %}
-                                                >
+                                                >   <span {% if user.id == app_technic.technic_sheet__driver_sheet__driver__id %} style="font-weight: bold"{% endif %}>
                                                     <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
-
                                                     {% if app_technic.technic_sheet__driver_sheet__status %}
-                                                        <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
-                                                        <span>[<span>{{ app_technic.priority }}</span>/
-                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
-                                                    </span>
+                                                        
+                                                            <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                            <span>[<span>{{ app_technic.priority }}</span>/<span>{{ app_technic.technic_sheet__count_application }}</span>]</span>
+                                                        
                                                     {% else %}
                                                         <span class="text-warning">(Водитель не назначен)</span>
                                                     {% endif %}
+                                                </span>
 
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">

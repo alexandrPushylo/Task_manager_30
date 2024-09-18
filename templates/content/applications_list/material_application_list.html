@@ -73,10 +73,10 @@
 {% block footer %}
     <div></div>
     <div>
-        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-primary"
+        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-primary"
            type="button">Назад</a>
         <a href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}"
-           class="btn btn-sm btn-success" type="button">Заявки на технику</a>
+           class="btn btn-success" type="button">Заявки на технику</a>
     </div>
     <div></div>
 {% endblock %}

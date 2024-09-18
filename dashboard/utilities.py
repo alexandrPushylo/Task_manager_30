@@ -383,6 +383,7 @@ def prepare_data_for_filter(context: dict) -> dict:
     )
     construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
         status=True,
+        isArchive=False,
         select_related=('foreman',),
         order_by=('address',)
     )

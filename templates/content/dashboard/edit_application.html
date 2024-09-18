@@ -149,24 +149,40 @@
                 </div>
 
                     <div id="div_application_materials" class="card shadow-lg mt-4"
-                         {% if not application_today.application_material.description %}
-                             style="display: none"
-                         {% endif %}
-                    >
+                         {% if not application_today.application_material.description %}style="display: none"{% endif %}>                        
                         <div class="card-header p-1">
                             <span class="fw-bolder ms-2">Список материалов:</span>
                         </div>
+                        <input type="hidden" 
+                               id="orig_material_description"
+                               value="{% if application_today.application_material.description %}{{ application_today.application_material.description }}{% endif %}">
                         <div class="card-body p-0">
                             <textarea id="app_material_desc"
-                                      readonly
+                                      {% if not is_changeable_material or user.post == 'supply' %} readonly disabled {% endif %}
                                       aria-label=""
                                       style="font-size: {{ user.font_size }}pt;"
                                       class="form-control material_description general_mat_description_font"
-                                      onchange="autoResize(this)"
-                                      onclick="autoResize(this); $('#modalMaterials').modal('show');"
+                                      oninput="autoResize(this); onInput_material_description();"
+                                      onclick="autoResize(this);"
+                                      onblur="blurAppMaterial()"
                             >{{ application_today.application_material.description }}</textarea>
                         </div>
+                        <div class="m-1 p-1 row"
+                             id="div_btn_edit_material"
+                             style="justify-content: space-between; display: none;">
+                            <button id="cancel_{{ app_technic.id }}" type="button"
+                                    onclick="cancelAddedMaterial(this)"
+                                    class="btn btn-outline-primary  w-auto"
+                            >Отмена</button>
+
+                            <button id="apply_{{ app_technic.id }}" type="button"
+                                    onclick="saveApplicationMaterials()"
+                                    class="btn btn-success  w-auto"
+                            >Сохранить изменения</button>
+                        </div>
                     </div>
+            
+            
             </form>
         </div>
 
@@ -175,7 +191,20 @@
     <div id="btn_edit_technics_and_materials"
          class="container position-fixed translate-middle-x bottom-0 start-50"
          style="margin-bottom: 4rem; width: max-content">
-        {% include 'includes/btn_edit_technics_and_materials.html' %}
+        <div class="btn-group" style="box-shadow: 2px 2px 10px 2px;">
+            <button type="button" class="btn btn-primary" id="btn_create_app_technic"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalApplicationTechnic">
+                <span class="fw-bolder"><i class="fa-solid fa-plus"></i> ТЕХНИКА</span>
+            </button>
+            {% if is_changeable_material or user.post == 'supply' %}
+                <button type="button" class="btn btn-primary" id="btn_create_app_mater"
+                        {% if application_today.application_material.description %}style="display: none"{% endif %}
+                        onclick="createAppMater()">
+                    <span class="fw-bolder"><i class="fa-solid fa-plus"></i> МАТЕРИАЛЫ</span>
+                </button>
+            {% endif %}
+        </div>
     </div>
 
 

@@ -102,9 +102,6 @@
                 type="submit"
                 style=" box-shadow: 2px 2px 10px 2px;"
                 form="technic_application_list_form">Сохранить изменения</button>
-{#        <button id="btn_submit_for_CR" type="submit" form="conflict_resolution_form" #}
-{#                style=" box-shadow: 2px 2px 10px 2px;" #}
-{#                class="btn btn-warning">Сохранить изменения</button>#}
     </div>
     
     
@@ -114,8 +111,8 @@
     <div></div>
     <div>
         <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}"            
-           class="btn btn-sm btn-primary" type="button">Назад</a>
-        <a href="{% url 'material_application_list' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success" type="button">Заявки на материалы</a>
+           class="btn btn-primary" type="button">Назад</a>
+        <a href="{% url 'material_application_list' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-success" type="button">Заявки на материалы</a>
                 
     </div>
     <div></div>

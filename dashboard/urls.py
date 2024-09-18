@@ -17,6 +17,7 @@ urlpatterns = [
     path('technic_application_list/', V.show_technic_application, name='technic_application_list'),
     path('material_application_list/', V.show_material_application, name='material_application_list'),
     path('material_application_supply/', V.material_application_supply_view, name='material_application_supply'),
+    path('application_for_driver/', V.application_for_driver_view, name='application_for_driver'),
 
     path('users/', V.users_view, name='users'),
     path('edit_user/', V.edit_user_view, name='edit_user'),

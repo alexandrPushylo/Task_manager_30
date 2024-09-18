@@ -532,6 +532,7 @@ def get_dashboard_for_driver(request, current_day: WorkDaySheet, context: dict) 
                 "technic_sheet__technic__title",
                 "technic_sheet__driver_sheet__status",
                 "technic_sheet__driver_sheet__driver__last_name",
+                "technic_sheet__driver_sheet__driver__id",
                 "priority",
                 "technic_sheet__count_application",
                 "description",
