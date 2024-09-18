@@ -83,8 +83,8 @@
 {% block footer %}
     <div></div>
     <div>
-        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-primary" type="button">Назад</a>
-        <a href="{% url 'material_application_list' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-sm btn-success" type="button">Заявки на материалы</a>
+        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-primary" type="button">Назад</a>
+        <a href="{% url 'material_application_list' %}?current_day={{ current_day.date.isoformat }}" class="btn btn-success" type="button">Заявки на материалы</a>
     </div>
     <div></div>
 {% endblock %}
