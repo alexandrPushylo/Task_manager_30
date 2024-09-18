@@ -224,7 +224,7 @@
     <div>
         <div>
             <a id="btn_apply_for_edit_app"
-               href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&current_day={{ current_day.date.isoformat }}"
+               href="{% url 'validate_application_today' %}?app_today_id={{ application_today.id }}&constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
                class="btn btn-success"
             >{% if application_today.is_edited %}<span>СОХРАНИТЬ</span>{% else %}<span>ОТМЕНА</span>{% endif %}</a>
         </div>
