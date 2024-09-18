@@ -23,13 +23,13 @@
                                 <input class="form-control" name="{{ parameter.name }}__value" type="text"
                                        value="{{ parameter.value }}" aria-label="">
                             </label>{% endif %}
-                            <label>Флаг
-                                <input type="checkbox" role="switch" class="form-check-input"
-                                       aria-label=""
-                                       name="{{ parameter.name }}__flag"
-                                       {% if parameter.flag %}checked{% endif %}
-                                       value="{{ parameter.flag }}"/>
-                            </label>
+{#                            <label>Флаг#}
+{#                                <input type="checkbox" role="switch" class="form-check-input"#}
+{#                                       aria-label=""#}
+{#                                       name="{{ parameter.name }}__flag"#}
+{#                                       {% if parameter.flag %}checked{% endif %}#}
+{#                                       value="{{ parameter.flag }}"/>#}
+{#                            </label>#}
                     </div>
                     <div>
                         {% if parameter.time %}

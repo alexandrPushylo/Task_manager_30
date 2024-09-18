@@ -39,7 +39,6 @@
     
 
     <div id="application_for_drivers" class="container-fluid translate-middle-x position-relative start-50 mx-auto">
-{#        <div id="technic_sheet_list" class="">#}
             {% for technic_sheet in technic_sheet_list %}
                 <div class="application_for_drivers_item card m-3 border border-2 {% if technic_sheet.count_application == 0 %}border-info
                             {% elif technic_sheet.count_application > 0 %}border-success
@@ -88,7 +87,6 @@
                 </div>
 
             {% endfor %}
-{#        </div>#}
 
     </div>
     
