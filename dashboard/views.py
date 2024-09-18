@@ -210,9 +210,16 @@ def validate_application_today_view(request):
     if request.user.is_authenticated:
         app_today_id = request.GET.get('app_today_id')
         current_day = request.GET.get('current_day')
+        construction_site_id = request.GET.get('constr_site_id')
         default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
-        application_today = APP_TODAY_SERVICE.get_apps_today(pk=app_today_id)
-
+        if U.is_valid_get_request(app_today_id):
+            application_today = APP_TODAY_SERVICE.get_apps_today(pk=app_today_id)
+        else:
+            date = WORK_DAY_SERVICE.get_current_day(request)
+            application_today = APP_TODAY_SERVICE.get_apps_today(
+                construction_site_id=construction_site_id,
+                date=date
+            )
         if application_today:
             APP_TODAY_SERVICE.validate_application_today(
                 application_today=application_today,
