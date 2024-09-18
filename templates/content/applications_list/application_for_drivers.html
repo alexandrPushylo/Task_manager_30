@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
+{% block content %}
+    <div class="mt-1 position-relative translate-middle-x start-50 top-0">
+        <p class="mb-1" style="text-align: center">
+            <label>
+                <input class="form-control text-center p-1 io_choice_day" type="date" name="current_day"
+                       value="{{ current_day.date.isoformat }}">
+            </label>
+        </p>
+        <nav aria-label="Page navigation example" class="d-flex justify-content-center">
+            <ul class="pagination">
+
+                <li class="page-item"><a
+                        class="page-link fw-bold text-dark me-2 ps-4 pe-4"
+                        href="{% url 'application_for_driver' %}?current_day={{ prev_work_day.date.isoformat }}"><i
+                        class="fa-solid fa-angles-left"></i></a></li>
+                {% for day in work_days %}
+                    <li class="page-item ms-1 me-1">
+                        <a class="page-link p-1 m-0 {% if day.status %}text-success{% else %}text-danger{% endif %} {% if today == day.date %}fw-bold text-dark{% endif %} {% if current_day.date == day.date %}border border-2 border-success{% endif %}"
+                           href="{% url 'application_for_driver' %}?current_day={{ day.date.isoformat }}"
+                           style="text-align: center; border-radius: 10%;"
+                        ><span class="">{{ day.date.day }}</span><br/>
+                            <span class="small">{{ day.weekday }}</span>
+                        </a></li>
+                {% endfor %}
+                <li class="page-item"><a
+                        class="page-link fw-bold text-dark ms-2 ps-4 pe-4"
+                        href="{% url 'application_for_driver' %}?current_day={{ next_work_day.date.isoformat }}"><i
+                        class="fa-solid fa-angles-right"></i></a></li>
+
+            </ul>
+        </nav>
+    </div>
+    <div style="text-align: center">
+        {% include 'includes/weekday_current_day.html' %}
+    
+
+    <div id="application_for_drivers" class="container-fluid translate-middle-x position-relative start-50 mx-auto">
+{#        <div id="technic_sheet_list" class="">#}
+            {% for technic_sheet in technic_sheet_list %}
+                <div class="application_for_drivers_item card m-3 border border-2 {% if technic_sheet.count_application == 0 %}border-info
+                            {% elif technic_sheet.count_application > 0 %}border-success
+                            {% endif %}"
+                     style="width: 20rem">
+
+                    <div class="card-header mb-1 p-1">
+                        <span class="fs-6"
+                        ><span {% if not technic_sheet.status %}style="text-decoration-line: line-through; color: rgba(97,95,95,0.51);" {% endif %}
+                        >{{ technic_sheet.technic.title }}</span></span>
+                        {% if technic_sheet.driver_sheet %}
+                            <span class="fw-bolder" {% if not technic_sheet.driver_sheet.status %}style="text-decoration-line: line-through; color: rgba(97,95,95,0.51);" {% endif %}
+                            >({{ technic_sheet.driver_sheet.driver.last_name }})</span>
+                        {% else %}
+                            <span class="text-warning">Не назначен</span>
+                        {% endif %}
+                        <span style="float: right; font-weight: bolder;"
+                        >{% if technic_sheet.count_application == 0 %}
+                            <span class="text-info">СВОБОДЕН</span>{% elif technic_sheet.count_application > 0 %}
+                            <span class="text-success">ЗАНЯТ</span>{% endif %}</span>
+                    </div>
+                
+                    {% for application_technic in applications_technic %}
+                        {% if technic_sheet.id == application_technic.technic_sheet_id and application_technic.applications %}
+                            {% for app_tech in application_technic.applications %}
+                                
+                                    <div class="card-body p-1">
+                                        <span class="fw-bolder form-text">{{ app_tech.application_today__construction_site__address }}</span>
+                                        {% if app_tech.application_today__construction_site__foreman__last_name %}
+                                            <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
+                                        {% endif %}
+                                        
+                                    {% if app_tech.description %}
+                                        <textarea
+                                                style="font-size: {{ user.font_size }}pt;"
+                                                class="form-control p-1 text_area_description general_tech_description_font"
+                                                aria-label="With textarea"
+                                        >{{ app_tech.description }}</textarea>
+                                    {% endif %}<hr style="margin: 0">
+                                    </div>
+                                
+
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% endfor %}
+{#        </div>#}
+
+    </div>
+    
+    {% include 'includes/modal_view_props.html' %}
+{% endblock %}
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a class="btn btn-primary"
+           href="{% url 'technic_application_list' %}?current_day={{ current_day.date.isoformat }}">Все заявки</a>
+    </div>
+    <div></div>
+{% endblock %}

@@ -666,9 +666,9 @@ function onInput_app_tech_description(e) {
     $('.btn_apply_' + app_technic_id).show();
 }
 
-$('#technic_sheet_list').masonry({
+$('#application_for_drivers').masonry({
 // указываем элемент-контейнер в котором расположены блоки для динамической верстки
-    itemSelector: '.technic_sheet_item',
+    itemSelector: '.application_for_drivers_item',
     // columnWidth: 200,
 // указываем класс элемента являющегося блоком в нашей сетке
     singleMode: true,
