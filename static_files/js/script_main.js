@@ -484,13 +484,16 @@ function cancelEditedAppDescr(){
 
 function saveApplicationMaterials(el) {
     const operation = "save_application_materials";
-    const add_materials_desc = $('#add_materials_desc');
-    const app_material_desc = $('#app_material_desc');
-
     const application_id = $('input[name="application_id"]')
     const app_material_id = $('input[name="app_material_id"]')
 
-    $.ajax({
+    const orig_material_description = $('#orig_material_description');
+    const app_material_desc = $('#app_material_desc');
+
+    const btn_create_app_mater = $('#btn_create_app_mater')
+
+    if (orig_material_description.val() || app_material_desc.val()){
+        $.ajax({
         type: 'POST',
         mode: 'same-origin',
         url: window.location,
@@ -499,7 +502,7 @@ function saveApplicationMaterials(el) {
             app_today_id: application_id.val(),
             construction_site_id: $('input[name="construction_site_id"]').val(),
             app_material_id: app_material_id.val(),
-            material_description: $('textarea[name="app_material_desc"]').val(),
+            material_description: app_material_desc.val(),
             operation: operation
         },
         success: (response) => {
@@ -512,39 +515,75 @@ function saveApplicationMaterials(el) {
             }
 
             if (data.status==='created'){
-                $('#modalMaterials').modal('hide');
                 $('#div_application_materials').show();
-                app_material_desc.val(add_materials_desc.val());
+                orig_material_description.val(app_material_desc.val());
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                btn_create_app_mater.hide()
                 MESS_STATUS_OK()
             }else if(data.status==='updated') {
-                $('#modalMaterials').modal('hide');
                 $('#div_application_materials').show();
-                app_material_desc.val(add_materials_desc.val());
+                orig_material_description.val(app_material_desc.val());
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                btn_create_app_mater.hide()
                 MESS_STATUS_OK()
             }else if (data.status==='deleted'){
-                $('#modalMaterials').modal('hide');
                 $('#div_application_materials').hide();
-                add_materials_desc.val('')
+                orig_material_description.val('')
                 app_material_desc.val('')
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
+                btn_create_app_mater.show()
                 MESS_STATUS_OK()
             }else {
                 MESS_STATUS_FAIL()
             }
+            $('#div_btn_edit_material').hide();
+            $('#btn_edit_technics_and_materials').show();
+            $('#main_footer').show();
         }
     })
-}
-function cancelAppMaterial(){
-    const app_material_desc = $('#app_material_desc');
-    const add_materials_desc = $('#add_materials_desc');
-    $('#modalMaterials').modal('hide');
-    if (app_material_desc.val()){
-        add_materials_desc.val(app_material_desc.val())
     }else {
-        add_materials_desc.val('')
+        $('#div_application_materials').hide();
     }
+
+}
+function createAppMater(){
+    $('#div_application_materials').show();
+    $('#app_material_desc').focus();
+    $('#btn_edit_technics_and_materials').hide();
+    $('#main_footer').hide();
+}
+
+function blurAppMaterial(){
+    if (!$('#app_material_desc').val()){
+        $('#div_application_materials').hide()
+    }else {
+        $('#btn_create_app_mater').hide()
+    }
+    $('#btn_edit_technics_and_materials').show();
+    $('#main_footer').show();
+}
+
+function onInput_material_description() {
+    $('#div_btn_edit_material').show();
+    $('#btn_edit_technics_and_materials').hide();
+    $('#main_footer').hide();
+}
+
+function cancelAddedMaterial(){
+    const app_material_desc = $('#app_material_desc');
+
+    const orig_material_description = $('#orig_material_description');
+    if (orig_material_description.val()){
+        app_material_desc.val(orig_material_description.val())
+    }else {
+        app_material_desc.val('')
+        $('#div_application_materials').hide()
+    }
+    app_material_desc.css('height', 'auto');
+    $('#div_btn_edit_material').hide();
+    $('#btn_create_app_mater').show();
+    $('#btn_edit_technics_and_materials').show();
+    $('#main_footer').show();
 }
 
 
