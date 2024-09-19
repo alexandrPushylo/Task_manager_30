@@ -288,6 +288,20 @@
 
 }
 
+#application_for_drivers {
+
+}
+.application_for_drivers_item {
+    width: 20rem;
+}
+
+@media screen and (max-width: 450px) {
+    .application_for_drivers_item {
+        width: 90vw;
+    }
+}
+
+
 
 .AP-conflict-title{
     color: red;
