@@ -518,20 +518,20 @@ function saveApplicationMaterials(el) {
                 $('#div_application_materials').show();
                 orig_material_description.val(app_material_desc.val());
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
-                btn_create_app_mater.hide()
+                // btn_create_app_mater.hide()
                 MESS_STATUS_OK()
             }else if(data.status==='updated') {
                 $('#div_application_materials').show();
                 orig_material_description.val(app_material_desc.val());
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
-                btn_create_app_mater.hide()
+                // btn_create_app_mater.hide()
                 MESS_STATUS_OK()
             }else if (data.status==='deleted'){
                 $('#div_application_materials').hide();
                 orig_material_description.val('')
                 app_material_desc.val('')
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
-                btn_create_app_mater.show()
+                // btn_create_app_mater.show()
                 MESS_STATUS_OK()
             }else {
                 MESS_STATUS_FAIL()
@@ -557,7 +557,7 @@ function createAppMater(){
 }
 
 function blurAppMaterial(){
-    $('#btn_create_app_mater').hide();
+    // $('#btn_create_app_mater').hide();
     $('#btn_edit_technics_and_materials').show();
     $('#main_footer').show();
 }
@@ -574,11 +574,11 @@ function cancelAddedMaterial(){
     const orig_material_description = $('#orig_material_description');
     if (orig_material_description.val()){
         app_material_desc.val(orig_material_description.val())
-        $('#btn_create_app_mater').hide();
+        // $('#btn_create_app_mater').hide();
     }else {
         app_material_desc.val('')
         $('#div_application_materials').hide()
-        $('#btn_create_app_mater').show();
+        // $('#btn_create_app_mater').show();
     }
     app_material_desc.css('height', 'auto');
     $('#div_btn_edit_material').hide();
