@@ -150,6 +150,9 @@
 
                     <div id="div_application_materials" class="card shadow-lg mt-4"
                          {% if not application_today.application_material.description %}style="display: none"{% endif %}>                        
+                        {% if not is_changeable_material %}
+                            <span style="text-align: center; background-color: rgba(233,236,132,0.47)">Прием заявок на материалы приостановлен</span>
+                        {% endif %}
                         <div class="card-header p-1">
                             <span class="fw-bolder ms-2">Список материалов:</span>
                         </div>
