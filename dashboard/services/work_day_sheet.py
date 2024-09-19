@@ -10,7 +10,6 @@ from logger import getLogger
 
 log = getLogger(__name__)
 TODAY = date.today()
-NOW = datetime.now().time()
 
 
 def get_workday(_date: date) -> WorkDaySheet:

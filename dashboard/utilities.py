@@ -34,7 +34,7 @@ import dashboard.services.parametr as PARAMETER_SERVICE
 log = getLogger(__name__)
 
 TODAY = date.today()
-NOW = datetime.now().time()
+NOW = lambda : datetime.now().time()
 
 
 def convert_str_to_date(str_date: str) -> date:
@@ -131,12 +131,19 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
 
     for technic_title in technic_title_list:
-        technic__title_list = technic_sheet.filter(technic__title=technic_title).values('id', 'count_application')
+        technic__title = technic_sheet.filter(technic__title=technic_title)
+        technic__title_list = technic__title.values('id', 'count_application')
+        total_technic_sheet_count = technic__title_list.count()
+        all_applications_count = sum(technic__title.values_list('count_application', flat=True))
+        need_technics_count = all_applications_count - total_technic_sheet_count
+
         out.append({
             'technic_title': technic_title,
             'free_technic_sheet_count': technic__title_list.filter(count_application=0).count(),
-            'total_technic_sheet_count': technic__title_list.count(),
-            'id_list': list(technic__title_list.values_list('id', flat=True))
+            'total_technic_sheet_count': total_technic_sheet_count,
+            'id_list': list(technic__title_list.values_list('id', flat=True)),
+            'all_applications_count': all_applications_count,
+            'need_technics_count': need_technics_count
         })
     return out
 
@@ -152,8 +159,7 @@ def get_conflict_list_of_technic_sheet(busiest_technic_title: list, priority_id_
     """
     out = []
     for _technic_sheet in busiest_technic_title:
-        if _technic_sheet['free_technic_sheet_count'] == 0 and set(_technic_sheet['id_list']).intersection(
-                priority_id_list):
+        if _technic_sheet['need_technics_count'] > 0 and set(_technic_sheet['id_list']).intersection(priority_id_list):
             if get_only_id_list:
                 out.extend(_technic_sheet['id_list'])
             else:
@@ -827,11 +833,11 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
     next_workday = WORK_DAY_SERVICE.get_next_workday()
 
     if (current_workday == next_workday
-            and NOW < time_limit):
+            and NOW() < time_limit):
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C1")
 
-    elif TODAY.weekday() in (4,) and current_workday.date.weekday() in (0,) and NOW < time_limit:
+    elif TODAY.weekday() in (4,) and current_workday.date.weekday() in (0,) and NOW() < time_limit:
         is_accept = True
         log.debug(f"get_accept_to_change_materials_app(): C2")
 
