@@ -5,21 +5,23 @@
     </button>
 
     <ul class="dropdown-menu dropdown-menu-end">
-        {% if app_technic.is_cancelled or app_technic.isChecked %}
+{#        {% if app_technic.is_cancelled or app_technic.isChecked %}#}
             <li>
-                <button type="button"
+                <button id="accept_{{ app_technic.id }}" type="button"
+                        {% if not app_technic.is_cancelled or app_technic.isChecked %}style="display: none" {% endif %}
                         class="dropdown-item fw-bolder text-success"
                         onclick="reject_or_accept_app_tech('{{ app_technic.id }}')"
                 >Принять заявку</button>
             </li>
-        {% else %}
+{#        {% else %}#}
             <li>
-                <button type="button"
+                <button id="reject_{{ app_technic.id }}" type="button"
+                        {% if app_technic.is_cancelled %}style="display: none" {% endif %}
                         class="dropdown-item fw-bolder text-primary"
                         onclick="reject_or_accept_app_tech('{{ app_technic.id }}')"
                 >Отменить заявку</button>
             </li>
-        {% endif %}
+{#        {% endif %}#}
         <li>
             <hr class=" dropdown-divider">
         </li>

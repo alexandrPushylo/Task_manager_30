@@ -349,12 +349,16 @@ function reject_or_accept_app_tech(appTechnicId){
         },
         success: (response) => {
             if (response==='reject'){
+                $('#accept_'+appTechnicId).show();
+                $('#reject_'+appTechnicId).hide();
                 $('#technic_title_'+appTechnicId).prop('disabled', true);
                 $('.technic_driver_selects_'+appTechnicId).prop('disabled', true);
                 app_tech_description.prop('disabled', true);
                 app_tech_description.addClass('border border-1 border-danger');
                 MESS_STATUS_OK();
             }else if (response==='accept'){
+                $('#accept_'+appTechnicId).hide();
+                $('#reject_'+appTechnicId).show();
                 $('#technic_title_'+appTechnicId).prop('disabled', false);
                 $('.technic_driver_selects_'+appTechnicId).prop('disabled', false);
                 app_tech_description.prop('disabled', false);
