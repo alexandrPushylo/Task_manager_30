@@ -199,7 +199,7 @@
             </button>
             {% if is_changeable_material or user.post == 'supply' %}
                 <button type="button" class="btn btn-primary" id="btn_create_app_mater"
-                        {% if application_today.application_material.description %}style="display: none"{% endif %}
+{#                        {% if application_today.application_material.description %}style="display: none"{% endif %}#}
                         onclick="createAppMater()">
                     <span class="fw-bolder"><i class="fa-solid fa-plus"></i> МАТЕРИАЛЫ</span>
                 </button>
