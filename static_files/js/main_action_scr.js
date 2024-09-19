@@ -444,6 +444,33 @@ function applyChangesAppTechnic(app_technic_id) {
     })
 }
 
+function createApplicationDescription(){
+    const btn_div_application_desc = $('#btn_div_application_desc');
+    const div_application_desc = $('#div_application_desc');
+
+    btn_div_application_desc.hide();
+    div_application_desc.show();
+    $('#textarea_application_description').focus();
+}
+
+function blurApplicationDescription(){
+    const btn_div_application_desc = $('#btn_div_application_desc');
+    const div_application_desc = $('#div_application_desc');
+    const textarea_application_description = $('#textarea_application_description');
+    const orig_application_description = $('#orig_application_description');
+
+    if (textarea_application_description.val() !== orig_application_description.val()){
+    }else if (orig_application_description.val()){
+        textarea_application_description.val(orig_application_description.val())
+        $('#div_btn_edit_application_description').hide();
+
+    }else {
+        btn_div_application_desc.show();
+        div_application_desc.hide();
+        $('#div_btn_edit_application_description').hide();
+    }
+}
+
 function saveApplicationDescription(){
     const operation = "save_application_description";
     const orig_application_description = $('#orig_application_description');
@@ -465,9 +492,18 @@ function saveApplicationDescription(){
                 application_id.val(data.app_today_id)
             }
             if(data.status === 'ok'){
+                const app_description = data.app_description
                 MESS_STATUS_OK()
                 $('#div_btn_edit_application_description').hide();
-                orig_application_description.val(application_today_description.val());
+                orig_application_description.val(app_description);
+                application_today_description.val(app_description);
+                if (app_description){
+                    $('#btn_div_application_desc').hide();
+                    $('#div_application_desc').show();
+                }else {
+                    $('#btn_div_application_desc').show();
+                    $('#div_application_desc').hide();
+                }
                 $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
             } else {
                 cancelEditedAppDescr()
@@ -478,10 +514,16 @@ function saveApplicationDescription(){
 }
 
 function cancelEditedAppDescr(){
-    const orig_application_description_value = $('#orig_application_description').val();
+    const orig_application_description = $('#orig_application_description');
     const application_description = $('textarea[name="application_description"]');
-    application_description.val(orig_application_description_value);
+    application_description.val(orig_application_description.val());
+    application_description.css('height', 'auto');
+    if (application_description.val()){
 
+    }else {
+        $('#btn_div_application_desc').show();
+        $('#div_application_desc').hide();
+    }
     $('#div_btn_edit_application_description').hide();
 }
 
