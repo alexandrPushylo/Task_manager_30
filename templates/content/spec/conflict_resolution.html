@@ -1,18 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
     <div id="conflict_resolution" class="container-sm">
+        
+        
         <div class="card mt-3 mx-auto"
              style="width: max-content">
             <div class="card-header">
+                
                 <p class="m-0 fw-bolder">{{ technic_title }}</p>
                 <p class="m-0 text-success">
-                    <span class="form-text me-1">Всего ед. техники:</span>
-                    <span>{{ conflict_technic_sheet.total_technic_sheet_count }}</span>
+                    <span class="form-text me-1">Всего ед. техники:</span><span>{{ conflict_technic_sheet.total_technic_sheet_count }}</span>
                 </p>
-                <p class="m-0 text-danger"
-                ><span class="form-text me-1">Количество необходимой техники:</span><span>{{ conflict_technic_sheet.total_count_apps }}</span></p>
+                <p class="m-0 text-primary">
+                    <span class="form-text me-1">Общее количество заданий:</span><span>{{ conflict_technic_sheet.all_applications_count }}</span>
+                </p>
+                <p class="m-0 text-success">
+                    <span class="form-text me-1">Количество свободных водителей:</span><span>{{ conflict_technic_sheet.free_technic_sheet_count }}</span>
+                </p>
+                <p class="m-0 text-danger">
+                    <span class="form-text me-1">Количество необходимой техники:</span><span>{{ conflict_technic_sheet.need_technics_count }}</span>
+                </p>
             </div>
         </div>
+        
+        
+        
         <div id="conflict_resolution_container" class="mt-3 mx-auto">
             <form id="conflict_resolution_form" method="post">{% csrf_token %}
                 {% for conflict_at in applications_technic %}
@@ -47,15 +59,15 @@
                                                 onchange="selectTechnicSheetForConflictResolution(this); $('#div_submit_for_CR').show();"
                                                 style="display: none" disabled
                                                 class="form-control technic_driver_CR {{ technic_driver.title_short }} at_{{ conflict_at.id }} p-1">
-                                            <option value="">--Любой--</option>
+                                            <option value="">--Любой свободный--</option>
                                             {% for technic_sheet in technic_driver.technic_sheets %}
-                                                {% if conflict_at.technic_sheet.id == technic_sheet.id %}
-                                                    <option selected value="{{ technic_sheet.id }}"
-                                                    >{{ technic_sheet.driver_sheet.driver.last_name }}</option>
-                                                {% else %}
-                                                    <option value="{{ technic_sheet.id }}"
-                                                    >{{ technic_sheet.driver_sheet.driver.last_name }}</option>
-                                                {% endif %}
+                                                
+                                                <option {% if conflict_at.technic_sheet.id == technic_sheet.id %}selected{% endif %} 
+                                                        {% if technic_sheet.count_application == 0 %}style="color: #0b5ed7" {% elif technic_sheet.count_application > 0 %}style="color: #d70b1c"{% endif %}
+                                                        value="{{ technic_sheet.id }}"
+                                                    >{{ technic_sheet.driver_sheet.driver.last_name }} ( <span
+                                                >{% if technic_sheet.count_application == 0 %}Свободен {% elif technic_sheet.count_application > 0 %}Занят{% endif %}</span> )</option>
+                                              
                                             {% endfor %}
                                         </select>
                                     </label>
