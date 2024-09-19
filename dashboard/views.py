@@ -53,7 +53,7 @@ def routing(request):
                 return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
 
         elif USERS_SERVICE.is_foreman(request.user) or USERS_SERVICE.is_master(request.user):
-            if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
+            if U.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
                 return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
 
         elif USERS_SERVICE.is_supply(request.user):
@@ -61,10 +61,10 @@ def routing(request):
         elif USERS_SERVICE.is_mechanic(request.user):
             return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         elif USERS_SERVICE.is_driver(request.user):
-            if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
+            if U.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
                 return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         elif USERS_SERVICE.is_employee(request.user):
-            if U.NOW > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
+            if U.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
                 return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         else:
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
