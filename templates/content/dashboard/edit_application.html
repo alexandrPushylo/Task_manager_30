@@ -8,7 +8,7 @@
                     <div class="card-header">
                         <p class="m-0">
                             <span class="small">Объект:</span>
-                            <span class="fw-bold">{{ construction_site.address }}</span>
+                            <span class="fw-bold">{{ construction_site.address|upper }}</span>
                         </p>
                         <p class="m-0">
                             <span class="small">Дата:</span>
@@ -25,19 +25,28 @@
                         <input type="hidden" 
                                id="orig_application_description"
                                value="{% if application_today.description %}{{ application_today.description }}{% endif %}">
-
-                        <label class="row">
-                            <span class="small">Примечание к объекту:</span>
-                            <textarea
-                                    style="font-size: {{ user.font_size }}pt;"
-                                    oninput="autoResize(this); $('#div_btn_edit_application_description').show();"
-                                    class="form-control app_tech_description general_application_description_font"
-                                    name="application_description"
-                            >{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
-                        </label>
-                    </div>
-
-                    <div class="m-1 p-1 row"
+                        <div id="div_application_desc" 
+                             class="row "
+                             {% if not application_today.description %}style="display: none" {% endif %}
+                        ><label class=""><span class="small">Примечание к объекту:</span>
+                                <textarea id="textarea_application_description"
+                                        style="font-size: {{ user.font_size }}pt;"
+                                        oninput="autoResize(this); $('#div_btn_edit_application_description').show();"
+                                        onblur="blurApplicationDescription()"  
+                                        class="form-control app_tech_description general_application_description_font"
+                                        name="application_description"
+                                >{% if application_today.description %}{{ application_today.description }}{% endif %}</textarea>
+                            </label>
+                        </div>
+                        <div id="btn_div_application_desc"
+                             {% if application_today.description %}style="display: none" {% endif %}>
+                            <button class="btn btn-secondary" type="button"
+                                    style="float: right"
+                                    onclick="createApplicationDescription()"
+                            >Добавить примечание</button>
+                        </div>
+                        
+                        <div class="mt-1 p-1 row"
                          id="div_btn_edit_application_description"
                          style="justify-content: space-between; display: none;"
                     >
@@ -51,6 +60,9 @@
                                 class="btn btn-success w-auto"
                         >Сохранить изменения</button>
                     </div>
+                    </div>
+
+                    
                 </div>
 
                 <div>

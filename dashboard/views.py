@@ -431,6 +431,10 @@ def edit_application_view(request):
                 case 'save_application_description':
                     log.info('save_application_description')
                     application_today = _prepare_app_today(post_application_today_id)
+                    data = {
+                        "status": None,
+                        "app_today_id": application_today.pk,
+                    }
 
                     if U.is_valid_get_request(post_application_today_description):
                         post_application_today_description = post_application_today_description.strip()
@@ -439,10 +443,9 @@ def edit_application_view(request):
                         application_today.description = ''
                     application_today.is_edited = True
                     application_today.save()
-                    return HttpResponse(json.dumps({
-                        "status": "ok",
-                        "app_today_id": application_today.pk
-                    }))
+                    data["status"] = 'ok'
+                    data["app_description"] = application_today.description
+                    return HttpResponse(json.dumps(data))
 
                 case 'save_application_materials':
                     log.info('save_application_materials')
