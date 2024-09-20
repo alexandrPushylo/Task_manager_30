@@ -835,15 +835,15 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
     if (current_workday == next_workday
             and NOW() < time_limit):
         is_accept = True
-        log.debug(f"get_accept_to_change_materials_app(): C1")
+        log.debug("get_accept_to_change_materials_app(): C1")
 
     elif TODAY.weekday() in (4,) and current_workday.date.weekday() in (0,) and NOW() < time_limit:
         is_accept = True
-        log.debug(f"get_accept_to_change_materials_app(): C2")
+        log.debug("get_accept_to_change_materials_app(): C2")
 
     elif current_workday.date > next_workday.date:
         is_accept = True
-        log.debug(f"get_accept_to_change_materials_app(): C3")
+        log.debug("get_accept_to_change_materials_app(): C3")
 
     return is_accept
 
