@@ -336,6 +336,10 @@ function reject_or_accept_app_tech(appTechnicId){
     const app_tech_description = $('#app_tech_description_'+appTechnicId);
     const csrf = $('input[name="csrfmiddlewaretoken"]').val();
     const pathname = window.location;
+
+    const btn_accept = $('#accept_'+appTechnicId);
+    const btn_reject = $('#reject_'+appTechnicId);
+
     $.ajax({
         type: 'POST',
         mode: 'same-origin',
@@ -349,19 +353,20 @@ function reject_or_accept_app_tech(appTechnicId){
         },
         success: (response) => {
             if (response==='reject'){
-                $('#accept_'+appTechnicId).show();
-                $('#reject_'+appTechnicId).hide();
+                btn_accept.show();
+                btn_reject.hide();
                 $('#technic_title_'+appTechnicId).prop('disabled', true);
                 $('.technic_driver_selects_'+appTechnicId).prop('disabled', true);
                 app_tech_description.prop('disabled', true);
                 app_tech_description.addClass('border border-1 border-danger');
                 MESS_STATUS_OK();
             }else if (response==='accept'){
-                $('#accept_'+appTechnicId).hide();
-                $('#reject_'+appTechnicId).show();
+                btn_accept.hide();
+                btn_reject.show();
                 $('#technic_title_'+appTechnicId).prop('disabled', false);
                 $('.technic_driver_selects_'+appTechnicId).prop('disabled', false);
                 app_tech_description.prop('disabled', false);
+                app_tech_description.css('border', 'none');
                 app_tech_description.removeClass('border border-1 border-danger');
                 app_tech_description.val(app_tech_description.val().replace('ОТКЛОНЕНА\n',''));
                 MESS_STATUS_OK();
@@ -1124,14 +1129,29 @@ function creatAppTechnicInst(data){
     const ul1 = $('<ul class="dropdown-menu dropdown-menu-end">')
 
     const li2 = $('<li/>')
-    if (is_cancelled || isChecked){
-        const buttonIn5 = $('<button type="button" class="dropdown-item fw-bolder text-success">Принять заявку</button>')
-        buttonIn5.click(function (e){reject_or_accept_app_tech(app_technic_id)})
-        li2.append(buttonIn5)
-    }else {
-        const buttonIn5 = $('<button type="button" class="dropdown-item fw-bolder text-primary">Отменить заявку</button>')
-        buttonIn5.click(function (e){reject_or_accept_app_tech(app_technic_id)})
-        li2.append(buttonIn5)
+
+    if (!is_cancelled || isChecked){
+        const buttonIn5 = $('<button id="accept_' + app_technic_id + '" type="button" style="display: none" class="dropdown-item fw-bolder text-success">Принять заявку</button>')
+        buttonIn5.click(function (e) {
+            reject_or_accept_app_tech(app_technic_id)
+        })
+        const buttonIn6 = $('<button id="reject_' + app_technic_id + '" type="button" class="dropdown-item fw-bolder text-primary">Отменить заявку</button>')
+        buttonIn6.click(function (e) {
+            reject_or_accept_app_tech(app_technic_id)
+        })
+
+        li2.append(buttonIn5, buttonIn6)
+    }else if (is_cancelled){
+        const buttonIn5 = $('<button id="accept_' + app_technic_id + '" type="button" class="dropdown-item fw-bolder text-success">Принять заявку</button>')
+        buttonIn5.click(function (e) {
+            reject_or_accept_app_tech(app_technic_id)
+        })
+        const buttonIn6 = $('<button id="reject_' + app_technic_id + '" type="button" style="display: none" class="dropdown-item fw-bolder text-primary">Отменить заявку</button>')
+        buttonIn6.click(function (e) {
+            reject_or_accept_app_tech(app_technic_id)
+        })
+
+        li2.append(buttonIn5, buttonIn6)
     }
 
     const li3 = $('<li/>').append($('<hr class=" dropdown-divider">'))

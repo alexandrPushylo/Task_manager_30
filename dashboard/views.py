@@ -485,11 +485,11 @@ def edit_application_view(request):
                 case _:
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
-        application_today = APP_TODAY_SERVICE.get_apps_today(
+        application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
             construction_site=construction_site,
             date=current_day,
             isArchive=False
-        )
+        ).first()
 
         if application_today:
             context['application_today'] = {
