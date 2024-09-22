@@ -29,12 +29,12 @@
                         <select class="form-select col-auto" name="filter_foreman">
                             <option value="0">Все</option>
                             {% for foreman in filter_foreman_list %}
-                                {% if foreman.id == user.filter_foreman %}
-                                    <option selected
+{#                                {% if foreman.id == user.filter_foreman %}#}
+                                    <option {% if foreman.id == user.filter_foreman %} selected {% endif %}
                                             value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
-                                {% else %}
-                                    <option value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>
-                                {% endif %}
+{#                                {% else %}#}
+{#                                    <option value="{{ foreman.id }}">{{ foreman.last_name }} {{ foreman.first_name }}</option>#}
+{#                                {% endif %}#}
                             {% endfor %}
                         </select>
                     </label>
@@ -44,16 +44,13 @@
                         <select class="form-select col-auto" name="filter_construction_site">
                             <option value="0">Все</option>
                             {% for construction_site in filter_construction_site_list %}
-                                {% if construction_site.id == user.filter_construction_site %}
-                                    <option selected
-                                            value="{{ construction_site.id }}">{{ construction_site.address }}
-                                        {% if construction_site.foreman %} ({{ construction_site.foreman.last_name }}
-                                            ){% endif %}</option>
-                                {% else %}
-                                    <option value="{{ construction_site.id }}">{{ construction_site.address }}
-                                        {% if construction_site.foreman %} ({{ construction_site.foreman.last_name }}
-                                            ){% endif %}</option>
-                                {% endif %}
+                                    
+                                <option {% if construction_site.id == user.filter_construction_site %} selected {% endif %}
+                                        value="{{ construction_site.id }}"
+                                        {% if user.filter_foreman != 0 and user.filter_foreman != construction_site.foreman.id %}style="display: none" {% endif %}
+                                            
+                                >{{ construction_site.address }}{% if construction_site.foreman %} ({{ construction_site.foreman.last_name }}){% endif %}</option>
+                            
                             {% endfor %}
                         </select>
                     </label>

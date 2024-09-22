@@ -389,6 +389,16 @@ def get_dashboard_for_employee(
         isArchive=False, status=True, applicationtoday__in=applications_today
     )
 
+    if request.user.filter_foreman != 0:
+        construction_sites = construction_sites.filter(
+            foreman_id=request.user.filter_foreman)
+
+
+    if request.user.filter_construction_site != 0:
+        construction_sites = construction_sites.filter(
+            pk=request.user.filter_construction_site)
+
+
     if request.user.is_show_technic_app:
         applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
             isArchive=False,
@@ -398,6 +408,11 @@ def get_dashboard_for_employee(
         )
     else:
         applications_technic = ApplicationTechnic.objects.none()
+
+    if request.user.filter_technic:
+        applications_technic = applications_technic.filter(
+            technic_sheet__technic__title=request.user.filter_technic)
+
 
     if request.user.is_show_material_app:
         application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(

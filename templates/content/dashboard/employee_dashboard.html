@@ -44,6 +44,7 @@
             {% endif %}
             {% include 'includes/weekday_current_day.html' %}
             {% include 'includes/btn_modal_view_props.html' %}
+            {% include 'includes/btn_modal_filter.html' %}
         </div>
     
         <div id="applications_container" class="mt-3 mx-auto">
@@ -145,6 +146,7 @@
 
     {% csrf_token %}
     {% include 'includes/modal_view_props.html' %}
+    {% include 'includes/modal_filter.html' %}
 
     {#    ------------------------------------------------------------------------------------------------------------#}
 {% endblock %}

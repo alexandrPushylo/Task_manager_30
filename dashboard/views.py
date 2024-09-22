@@ -112,6 +112,10 @@ def dashboard_view(request):
             if U.is_valid_get_request(target_day) and U.is_valid_get_request(application_id):
                 default_app_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                 U.copy_application_to_target_day(application_id, target_day, default_app_status)
+
+        if U.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+            U.set_data_for_filter(request)
+
     #   POST    ===================================================================================================
 
     #   show info about dashboard for driver ------------------------------------------------------------------
