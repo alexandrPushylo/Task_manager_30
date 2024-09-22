@@ -302,6 +302,21 @@
 }
 
 
+.btn-main-actions {
+    
+}
+@media screen and (max-width: 450px) {
+    .btn-main-actions-be-hidden {
+        display: none;
+    }
+}
+@media screen and (max-width: 360px) {
+    .btn-main-actions {
+        padding-right: 3px;
+        padding-left: 3px;
+    }
+}
+
 
 .AP-conflict-title{
     color: red;

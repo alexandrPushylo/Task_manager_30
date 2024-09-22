@@ -4,22 +4,25 @@
         {% if conflict_technic_sheet %}
             <div>
                 <a href="{% url 'conflicts_list' %}?current_day={{ current_day.date.isoformat }}" role="button"
-                   class="btn btn-danger">Имеются конфликты</a>
+                   class="btn btn-danger btn-main-actions">Имеются конфликты</a>
             </div>
         {% elif status_list_application_today.submitted %}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=submitted"
-                   role="button" class="btn btn-success">Одобрить все заявки</a>
+                   role="button" class="btn btn-success btn-main-actions"
+                ><span>Одобрить все</span><span class="btn-main-actions-be-hidden"> заявки</span></a>
             </div>
         {% elif status_list_application_today.approved %}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=approved"
-                   role="button" class="btn btn-warning">Отправить все заявки</a>
+                   role="button" class="btn btn-warning btn-main-actions"
+                ><span>Отправить все</span><span class="btn-main-actions-be-hidden"> заявки</span></a>
             </div>
         {% elif status_list_application_today.send %}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=send"
-                   role="button" class="btn btn-outline-secondary">Повторно отправить заявки</a>
+                   role="button" class="btn btn-outline-secondary btn-main-actions"
+                ><span>Повторно отправить</span><span class="btn-main-actions-be-hidden"> заявки</span></a>
             </div>
         {% endif %}
     {% endif %}

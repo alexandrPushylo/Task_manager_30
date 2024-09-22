@@ -4,7 +4,8 @@
         {% if status_list_application_today.saved and not ACCEPT_MODE %}
             <div>
                 <a href="{% url 'change_app_status' %}?current_day={{ current_day.date.isoformat }}&current_status=saved"
-                   role="button" class="btn btn-warning">Подать все заявки</a>
+                   role="button" class="btn btn-warning btn-main-actions"
+                ><span>Подать</span><span class="btn-main-actions-be-hidden"> все</span><span> заявки</span></a>
             </div>
         {% endif %}
     {% endif %}
