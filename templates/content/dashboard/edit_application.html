@@ -90,7 +90,7 @@
                                             
                                             {% for technic_driver in technic_driver_list %}
                                                 <select id="technic_sheet_{{ app_technic.id }}"
-                                                        onchange="changeTechnicSheetSelector(this)"
+                                                        onchange="applyChangesAppTechnic('{{ app_technic.id }}')"
                                                         {% if app_technic.is_cancelled or app_technic.isChecked %}disabled=""{% endif %}
                                                         class="{{ technic_driver.title_short }}_{{ app_technic.id }} technic_driver_selects technic_driver_selects_{{ app_technic.id }} form-control p-1">
                                                     {% for technic_sheet in technic_driver.technic_sheets %}
@@ -131,7 +131,8 @@
                                                       {% endif %}
                                                         "
                                                       {% if app_technic.is_cancelled or app_technic.isChecked %}disabled{% endif %}
-                                                      oninput="onInput_tech_description(this); autoResize(this);"
+                                                      oninput="autoResize(this); $('#btn_edit_technics_and_materials').hide(); $('#main_footer').hide();"
+                                                      onblur="blurAppTechnic('{{ app_technic.id }}')"  
                                             >{{ app_technic.description }}</textarea>
                                         </label>
                                     </div>
