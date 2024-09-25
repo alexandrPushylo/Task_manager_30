@@ -290,11 +290,7 @@ def edit_application_view(request):
         technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(
             technic_sheets=technic_sheets
         )
-
-        context['technic_titles_dict'] = TECHNIC_SERVICE.get_dict_short_technic_names(
-            technic_sheets=technic_sheets.filter()
-        )
-
+        context['technic_titles_dict'] = technic_titles_dict
 
         context['technic_titles_dict_for_add'] = TECHNIC_SERVICE.get_dict_short_technic_names(
             technic_sheets=technic_sheets.filter(
@@ -314,8 +310,19 @@ def edit_application_view(request):
                 technic_titles=technic_titles_dict,
                 technic_sheets=technic_sheets
             )
+            technic_driver_list_json = ADD_EDIT_APP_SERVICE.get_technic_driver_list_for_json(
+                technic_titles=technic_titles_dict,
+                technic_sheets=technic_sheets
+            )
         else:
             context['technic_driver_list'] = context['technic_driver_list_for_add']
+            technic_driver_list_json = ADD_EDIT_APP_SERVICE.get_technic_driver_list_for_json(
+                technic_titles=technic_titles_dict,
+                technic_sheets=technic_sheets.filter(
+                    driver_sheet__status=True,
+                    status=True,
+                )
+            )
 
         if request.method == 'POST':
             operation = request.POST.get('operation')  # операция
@@ -330,11 +337,6 @@ def edit_application_view(request):
             post_application_material_id = request.POST.get('app_material_id')
             post_application_material_description = request.POST.get('material_description')
 
-            technic_driver_list_json = ADD_EDIT_APP_SERVICE.get_technic_driver_list_for_json(
-                technic_titles=technic_titles_dict,
-                technic_sheets=technic_sheets
-            )
-
             match operation:
                 case 'add_technic_to_application':
                     log.info('add_technic_to_application')
@@ -345,9 +347,10 @@ def edit_application_view(request):
                         "technic_driver_list": json.dumps(technic_driver_list_json, ensure_ascii=False)
                     }
                     if U.is_valid_get_request(post_technic_title_shrt):
-
                         if not U.is_valid_get_request(post_technic_sheet_id):
-                            technic_title = technic_titles_dict.get(post_technic_title_shrt)
+                            technic_title_dict = [*filter(lambda item: item['short_title'] == post_technic_title_shrt,
+                                                         technic_titles_dict)][0]
+                            technic_title = technic_title_dict.get('title')
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
                                 technic_title=technic_title, workday=current_day
                             )
@@ -407,7 +410,9 @@ def edit_application_view(request):
                             application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
 
                             if not U.is_valid_get_request(post_technic_sheet_id):
-                                technic_title = technic_titles_dict.get(post_technic_title_shrt)
+                                technic_title_dict = [*filter(lambda item: item['short_title'] == post_technic_title_shrt, technic_titles_dict)][0]
+                                technic_title = technic_title_dict.get('title')
+
                                 some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
                                     technic_title=technic_title, workday=current_day
                                 )
@@ -1101,6 +1106,7 @@ def conflict_resolution_view(request):
                     isArchive=False,
                     status=True,
                     driver_sheet__isnull=False,
+                    driver_sheet__status=True,
                     date=current_day
                 )
 
@@ -1118,7 +1124,9 @@ def conflict_resolution_view(request):
 
                         application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=application_technic_id)
                         if not U.is_valid_get_request(technic_sheet_id):
-                            n_technic_title = technic_titles_dict.get(title)
+                            technic_title_dict = [*filter(lambda item: item['short_title'] == title,
+                                                          technic_titles_dict)][0]
+                            n_technic_title = technic_title_dict.get('title')
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
                                 technic_title=n_technic_title, workday=current_day
                             )

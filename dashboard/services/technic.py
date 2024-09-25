@@ -148,16 +148,22 @@ def get_supply_technic_list() -> QuerySet[Technic]:
     return technic_list
 
 
-def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]) -> dict:
+def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]):
     """
-    Получить dict {короткое название техники: название техники}
-    :param technic_sheets:
-    :return:
-    """
+        Получить dict {короткое название техники: название техники}
+        :param technic_sheets:
+        :return:
+        """
     technic_titles_list = technic_sheets.values_list('technic__title', flat=True).distinct()
-    technic_titles_dict = {str(title).replace(' ', '').replace('.', ''): title
-                           for title in technic_titles_list}
-    return technic_titles_dict
+    out = []
+    for title in technic_titles_list:
+        out.append({
+            'title': title,
+            'short_title': str(title).replace(' ', '').replace('.', ''),
+            'status_busies_list': list(technic_sheets.filter(technic__title=title).values_list('count_application', flat=True))
+        })
+    return out
+
 
 
 def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptionMode:

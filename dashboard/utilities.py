@@ -131,7 +131,7 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
 
     for technic_title in technic_title_list:
-        technic__title = technic_sheet.filter(technic__title=technic_title)
+        technic__title = technic_sheet.filter(technic__title=technic_title, driver_sheet__status=True)
         technic__title_list = technic__title.values('id', 'count_application')
         total_technic_sheet_count = technic__title_list.count()
         all_applications_count = sum(technic__title.values_list('count_application', flat=True))

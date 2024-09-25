@@ -16,8 +16,13 @@
                             <select id="select_add_tech_title" class="form-control select_add_tech_title"
                                     onchange="selectAddTechnicDriver(this)">
                                 <option value="none">---</option>
-                                {% for title_short, title in technic_titles_dict_for_add.items %}
-                                    <option value="{{ title_short }}">{{ title }}</option>
+                                {% for technic_title in technic_titles_dict_for_add %}
+                                    {% if 0 in technic_title.status_busies_list %}
+                                        <option value="{{ technic_title.short_title }}">{{ technic_title.title }}</option>
+                                    {% else %}
+                                        <option style="color: red" value="{{ technic_title.short_title }}">{{ technic_title.title }} <span
+                                        >(Занят)</span></option>
+                                    {% endif %}
 
                                 {% endfor %}
                             </select>
