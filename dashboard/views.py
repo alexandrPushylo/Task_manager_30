@@ -1101,6 +1101,7 @@ def conflict_resolution_view(request):
                     isArchive=False,
                     status=True,
                     driver_sheet__isnull=False,
+                    driver_sheet__status=True,
                     date=current_day
                 )
 
