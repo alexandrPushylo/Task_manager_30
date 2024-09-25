@@ -290,11 +290,7 @@ def edit_application_view(request):
         technic_titles_dict = TECHNIC_SERVICE.get_dict_short_technic_names(
             technic_sheets=technic_sheets
         )
-
-        context['technic_titles_dict'] = TECHNIC_SERVICE.get_dict_short_technic_names(
-            technic_sheets=technic_sheets.filter()
-        )
-
+        context['technic_titles_dict'] = technic_titles_dict
 
         context['technic_titles_dict_for_add'] = TECHNIC_SERVICE.get_dict_short_technic_names(
             technic_sheets=technic_sheets.filter(
