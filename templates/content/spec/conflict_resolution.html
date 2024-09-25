@@ -44,11 +44,11 @@
                                 <label class="m-0 p-0 col-auto">
                                     <select id="title_{{ conflict_at.id }}" class="form-control p-1" name="{{ conflict_at.id }}_title"
                                             onchange="selectTechnicTitleForConflictResolution(this); $('#div_submit_for_CR').show();">
-                                        {% for title_short, title in technic_titles_dict.items %}
-                                            {% if title == technic_title %}
-                                                <option selected value="{{ title_short }}">{{ title }}</option>
+                                        {% for title_short_item in technic_titles_dict %}
+                                            {% if title_short_item.title == technic_title %}
+                                                <option selected value="{{ title_short_item.short_title }}">{{ title_short_item.title }}</option>
                                             {% else %}
-                                                <option value="{{ title_short }}">{{ title }}</option>
+                                                <option value="{{ title_short_item.short_title }}">{{ title_short_item.title }}</option>
                                             {% endif %}
                                         {% endfor %}
                                     </select>

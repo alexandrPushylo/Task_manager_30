@@ -78,13 +78,10 @@
                                                     class="form-control p-1"
                                                     {% if app_technic.is_cancelled or app_technic.isChecked %}disabled=""{% endif %}
                                                     onchange="selectTechnicTitle(this)">
-                                                {% for title_short, title in technic_titles_dict.items %}
-                                                    {% if app_technic.technic_sheet__technic__title == title %}
-                                                        <option selected
-                                                                value="{{ title_short }}">{{ title }}</option>
-                                                    {% else %}
-                                                        <option value="{{ title_short }}">{{ title }}</option>
-                                                    {% endif %}
+                                                {% for technic_title in technic_titles_dict %}
+                                                        <option {% if app_technic.technic_sheet__technic__title == technic_title.title %} selected {% endif %}
+                                                                value="{{ technic_title.short_title }}"
+                                                        >{{ technic_title.title }}</option>     
                                                 {% endfor %}
                                             </select>
                                         </label>
@@ -101,7 +98,7 @@
                                                                 {% if app_technic.technic_sheet_id == technic_sheet.id %}
                                                                     selected {% endif %}
                                                                     value="{{ technic_sheet.id }}"
-                                                        >{% if not technic_sheet.driver_sheet.status %}Не назначен{% else %}{{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}</option>
+                                                        >{% if not technic_sheet.driver_sheet.status %}Не назначен{% else %}{{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}{% if technic_sheet.count_application > 0 %} (Занят){% endif %}</option>
                                                     {% endfor %}
                                                 </select>
                                             {% endfor %}  
