@@ -331,11 +331,15 @@ def edit_application_view(request):
             post_construction_site_id = request.POST.get('construction_site_id')  # id construction_site
             post_technic_title_shrt = request.POST.get('technic_title_shrt')
             post_technic_sheet_id = request.POST.get('technic_sheet_id')
-            post_application_technic_description = request.POST.get('app_tech_desc')
+            post_application_technic_description = request.POST.get('app_tech_desc', '')
             post_application_technic_id = request.POST.get('application_technic_id')
-            post_application_today_description = request.POST.get('application_today_description')
+            post_application_today_description = request.POST.get('application_today_description', '')
             post_application_material_id = request.POST.get('app_material_id')
-            post_application_material_description = request.POST.get('material_description')
+            post_application_material_description = request.POST.get('material_description', '')
+
+            post_application_technic_description:str = post_application_technic_description.strip()
+            post_application_today_description:str = post_application_today_description.strip()
+            post_application_material_description:str = post_application_material_description.strip()
 
             match operation:
                 case 'add_technic_to_application':
