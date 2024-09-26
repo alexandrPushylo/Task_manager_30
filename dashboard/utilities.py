@@ -482,6 +482,7 @@ def send_application_by_telegram_for_driver(current_day: WorkDaySheet, messages=
         msg = f'Заявка на:\n{template_date}\n\n'
 
     for item in driver_sheet_list:
+        msg = ''
         msg = f"{item['driver_sheet__driver__last_name']} {item['driver_sheet__driver__first_name']}\n{msg}"
         for app in item['applications']:
             if app['application_today__construction_site__foreman__last_name']:
