@@ -131,7 +131,8 @@
                                                       {% endif %}
                                                         "
                                                       {% if app_technic.is_cancelled or app_technic.isChecked %}disabled{% endif %}
-                                                      oninput="autoResize(this); $('#btn_edit_technics_and_materials').hide(); $('#main_footer').hide();"
+{#                                                      oninput="autoResize(this); $('#btn_edit_technics_and_materials').hide(); $('#main_footer').hide();"#}
+                                                      oninput="autoResize(this);"
                                                       onblur="blurAppTechnic('{{ app_technic.id }}')"  
                                             >{{ app_technic.description }}</textarea>
                                         </label>
