@@ -21,7 +21,7 @@ def get_app_technic(**kwargs) -> ApplicationTechnic:
         application_technic = ApplicationTechnic.objects.get(**kwargs)
         return application_technic
     except ApplicationTechnic.DoesNotExist:
-        log.error('get_app_technic(): ApplicationTechnic.DoesNotExist')
+        log.warning('get_app_technic(): ApplicationTechnic.DoesNotExist')
 
 
 def get_apps_technic_queryset(select_related: tuple = (),
