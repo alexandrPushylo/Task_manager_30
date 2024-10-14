@@ -773,7 +773,10 @@ def change_up_status_for_application_today(workday: WorkDaySheet, application_to
             status=current_status
         )
         [application_today.set_next_status() for application_today in application_today_list]
-        return application_today_list.first().status
+        if application_today_list.exists():
+            return application_today_list.first().status
+        else:
+            return current_status
 
 
 def get_status_lists_of_apps_today(applications_today: QuerySet[ApplicationToday]) -> dict:
