@@ -291,7 +291,8 @@ def get_table_working_technic_sheet(current_day: WorkDaySheet):
         isArchive=False,
         date=current_day
     )
-    return _technic_sheet.order_by('technic__title', 'driver_sheet__driver__last_name')
+    # return _technic_sheet.order_by('technic__title', 'driver_sheet__driver__last_name')
+    return _technic_sheet.order_by('driver_sheet__driver__last_name')
 
 
 def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bool:
