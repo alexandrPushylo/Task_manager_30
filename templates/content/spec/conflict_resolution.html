@@ -63,7 +63,7 @@
                                             {% for technic_sheet in technic_driver.technic_sheets %}
                                                 
                                                 <option {% if conflict_at.technic_sheet.id == technic_sheet.id %}selected{% endif %} 
-                                                        {% if technic_sheet.count_application == 0 %}style="color: #0b5ed7" {% elif technic_sheet.count_application > 0 %}style="color: #d70b1c"{% endif %}
+                                                        {% if technic_sheet.count_application == 0 %}style="color: green" {% elif technic_sheet.count_application > 0 %}style="color: #d70b1c"{% endif %}
                                                         value="{{ technic_sheet.id }}"
                                                     >{{ technic_sheet.driver_sheet.driver.last_name }} ( <span
                                                 >{% if technic_sheet.count_application == 0 %}Свободен {% elif technic_sheet.count_application > 0 %}Занят{% endif %}</span> )</option>

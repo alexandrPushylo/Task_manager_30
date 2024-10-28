@@ -98,6 +98,7 @@
                                                                 {% if app_technic.technic_sheet_id == technic_sheet.id %}
                                                                     selected {% endif %}
                                                                     value="{{ technic_sheet.id }}"
+                                                                    {% if technic_sheet.count_application == 0 %} style="color: green;" {% else %} style="color: red" {% endif %}
                                                         >{% if not technic_sheet.driver_sheet.status %}Не назначен{% else %}{{ technic_sheet.driver_sheet.driver.last_name }}{% endif %}{% if technic_sheet.count_application > 0 %} (Занят){% endif %}</option>
                                                     {% endfor %}
                                                 </select>
