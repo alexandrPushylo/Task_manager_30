@@ -309,13 +309,20 @@
     .btn-main-actions-be-hidden {
         display: none;
     }
-}
-@media screen and (max-width: 360px) {
     .btn-main-actions {
         padding-right: 3px;
         padding-left: 3px;
     }
+    .main_menu {
+        margin: 0;
+    }
 }
+/*@media screen and (max-width: 360px) {*/
+/*    .btn-main-actions {*/
+/*        padding-right: 3px;*/
+/*        padding-left: 3px;*/
+/*    }*/
+/*}*/
 
 
 .AP-conflict-title{
