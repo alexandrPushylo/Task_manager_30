@@ -961,6 +961,46 @@ def construction_site_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
+def archive_construction_site_view(request):
+    if request.user.is_authenticated:
+        context = {
+            'title': 'Архив строительных объектов'
+        }
+
+        current_day = WORK_DAY_SERVICE.get_current_day(request)
+        context = U.get_prepared_data(context, current_day)
+        context['current_day'] = current_day
+
+        construction_site_list = None
+        if USERS_SERVICE.is_administrator(request.user):
+            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+                select_related=('foreman',),
+                isArchive=True,
+            )
+
+        if USERS_SERVICE.is_foreman(request.user):
+            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+                select_related=('foreman',),
+                isArchive=True,
+                foreman=request.user),
+
+        if USERS_SERVICE.is_master(request.user):
+            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
+                select_related=('foreman',),
+                isArchive=True,
+                foreman_id=request.user.supervisor_user_id)
+
+        context['construction_sites'] = construction_site_list
+        delete_constr_site_id = request.GET.get('delete')
+
+        if U.is_valid_get_request(delete_constr_site_id):
+            CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+            return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
+
+        return render(request, 'content/construction_site/archive_construction_sites.html', context)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
 def edit_construction_sites(request):
     if request.user.is_authenticated:
         context = {
