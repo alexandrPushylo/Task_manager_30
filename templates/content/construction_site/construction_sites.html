@@ -13,6 +13,11 @@
                         <div class="card-body p-1">
                             <div class="card-header p-1">
                                 <span class="fw-bolder">{{ construction_site.address }}</span>
+                                {% if construction_site.isArchive and construction_site.deleted_date %}
+                                    <br>
+                                    <span class="form-text small">Дата удаления: </span>
+                                    <span>{{ construction_site.deleted_date }}</span>
+                                {% endif %}
                                 <hr class="m-0"/>
                                 {% if construction_site.foreman %}
                                     <span class="form-text small">Прораб:</span>
@@ -24,8 +29,15 @@
                             <hr class="m-0"
                                 style="border-width: medium; border-color: {% if construction_site.status %}green{% else %}red{% endif %}"/>
                             <div class="navbar m-1">
-                                <span><a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
-                                         class="btn btn-sm btn-outline-danger" aria-current="page">Удалить</a></span>
+                                <span>
+                                    {% if construction_site.isArchive %}
+                                    <a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
+                                         class="btn btn-sm btn-outline-success" aria-current="page">Восстановить</a>
+                                    {% else %}
+                                    <a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
+                                         class="btn btn-sm btn-outline-danger" aria-current="page">Удалить</a>    
+                                    {% endif %}
+                                </span>
                                 <span><a href="{% url 'edit_construction_sites' %}?id={{ construction_site.id }}"
                                          class="btn btn-sm btn-outline-primary" aria-current="page">Изменить</a></span>
                                 <span>
@@ -50,6 +62,11 @@
                         <div class="card-body p-1">
                             <div class="card-header p-1">
                                 <span class="fw-bolder">{{ construction_site.address }}</span>
+                            {% if construction_site.isArchive and construction_site.deleted_date %}
+                                    <br>
+                                    <span class="form-text small">Дата удаления: </span>
+                                    <span>{{ construction_site.deleted_date }}</span>
+                                {% endif %}
                                 <hr class="m-0"/>
                                 {% if construction_site.foreman %}
                                     <span class="form-text small">Прораб:</span>
@@ -61,8 +78,15 @@
                             <hr class="m-0"
                                 style="border-width: medium; border-color: {% if construction_site.status %}green{% else %}red{% endif %}"/>
                             <div class="navbar m-1">
-                                <span><a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
-                                         class="btn btn-sm btn-outline-danger" aria-current="page">Удалить</a></span>
+                                <span>
+                                    {% if construction_site.isArchive %}
+                                    <a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
+                                         class="btn btn-sm btn-outline-success" aria-current="page">Восстанов.</a>
+                                    {% else %}
+                                    <a href="{% url 'construction_site' %}?delete={{ construction_site.id }}"
+                                         class="btn btn-sm btn-outline-danger" aria-current="page">Удалить</a>    
+                                    {% endif %}
+                                </span>
                                 <span><a href="{% url 'edit_construction_sites' %}?id={{ construction_site.id }}"
                                          class="btn btn-sm btn-outline-primary" aria-current="page">Изменить</a></span>
                                 <span>

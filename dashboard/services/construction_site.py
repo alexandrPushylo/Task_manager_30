@@ -2,6 +2,8 @@ from dashboard.models import ConstructionSite, User
 from dashboard.services.user import get_user
 from django.db.models import QuerySet  # type: ignore
 
+import dashboard.utilities as U
+
 from logger import getLogger
 
 log = getLogger(__name__)
@@ -54,12 +56,14 @@ def delete_construction_site(constr_site_id) -> ConstructionSite | None:
     if constr_site:
         if constr_site.isArchive:
             constr_site.isArchive = False
+            constr_site.deleted_date = None
             log.info('Объект %s был восстановлен из архива' % constr_site.address)
         else:
             constr_site.isArchive = True
+            constr_site.deleted_date = U.TODAY
             log.info('Объект %s был помешен в архив' % constr_site.address)
 
-        constr_site.save(update_fields=['isArchive'])
+        constr_site.save(update_fields=['isArchive', 'deleted_date'])
         return constr_site
     return None
 
@@ -109,9 +113,47 @@ def edit_construction_site(constr_site_id, data: dict):
 def create_or_edit_construction_site(data: dict, constr_site_id=None):
     prepare_data = check_data(data)
     if prepare_data:
-        if constr_site_id:
-            edit_construction_site(constr_site_id, prepare_data)
+        is_cs_was_del = is_construction_site_already_exists(prepare_data['address'], prepare_data['foreman'])
+        if is_cs_was_del:
+            restore_construction_site(prepare_data)
         else:
-            create_construction_site(prepare_data)
+            if constr_site_id:
+                edit_construction_site(constr_site_id, prepare_data)
+            else:
+                create_construction_site(prepare_data)
     else:
         log.error('Ошибка с данными')
+
+
+def is_construction_site_already_exists(constr_site_title: str, foreman: User) -> bool:
+    """
+    Существует ли объект с данными параметрами
+    :param constr_site_title:
+    :param foreman:
+    :return:
+    """
+    if constr_site_title is None or constr_site_title == '':
+        return False
+    cs = get_construction_site_queryset(
+        address=constr_site_title,
+        foreman=foreman,
+    )
+    return True if cs.exists() else False
+
+
+def restore_construction_site(data: dict[str, User | None]):
+    """
+    Восстановление объекта в рабочее состояние
+    :param data:
+    :return:
+    """
+    cs = get_construction_sites(
+        address=data['address'],
+        foreman=data['foreman'],
+    )
+    if cs:
+        cs.isArchive = False
+        cs.status = True
+        cs.deleted_date = None
+        cs.save()
+        log.info('Объект %s был восстановлен' % data["address"])

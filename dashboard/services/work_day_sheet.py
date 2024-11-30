@@ -22,9 +22,8 @@ def get_workday(_date: date) -> WorkDaySheet:
         return workday
     except WorkDaySheet.DoesNotExist:
         log.error(f"Workday: {_date} не существует")
-        prepare_workday(_date)
-        work_day = get_workday(_date)
-        return work_day
+        status = prepare_workday(_date)
+        return get_workday(_date) if status else get_workday(TODAY)
     except ValidationError:
         log.error("Значение имеет неверный формат даты")
         return get_workday(TODAY)
@@ -57,8 +56,10 @@ def prepare_workday(_date: date):
                 status = True
             WorkDaySheet.objects.update_or_create(date=day, defaults={'status': status})
         log.info("Prepare workday выполнен")
+        return True
     else:
         log.info("Prepare workday не выполнен")
+        return False
 
 
 def get_range_workdays(start_date: date, before_days: int, after_days: int) -> WorkDaySheet.objects:
