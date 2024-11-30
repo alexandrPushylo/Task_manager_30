@@ -2,6 +2,8 @@ from dashboard.models import ConstructionSite, User
 from dashboard.services.user import get_user
 from django.db.models import QuerySet  # type: ignore
 
+import dashboard.utilities as U
+
 from logger import getLogger
 
 log = getLogger(__name__)
@@ -54,12 +56,14 @@ def delete_construction_site(constr_site_id) -> ConstructionSite | None:
     if constr_site:
         if constr_site.isArchive:
             constr_site.isArchive = False
+            constr_site.deleted_date = None
             log.info('Объект %s был восстановлен из архива' % constr_site.address)
         else:
             constr_site.isArchive = True
+            constr_site.deleted_date = U.TODAY
             log.info('Объект %s был помешен в архив' % constr_site.address)
 
-        constr_site.save(update_fields=['isArchive'])
+        constr_site.save(update_fields=['isArchive', 'deleted_date'])
         return constr_site
     return None
 
