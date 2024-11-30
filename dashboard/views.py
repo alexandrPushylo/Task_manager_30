@@ -974,7 +974,7 @@ def construction_site_view(request):
 def archive_construction_site_view(request):
     if request.user.is_authenticated:
         context = {
-            'title': 'Архив строительных объектов'
+            'title': 'Архив объектов'
         }
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
