@@ -902,7 +902,11 @@ def delete_user_view(request):
 def construction_site_view(request):
     if request.user.is_authenticated:
         context = {
-            'title': 'Строительные объекты'}
+            'title': 'Строительные объекты',
+            'active_construction_sites': [],
+            'hidden_construction_sites': [],
+            'archived_construction_sites': [],
+        }
 
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day)
@@ -927,8 +931,14 @@ def construction_site_view(request):
                 isArchive=False,
                 foreman_id=request.user.supervisor_user_id)
 
-        context['active_construction_sites'] = construction_site_list.filter(status=True)
-        context['hidden_construction_sites'] = construction_site_list.filter(status=False)
+        for construction_site in construction_site_list:
+            if construction_site.isArchive:
+                context['archived_construction_sites'].append(construction_site)
+            elif construction_site.status:
+                context['active_construction_sites'].append(construction_site)
+            else:
+                context['hidden_construction_sites'].append(construction_site)
+
 
         hide_constr_site_id = request.GET.get('hide')
         if U.is_valid_get_request(hide_constr_site_id):
