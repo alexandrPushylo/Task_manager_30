@@ -10,6 +10,7 @@ from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMa
 from dashboard.models import Parameter
 
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
@@ -44,9 +45,14 @@ class CustomUserAdmin(UserAdmin):
          ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
+    list_display = ("username", "last_name", "post", "isArchive")
+    list_filter = ("post", "isArchive")
 
 
-admin.site.register(User, CustomUserAdmin)
+
+
+
+
 
 admin.site.register(Technic)
 admin.site.register(TemplateDescForTechnic)
