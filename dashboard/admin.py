@@ -71,6 +71,14 @@ class WorkDaySheetAdmin(admin.ModelAdmin):
     list_per_page = 20
     actions = (set_workday, set_weekend)
 
+#   DriverSheet ----------------------------------------------------------------
+@admin.register(DriverSheet)
+class DriverSheetAdmin(admin.ModelAdmin):
+    driver_count = User.objects.filter(post='driver', isArchive=False).count()
+    list_display = ("date", "driver", "status")
+    list_per_page = driver_count
+    list_editable = ("status","driver")
+    list_filter = ("status", "isArchive")
 
 
 #   TechnicSheet ----------------------------------------------------------------
@@ -84,7 +92,6 @@ class TechnicSheetAdmin(admin.ModelAdmin):
 
 
 
-admin.site.register(DriverSheet)
 admin.site.register(ApplicationToday)
 admin.site.register(ApplicationTechnic)
 admin.site.register(ApplicationMaterial)
