@@ -140,7 +140,7 @@ class TechnicSheet(models.Model):
             self.count_application = self.count_application - 1
             self.save(update_fields=['count_application'])
 
-    def __str__(self): return f"{self.date.date} {self.technic} [{'Рабочий' if self.status else 'Выходной'}]"
+    def __str__(self): return f"{self.date.date} {self.technic} [{'Работает' if self.status else 'Не работает'}]"
 
     class Meta:
         verbose_name = 'Отметка техники'

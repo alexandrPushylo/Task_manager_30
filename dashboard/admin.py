@@ -76,11 +76,18 @@ class WorkDaySheetAdmin(admin.ModelAdmin):
 
 
 
+#   TechnicSheet ----------------------------------------------------------------
+@admin.register(TechnicSheet)
+class TechnicSheetAdmin(admin.ModelAdmin):
+    technic_count = Technic.objects.filter(isArchive=False).count()
+    list_display = ("date", "technic", "status")
+    list_per_page = technic_count
+    list_filter = ("status", "isArchive")
+    list_editable = ("status", "technic")
 
 
 
 admin.site.register(DriverSheet)
-admin.site.register(TechnicSheet)
 
 admin.site.register(ApplicationToday)
 admin.site.register(ApplicationTechnic)
