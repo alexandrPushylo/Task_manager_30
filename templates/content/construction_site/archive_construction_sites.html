@@ -5,9 +5,9 @@
 {% block content %}
     <div id="construction_site" class="container-fluid position-relative translate-middle-x start-50">
         <div><h3><u>{{ title }}</u></h3></div>
-        <div class="row align-items-center" id="construction_site_container">
-
+        <div class="row align-items-center" id="construction_site_container">  
             {% for construction_site in construction_sites %}
+                {% if construction_site %}
                 <div class="construction_site_items" style="width: 20rem">
                     <div class="card m-2 shadow-lg construction_site_card">
                         <div class="card-body p-1">
@@ -38,6 +38,7 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
             {% endfor %}
         </div>
 
