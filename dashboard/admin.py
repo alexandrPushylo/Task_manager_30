@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-# from dashboard.models import Administrator, Foreman, Master, Driver, Mechanic, Supply, Employee
-# from dashboard.models import Supervisor
 from dashboard.models import User
 from dashboard.models import Technic, TemplateDescForTechnic
 from dashboard.models import ConstructionSite
@@ -58,7 +55,7 @@ admin.site.register(ConstructionSite)
 
 
 
-
+#   WorkDaySheet ----------------------------------------------------------------
 @admin.action(description="Назначить выходным днем")
 def set_weekend(modeladmin, request, queryset):
     queryset.update(status=False)
@@ -88,7 +85,6 @@ class TechnicSheetAdmin(admin.ModelAdmin):
 
 
 admin.site.register(DriverSheet)
-
 admin.site.register(ApplicationToday)
 admin.site.register(ApplicationTechnic)
 admin.site.register(ApplicationMaterial)

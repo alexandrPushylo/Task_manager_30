@@ -108,7 +108,7 @@ class WorkDaySheet(models.Model):
         self.save(update_fields=['is_all_application_send'])
 
     def __str__(self):
-        return f"{self.date} - {'Рабочий' if self.status else 'Выходной'}"
+        return f"{self.date}"
 
     class Meta:
         verbose_name = 'Рабочий день'
