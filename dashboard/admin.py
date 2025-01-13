@@ -56,7 +56,29 @@ admin.site.register(TemplateDescForTechnic)
 
 admin.site.register(ConstructionSite)
 
-admin.site.register(WorkDaySheet)
+
+
+
+@admin.action(description="Назначить выходным днем")
+def set_weekend(modeladmin, request, queryset):
+    queryset.update(status=False)
+@admin.action(description="Назначить рабочим днем")
+def set_workday(modeladmin, request, queryset):
+    queryset.update(status=True)
+
+@admin.register(WorkDaySheet)
+class WorkDaySheetAdmin(admin.ModelAdmin):
+    list_display = ("date", "status", "accept_mode")
+    list_filter = ("date", "status", "accept_mode")
+    list_editable = ("status",)
+    list_per_page = 20
+    actions = (set_workday, set_weekend)
+
+
+
+
+
+
 admin.site.register(DriverSheet)
 admin.site.register(TechnicSheet)
 
