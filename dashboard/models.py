@@ -27,6 +27,14 @@ class User(AbstractUser):
     color_title = models.CharField(max_length=8, null=False, default='#000000', verbose_name='Цвет названия объекта')
     font_size = models.IntegerField(default=10, verbose_name='Размер шрифта для описания заявки')
 
+    def __str__(self):
+        return f"{self.last_name} {self.first_name}"
+
+    class Meta:
+        verbose_name = "Сотрудник"
+        verbose_name_plural = "Сотрудники"
+        ordering = ['last_name']
+
 
 #   TECHNIC-------------------------------------------------------------------
 class Technic(models.Model):
