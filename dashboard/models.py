@@ -149,7 +149,7 @@ class TechnicSheet(models.Model):
             self.count_application = self.count_application - 1
             self.save(update_fields=['count_application'])
 
-    def __str__(self): return f"{self.date.date} {self.technic} [{'Работает' if self.status else 'Не работает'}]"
+    def __str__(self): return f"{self.technic}"
 
     class Meta:
         verbose_name = 'Отметка техники'
@@ -222,6 +222,7 @@ class ApplicationTechnic(models.Model):
     class Meta:
         verbose_name = "Заявка на технику"
         verbose_name_plural = "Заявки на технику"
+        ordering = ['application_today', 'technic_sheet']
 
 
 class ApplicationMaterial(models.Model):
@@ -237,6 +238,7 @@ class ApplicationMaterial(models.Model):
     class Meta:
         verbose_name = 'Заявка на материал'
         verbose_name_plural = 'Заявка на материалы'
+        ordering = ['application_today',]
 
 #   Applications-END----------------------------------------------------------
 
@@ -258,6 +260,7 @@ class Parameter(models.Model):
     class Meta:
         verbose_name = "Переменная"
         verbose_name_plural = "Переменные"
+        ordering = ['title',]
 
 # class Telebot(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
