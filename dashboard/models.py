@@ -72,6 +72,7 @@ class TemplateDescForTechnic(models.Model):
     class Meta:
         verbose_name = "Templates для техники"
         verbose_name_plural = "Template для техники"
+        ordering = ['technic',]
 
 #   TECHNIC-END---------------------------------------------------------------
 

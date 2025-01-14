@@ -49,11 +49,6 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("post", "isArchive")
 
 
-
-
-
-
-
 #   Technic ----------------------------------------------------------------
 @admin.register(Technic)
 class TechnicAdmin(admin.ModelAdmin):
@@ -62,7 +57,10 @@ class TechnicAdmin(admin.ModelAdmin):
     list_editable = ('attached_driver', 'isArchive')
 
 
-admin.site.register(TemplateDescForTechnic)
+#   TemplateDescForTechnic ----------------------------------------------------------------
+@admin.register(TemplateDescForTechnic)
+class TemplateDescForTechnicAdmin(admin.ModelAdmin):
+    list_display = ('technic', 'description', 'is_auto_mode', 'is_default_mode', )
 
 admin.site.register(ConstructionSite)
 
