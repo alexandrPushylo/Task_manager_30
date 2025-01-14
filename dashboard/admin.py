@@ -54,7 +54,6 @@ class CustomUserAdmin(UserAdmin):
 class TechnicAdmin(admin.ModelAdmin):
     list_display = ("title", "id_information", "attached_driver", "isArchive")
     list_filter = ('type', 'isArchive')
-    list_editable = ('isArchive', )
 
 
 #   TemplateDescForTechnic ----------------------------------------------------
