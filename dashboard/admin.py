@@ -103,7 +103,7 @@ class TechnicSheetAdmin(admin.ModelAdmin):
     list_display = ("date", "technic", "status")
     list_per_page = technic_count
     list_filter = ("status", "isArchive")
-    list_editable = ("status", "technic")
+    list_editable = ("status", )
 
 
 
