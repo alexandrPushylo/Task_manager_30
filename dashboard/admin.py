@@ -110,7 +110,6 @@ class TechnicSheetAdmin(admin.ModelAdmin):
 class ApplicationTodayAdmin(admin.ModelAdmin):
     list_display = ('construction_site', 'date', 'status', 'is_edited')
 
-admin.site.register(ApplicationMaterial)
 
 admin.site.register(Parameter)
 # admin.site.register(Telebot)
@@ -118,6 +117,13 @@ admin.site.register(Parameter)
 @admin.register(ApplicationTechnic)
 class ApplicationTechnicAdmin(admin.ModelAdmin):
     list_display = ('application_today', 'technic_sheet', 'priority', 'isChecked', 'is_cancelled')
+    list_per_page = 50
+
+
+#   ApplicationMaterial ----------------------------------------------------------------
+@admin.register(ApplicationMaterial)
+class ApplicationMaterialAdmin(admin.ModelAdmin):
+    list_display = ('application_today', 'description', 'isChecked', 'is_cancelled')
     list_per_page = 50
 
 
