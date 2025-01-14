@@ -56,7 +56,7 @@ class Technic(models.Model):
     class Meta:
         verbose_name = "Единица техники"
         verbose_name_plural = "Техника"
-        ordering = ['title']
+        ordering = ['title', 'attached_driver']
 
 
 class TemplateDescForTechnic(models.Model):

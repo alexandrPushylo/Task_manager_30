@@ -54,7 +54,14 @@ class CustomUserAdmin(UserAdmin):
 
 
 
-admin.site.register(Technic)
+#   Technic ----------------------------------------------------------------
+@admin.register(Technic)
+class TechnicAdmin(admin.ModelAdmin):
+    list_display = ("title", "id_information", "attached_driver", "isArchive")
+    list_filter = ('type', 'isArchive')
+    list_editable = ('attached_driver', 'isArchive')
+
+
 admin.site.register(TemplateDescForTechnic)
 
 admin.site.register(ConstructionSite)
