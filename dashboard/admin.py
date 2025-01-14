@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-# from dashboard.models import Administrator, Foreman, Master, Driver, Mechanic, Supply, Employee
-# from dashboard.models import Supervisor
 from dashboard.models import User
 from dashboard.models import Technic, TemplateDescForTechnic
 from dashboard.models import ConstructionSite
@@ -13,6 +10,7 @@ from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMa
 from dashboard.models import Parameter
 
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
@@ -47,22 +45,89 @@ class CustomUserAdmin(UserAdmin):
          ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
+    list_display = ("username", "last_name", "post", "isArchive")
+    list_filter = ("post", "isArchive")
 
 
-admin.site.register(User, CustomUserAdmin)
+#   Technic ----------------------------------------------------------------
+@admin.register(Technic)
+class TechnicAdmin(admin.ModelAdmin):
+    list_display = ("title", "id_information", "attached_driver", "isArchive")
+    list_filter = ('type', 'isArchive')
 
-admin.site.register(Technic)
-admin.site.register(TemplateDescForTechnic)
 
-admin.site.register(ConstructionSite)
+#   TemplateDescForTechnic ----------------------------------------------------
+@admin.register(TemplateDescForTechnic)
+class TemplateDescForTechnicAdmin(admin.ModelAdmin):
+    list_display = ('technic', 'description', 'is_auto_mode', 'is_default_mode', )
 
-admin.site.register(WorkDaySheet)
-admin.site.register(DriverSheet)
-admin.site.register(TechnicSheet)
 
-admin.site.register(ApplicationToday)
-admin.site.register(ApplicationTechnic)
-admin.site.register(ApplicationMaterial)
+#   TemplateDescForTechnic ----------------------------------------------------
+@admin.register(ConstructionSite)
+class ConstructionSiteAdmin(admin.ModelAdmin):
+    list_display = ('address', 'foreman', 'status', 'isArchive')
+    list_filter = ('status', 'isArchive')
 
-admin.site.register(Parameter)
-# admin.site.register(Telebot)
+
+#   WorkDaySheet ----------------------------------------------------------------
+@admin.action(description="Назначить выходным днем")
+def set_weekend(modeladmin, request, queryset):
+    queryset.update(status=False)
+@admin.action(description="Назначить рабочим днем")
+def set_workday(modeladmin, request, queryset):
+    queryset.update(status=True)
+
+@admin.register(WorkDaySheet)
+class WorkDaySheetAdmin(admin.ModelAdmin):
+    list_display = ("date", "status", "accept_mode")
+    list_filter = ("date", "status", "accept_mode")
+    list_editable = ("status",)
+    list_per_page = 20
+    actions = (set_workday, set_weekend)
+
+#   DriverSheet ----------------------------------------------------------------
+@admin.register(DriverSheet)
+class DriverSheetAdmin(admin.ModelAdmin):
+    driver_count = User.objects.filter(post='driver', isArchive=False).count()
+    list_display = ("date", "driver", "status")
+    list_per_page = driver_count
+    list_editable = ("status",)
+    list_filter = ("status", "isArchive")
+
+
+#   TechnicSheet ----------------------------------------------------------------
+@admin.register(TechnicSheet)
+class TechnicSheetAdmin(admin.ModelAdmin):
+    technic_count = Technic.objects.filter(isArchive=False).count()
+    list_display = ("date", "technic", "status")
+    list_per_page = technic_count
+    list_filter = ("status", "isArchive")
+    list_editable = ("status", )
+
+
+#   TechnicSheet ----------------------------------------------------------------
+@admin.register(ApplicationToday)
+class ApplicationTodayAdmin(admin.ModelAdmin):
+    list_display = ('construction_site', 'date', 'status', 'is_edited')
+
+
+#   ApplicationTechnic ----------------------------------------------------------------
+@admin.register(ApplicationTechnic)
+class ApplicationTechnicAdmin(admin.ModelAdmin):
+    list_display = ('application_today', 'technic_sheet', 'priority', 'isChecked', 'is_cancelled')
+    list_per_page = 50
+
+
+#   ApplicationMaterial ----------------------------------------------------------------
+@admin.register(ApplicationMaterial)
+class ApplicationMaterialAdmin(admin.ModelAdmin):
+    list_display = ('application_today', 'description', 'isChecked', 'is_cancelled')
+    list_per_page = 50
+
+
+#   ApplicationMaterial ----------------------------------------------------------------
+@admin.register(Parameter)
+class ParameterAdmin(admin.ModelAdmin):
+    list_display = ('title', 'value', 'flag', 'time', 'date')
+
+

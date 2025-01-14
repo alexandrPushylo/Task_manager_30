@@ -27,6 +27,14 @@ class User(AbstractUser):
     color_title = models.CharField(max_length=8, null=False, default='#000000', verbose_name='Цвет названия объекта')
     font_size = models.IntegerField(default=10, verbose_name='Размер шрифта для описания заявки')
 
+    def __str__(self):
+        return f"{self.last_name} {self.first_name}"
+
+    class Meta:
+        verbose_name = "Сотрудник"
+        verbose_name_plural = "Сотрудники"
+        ordering = ['last_name']
+
 
 #   TECHNIC-------------------------------------------------------------------
 class Technic(models.Model):
@@ -48,7 +56,7 @@ class Technic(models.Model):
     class Meta:
         verbose_name = "Единица техники"
         verbose_name_plural = "Техника"
-        ordering = ['title']
+        ordering = ['title', 'attached_driver']
 
 
 class TemplateDescForTechnic(models.Model):
@@ -64,6 +72,7 @@ class TemplateDescForTechnic(models.Model):
     class Meta:
         verbose_name = "Templates для техники"
         verbose_name_plural = "Template для техники"
+        ordering = ['technic',]
 
 #   TECHNIC-END---------------------------------------------------------------
 
@@ -76,7 +85,7 @@ class ConstructionSite(models.Model):
     status = models.BooleanField(default=True, verbose_name="Статус объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
-    def __str__(self): return f"{self.address} ({self.foreman}) - {'Открыт' if self.status else 'Закрыт'}"
+    def __str__(self): return f"{self.address} ({self.foreman})"
 
     class Meta:
         verbose_name = "Строительный объект"
@@ -100,7 +109,7 @@ class WorkDaySheet(models.Model):
         self.save(update_fields=['is_all_application_send'])
 
     def __str__(self):
-        return f"{self.date} - {'Рабочий' if self.status else 'Выходной'}"
+        return f"{self.date}"
 
     class Meta:
         verbose_name = 'Рабочий день'
@@ -140,7 +149,7 @@ class TechnicSheet(models.Model):
             self.count_application = self.count_application - 1
             self.save(update_fields=['count_application'])
 
-    def __str__(self): return f"{self.date.date} {self.technic} [{'Рабочий' if self.status else 'Выходной'}]"
+    def __str__(self): return f"{self.technic}"
 
     class Meta:
         verbose_name = 'Отметка техники'
@@ -213,6 +222,7 @@ class ApplicationTechnic(models.Model):
     class Meta:
         verbose_name = "Заявка на технику"
         verbose_name_plural = "Заявки на технику"
+        ordering = ['application_today', 'technic_sheet']
 
 
 class ApplicationMaterial(models.Model):
@@ -228,6 +238,7 @@ class ApplicationMaterial(models.Model):
     class Meta:
         verbose_name = 'Заявка на материал'
         verbose_name_plural = 'Заявка на материалы'
+        ordering = ['application_today',]
 
 #   Applications-END----------------------------------------------------------
 
@@ -249,6 +260,7 @@ class Parameter(models.Model):
     class Meta:
         verbose_name = "Переменная"
         verbose_name_plural = "Переменные"
+        ordering = ['title',]
 
 # class Telebot(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
