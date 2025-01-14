@@ -92,7 +92,7 @@ class DriverSheetAdmin(admin.ModelAdmin):
     driver_count = User.objects.filter(post='driver', isArchive=False).count()
     list_display = ("date", "driver", "status")
     list_per_page = driver_count
-    list_editable = ("status","driver")
+    list_editable = ("status",)
     list_filter = ("status", "isArchive")
 
 
