@@ -57,7 +57,7 @@ class TechnicAdmin(admin.ModelAdmin):
     list_editable = ('attached_driver', 'isArchive')
 
 
-#   TemplateDescForTechnic ----------------------------------------------------------------
+#   TemplateDescForTechnic ----------------------------------------------------
 @admin.register(TemplateDescForTechnic)
 class TemplateDescForTechnicAdmin(admin.ModelAdmin):
     list_display = ('technic', 'description', 'is_auto_mode', 'is_default_mode', )
