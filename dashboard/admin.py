@@ -105,8 +105,12 @@ class TechnicSheetAdmin(admin.ModelAdmin):
     list_editable = ("status", )
 
 
+#   TechnicSheet ----------------------------------------------------------------
+@admin.register(ApplicationToday)
+class ApplicationTodayAdmin(admin.ModelAdmin):
+    list_display = ('construction_site', 'date', 'status', 'is_edited')
+    
 
-admin.site.register(ApplicationToday)
 admin.site.register(ApplicationTechnic)
 admin.site.register(ApplicationMaterial)
 
