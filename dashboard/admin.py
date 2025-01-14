@@ -62,8 +62,12 @@ class TechnicAdmin(admin.ModelAdmin):
 class TemplateDescForTechnicAdmin(admin.ModelAdmin):
     list_display = ('technic', 'description', 'is_auto_mode', 'is_default_mode', )
 
-admin.site.register(ConstructionSite)
 
+#   TemplateDescForTechnic ----------------------------------------------------
+@admin.register(ConstructionSite)
+class ConstructionSiteAdmin(admin.ModelAdmin):
+    list_display = ('address', 'foreman', 'status', 'isArchive')
+    list_filter = ('status', 'isArchive')
 
 
 #   WorkDaySheet ----------------------------------------------------------------

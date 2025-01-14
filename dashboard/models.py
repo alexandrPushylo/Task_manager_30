@@ -85,7 +85,7 @@ class ConstructionSite(models.Model):
     status = models.BooleanField(default=True, verbose_name="Статус объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
-    def __str__(self): return f"{self.address} ({self.foreman}) - {'Открыт' if self.status else 'Закрыт'}"
+    def __str__(self): return f"{self.address} ({self.foreman})"
 
     class Meta:
         verbose_name = "Строительный объект"
