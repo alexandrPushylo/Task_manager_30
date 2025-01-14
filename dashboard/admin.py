@@ -111,7 +111,6 @@ class ApplicationTodayAdmin(admin.ModelAdmin):
     list_display = ('construction_site', 'date', 'status', 'is_edited')
 
 
-admin.site.register(Parameter)
 # admin.site.register(Telebot)
 #   ApplicationTechnic ----------------------------------------------------------------
 @admin.register(ApplicationTechnic)
@@ -125,5 +124,10 @@ class ApplicationTechnicAdmin(admin.ModelAdmin):
 class ApplicationMaterialAdmin(admin.ModelAdmin):
     list_display = ('application_today', 'description', 'isChecked', 'is_cancelled')
     list_per_page = 50
+
+
+@admin.register(Parameter)
+class ParameterAdmin(admin.ModelAdmin):
+    list_display = ('title', 'value', 'flag', 'time', 'date')
 
 
