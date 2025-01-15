@@ -272,10 +272,10 @@ def edit_application_view(request):
 
         if not current_day.status:
             return render(request, 'content/spec/weekend.html', context)
-
-        context['technics'] = TECHNIC_SERVICE.get_technics_queryset(
-            isArchive=False
-        ).distinct().values_list('title', flat=True)
+        # TODO: clear
+        # context['technics'] = TECHNIC_SERVICE.get_technics_queryset(
+        #     isArchive=False
+        # ).distinct().values_list('title', flat=True)
 
         technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('technic', 'driver_sheet__driver'),
