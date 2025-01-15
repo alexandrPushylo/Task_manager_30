@@ -9,6 +9,8 @@ from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet
 from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMaterial
 from dashboard.models import Parameter
 
+from dashboard.utilities import TODAY, timedelta
+
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -54,6 +56,10 @@ class CustomUserAdmin(UserAdmin):
 class TechnicAdmin(admin.ModelAdmin):
     list_display = ("title", "id_information", "attached_driver", "isArchive")
     list_filter = ('type', 'isArchive')
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super(TechnicAdmin, self).get_form(request, obj, change, **kwargs)
+        form.base_fields['attached_driver'].queryset = User.objects.filter(post='driver')
+        return form
 
 
 #   TemplateDescForTechnic ----------------------------------------------------
@@ -67,6 +73,10 @@ class TemplateDescForTechnicAdmin(admin.ModelAdmin):
 class ConstructionSiteAdmin(admin.ModelAdmin):
     list_display = ('address', 'foreman', 'status', 'isArchive')
     list_filter = ('status', 'isArchive')
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super(ConstructionSiteAdmin, self).get_form(request, obj, change, **kwargs)
+        form.base_fields['foreman'].queryset = User.objects.filter(post='foreman')
+        return form
 
 
 #   WorkDaySheet ----------------------------------------------------------------
@@ -93,7 +103,13 @@ class DriverSheetAdmin(admin.ModelAdmin):
     list_per_page = driver_count
     list_editable = ("status",)
     list_filter = ("status", "isArchive")
+    list_display_links = ("driver",)
 
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["driver"].queryset = User.objects.filter(post='driver', isArchive=False)
+        form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date__gte=TODAY-timedelta(days=7))
+        return form
 
 #   TechnicSheet ----------------------------------------------------------------
 @admin.register(TechnicSheet)
@@ -103,12 +119,34 @@ class TechnicSheetAdmin(admin.ModelAdmin):
     list_per_page = technic_count
     list_filter = ("status", "isArchive")
     list_editable = ("status", )
+    list_display_links = ("technic",)
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        if obj:
+            date = obj.date.date
+        else:
+            date = TODAY
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["driver_sheet"].queryset = DriverSheet.objects.filter(date__date=date)
+        form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date=date)
+        return form
 
 
-#   TechnicSheet ----------------------------------------------------------------
+#   ApplicationToday ----------------------------------------------------------------
 @admin.register(ApplicationToday)
 class ApplicationTodayAdmin(admin.ModelAdmin):
     list_display = ('construction_site', 'date', 'status', 'is_edited')
+    list_per_page = 20
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        if obj:
+            date = obj.date.date
+        else:
+            date = TODAY
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date__gte=date)
+        form.base_fields["construction_site"].queryset = ConstructionSite.objects.filter(status=True, isArchive=False)
+        return form
 
 
 #   ApplicationTechnic ----------------------------------------------------------------
@@ -117,12 +155,31 @@ class ApplicationTechnicAdmin(admin.ModelAdmin):
     list_display = ('application_today', 'technic_sheet', 'priority', 'isChecked', 'is_cancelled')
     list_per_page = 50
 
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        if obj:
+            date = obj.application_today.date.date
+        else:
+            date = TODAY
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["application_today"].queryset = ApplicationToday.objects.filter(date__date=date)
+        form.base_fields["technic_sheet"].queryset = TechnicSheet.objects.filter(date__date=date)
+        return form
+
 
 #   ApplicationMaterial ----------------------------------------------------------------
 @admin.register(ApplicationMaterial)
 class ApplicationMaterialAdmin(admin.ModelAdmin):
     list_display = ('application_today', 'description', 'isChecked', 'is_cancelled')
     list_per_page = 50
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        if obj:
+            date = obj.application_today.date.date
+        else:
+            date = TODAY
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["application_today"].queryset = ApplicationToday.objects.filter(date__date=date)
+        return form
 
 
 #   ApplicationMaterial ----------------------------------------------------------------
