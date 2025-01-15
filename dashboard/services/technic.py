@@ -154,16 +154,41 @@ def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]):
         :param technic_sheets:
         :return:
         """
-    technic_titles_list = technic_sheets.values_list('technic__title', flat=True).distinct()
+    distinct_technic_titles_list = get_distinct_technic_title(technic_sheets)
     out = []
-    for title in technic_titles_list:
+
+    for title in distinct_technic_titles_list:
         out.append({
             'title': title,
-            'short_title': str(title).replace(' ', '').replace('.', ''),
-            'status_busies_list': list(technic_sheets.filter(technic__title=title).values_list('count_application', flat=True))
+            'short_title': get_short_title(title),
+            'status_busies_list': list(technic_sheets.filter(
+                technic__title=title
+            ).values_list('count_application', flat=True))
         })
     return out
 
+
+def get_short_title(title: str) -> str:
+    """
+    Получить short_title для technic title
+    :param title:
+    :return:
+    """
+    return title.replace(' ', '').replace('.', '')
+
+
+def get_distinct_technic_title(technic_sheets: QuerySet[TechnicSheet]) -> list:
+    """
+    :param technic_sheets:
+    :return: technic_sheets.values_list('technic__title', flat=True).distinct()
+    """
+    distinct_technic_titles_list = []
+    technic_titles_list = technic_sheets.values_list('technic__title', flat=True)
+
+    for item in technic_titles_list:
+        if item not in distinct_technic_titles_list:
+            distinct_technic_titles_list.append(item)
+    return distinct_technic_titles_list
 
 
 def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptionMode:

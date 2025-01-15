@@ -123,7 +123,7 @@ class DriverSheet(models.Model):
     date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
-    def __str__(self): return f"{self.date.date} {self.driver} [{'Работает' if self.status else 'Не работает'}]"
+    def __str__(self): return f"{self.driver} [{'Работает' if self.status else 'Не работает'}]"
 
     class Meta:
         verbose_name = 'Отметка водителя'
