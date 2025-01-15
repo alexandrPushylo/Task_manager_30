@@ -165,6 +165,19 @@ def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]):
     return out
 
 
+def get_distinct_technic_title(technic_sheets: QuerySet[TechnicSheet]) -> list:
+    """
+    :param technic_sheets:
+    :return: technic_sheets.values_list('technic__title', flat=True).distinct()
+    """
+    distinct_technic_titles_list = []
+    technic_titles_list = technic_sheets.values_list('technic__title', flat=True)
+
+    for item in technic_titles_list:
+        if item not in distinct_technic_titles_list:
+            distinct_technic_titles_list.append(item)
+    return distinct_technic_titles_list
+
 
 def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptionMode:
     """
