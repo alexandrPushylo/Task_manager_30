@@ -341,3 +341,4 @@ fabric.properties
 /static
 /tmp
 .htaccess
+/dashboard/migrations
