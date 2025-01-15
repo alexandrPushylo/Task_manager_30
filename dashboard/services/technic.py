@@ -165,6 +165,15 @@ def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]):
     return out
 
 
+def get_short_title(title: str) -> str:
+    """
+    Получить short_title для technic title
+    :param title:
+    :return:
+    """
+    return title.replace(' ', '').replace('.', '')
+
+
 def get_distinct_technic_title(technic_sheets: QuerySet[TechnicSheet]) -> list:
     """
     :param technic_sheets:
