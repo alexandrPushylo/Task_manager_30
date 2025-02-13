@@ -128,7 +128,7 @@ def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
     technic_sheet = technic_sheet.exclude(
         applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
     )
-    technic_title_list = technic_sheet.values_list('technic__title', flat=True).distinct()
+    technic_title_list = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheet)
 
     for technic_title in technic_title_list:
         technic__title = technic_sheet.filter(technic__title=technic_title, driver_sheet__status=True)
