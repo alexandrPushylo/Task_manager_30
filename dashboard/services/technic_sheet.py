@@ -93,7 +93,6 @@ def prepare_technic_sheets(workday: WorkDaySheet):
     :param workday: WorkDaySheet
     :return:
     """
-    # technic_sheet_list = TechnicSheet.objects.filter(isArchive=False, date=workday)
     technic_sheet_list = get_technic_sheet_queryset(isArchive=False, date=workday)
     count_technic_sheet = technic_sheet_list.count()
 
