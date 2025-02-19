@@ -873,3 +873,14 @@ def validate_telephone(telephone: str, length=9, use_pref=True) -> str | None:
                 return out[-length:]
         else:
             return None
+
+def is_redirect_to_dashboard(request_meta: dict) -> bool:
+    """
+    Перенаправить ли на главную страницу
+    :param request_meta:
+    :return: True | False
+    """
+    if request_meta.get('HTTP_REFERER') is None:
+        return True
+    else:
+        return False
