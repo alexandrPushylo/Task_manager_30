@@ -1668,6 +1668,7 @@ def spec_page_view(request):
             with open(file_url, 'rt') as f:
                 file = f.readlines()
         except FileNotFoundError:
+            file = 'FileNotFoundError'
             log.error('spec_page_view(): FileNotFoundError')
 
         return HttpResponse(file, content_type='text/plain')
