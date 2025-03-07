@@ -1663,8 +1663,12 @@ def spec_page_view(request):
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
         # file = ''
-        with open(file_url, 'rt') as f:
-            file = f.readlines()
+
+        try:
+            with open(file_url, 'rt') as f:
+                file = f.readlines()
+        except FileNotFoundError:
+            log.error('spec_page_view(): FileNotFoundError')
 
         return HttpResponse(file, content_type='text/plain')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
