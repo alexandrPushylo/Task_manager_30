@@ -1,3 +1,5 @@
+from django.db.utils import IntegrityError
+
 from dashboard.models import User
 from django.core.handlers.wsgi import WSGIRequest
 
@@ -96,19 +98,23 @@ def edit_user(user_id, data: dict) -> User:
 
 
 def create_new_user(data: dict) -> User | None:
-    user = User.objects.create_user(
-        username=data['username'],
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        telephone=data['telephone'],
-        password=data['password'],
-        post=data['post'],
-        supervisor_user_id=data['supervisor_user_id'],
-        is_staff=False,
-        is_superuser=False
-    )
-    log.info('Пользователь %s был добавлен' % data['last_name'])
-    return user
+    try:
+        user = User.objects.create_user(
+            username=data['username'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            telephone=data['telephone'],
+            password=data['password'],
+            post=data['post'],
+            supervisor_user_id=data['supervisor_user_id'],
+            is_staff=False,
+            is_superuser=False
+        )
+        log.info('Пользователь %s был добавлен' % data['last_name'])
+        return user
+    except IntegrityError:
+        log.error('create_new_user(): IntegrityError; | username= [%s]', data['username'])
+        return None
 
 
 def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
