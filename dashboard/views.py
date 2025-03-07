@@ -75,10 +75,10 @@ def dashboard_view(request):
     if request.user.is_anonymous:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
-    is_redirect = U.is_redirect_to_dashboard(request.META)
-    if request.GET.get('current_day') != str(U.TODAY):
-        if is_redirect:
-            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={U.TODAY}")
+    # is_redirect = U.is_redirect_to_dashboard(request.META)
+    # if request.GET.get('current_day') != str(U.TODAY):
+    #     if is_redirect:
+    #         return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={U.TODAY}")
 
     current_day = WORK_DAY_SERVICE.get_current_day(request)
 
