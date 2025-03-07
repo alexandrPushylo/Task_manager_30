@@ -25,7 +25,8 @@
             </li>
         
             <li><a class="dropdown-item" href="/admin/">Админ страница</a>
-            <li><a class="dropdown-item" href="#">Заявки на технику</a>
+            <li><a class="dropdown-item" href="{% url 'spec_page' %}?page_type=info">Info page</a>
+            <li><a class="dropdown-item" href="{% url 'spec_page' %}?page_type=error">Error page</a>
             
             <li>
                 <hr class="m-0">

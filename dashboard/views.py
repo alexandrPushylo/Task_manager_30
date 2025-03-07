@@ -1649,3 +1649,22 @@ def calculate_all_applications(request):
         TECHNIC_SHEET_SERVICE.calculate_all_applications_for_ts(current_day)
         return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={ current_day.date }")
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def spec_page_view(request):
+    if request.user.is_authenticated:
+        page_type = request.GET.get('page_type')
+        from config.settings import BASE_DIR
+        if page_type == 'info':
+            file_url = f'{BASE_DIR}/logs/info.log'
+        elif page_type == 'error':
+            file_url = f'{BASE_DIR}/logs/errors.log'
+        else:
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+
+        # file = ''
+        with open(file_url, 'rt') as f:
+            file = f.readlines()
+
+        return HttpResponse(file, content_type='text/plain')
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
