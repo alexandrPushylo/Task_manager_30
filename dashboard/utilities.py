@@ -46,7 +46,7 @@ def convert_str_to_date(str_date: str) -> date:
         elif isinstance(str_date, date):
             return str_date
     except:
-        print('Error date')
+        log.warning('convert_str_to_date(): Error date')
 
 
 def get_weekday(_date: date) -> str | None:
@@ -333,7 +333,7 @@ def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bo
                     try:
                         font_size = int(io_value)
                     except Exception as e:
-                        log.error("set_data_for_filter(): 'font_size'")
+                        log.warning("set_data_for_filter(): 'font_size'")
                         font_size = 10
                 user.font_size = font_size
                 user.save(update_fields=['font_size'])
@@ -419,7 +419,7 @@ def send_messages_by_telegram(chat_id, messages):
         try:
             T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
         except T.ApiTelegramException as e:
-            log.error('send_messages_by_telegram(): ApiTelegramException')
+            log.error('send_messages_by_telegram(): ApiTelegramException [%s]' % chat_id)
 
 
 def get_user_key(user_id) -> str:
@@ -830,8 +830,8 @@ def get_accept_to_change_materials_app(current_workday: WorkDaySheet) -> bool:
     )
     if not var_time_limit:
         log.warning(
-            f"Переменная {VAR.VAR_TIME_RECEPTION_OF_MATERIALS['name']} \
-            для ограничения времени подачи заявок на материалы не существует.")
+            f"Variable {VAR.VAR_TIME_RECEPTION_OF_MATERIALS['name']} \
+            There is no time limit for submitting applications for materials.")
         return False
 
     time_limit = var_time_limit.time

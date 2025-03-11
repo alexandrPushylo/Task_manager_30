@@ -14,7 +14,7 @@ def get_construction_sites(**kwargs) -> ConstructionSite:
         construction_sites = ConstructionSite.objects.get(**kwargs)
         return construction_sites
     except ConstructionSite.DoesNotExist:
-        log.error('get_construction_sites(): DoesNotExist')
+        log.warning('get_construction_sites(): DoesNotExist')
         return ConstructionSite.objects.none()
     except ValueError:
         log.error('get_construction_sites(): ValueError')
@@ -44,10 +44,10 @@ def hide_construction_site(constr_site_id):
     if constr_site:
         if constr_site.status:
             constr_site.status = False
-            log.info('Объект был скрыт')
+            log.info('The construction site was hidden')
         else:
             constr_site.status = True
-            log.info('Объект был отображен')
+            log.info('The construction site was displayed')
         constr_site.save(update_fields=['status'])
 
 
@@ -57,11 +57,11 @@ def delete_construction_site(constr_site_id) -> ConstructionSite | None:
         if constr_site.isArchive:
             constr_site.isArchive = False
             constr_site.deleted_date = None
-            log.info('Объект %s был восстановлен из архива' % constr_site.address)
+            log.info('The %s construction site has been restored from the archive' % constr_site.address)
         else:
             constr_site.isArchive = True
             constr_site.deleted_date = U.TODAY
-            log.info('Объект %s был помешен в архив' % constr_site.address)
+            log.info('The %s construction site has been archived' % constr_site.address)
 
         constr_site.save(update_fields=['isArchive', 'deleted_date'])
         return constr_site
@@ -80,16 +80,16 @@ def check_data(data: dict) -> dict | None:
             out['foreman'] = foreman
         else:
             out['foreman'] = None
-            log.error('Прораба с id %s не существует' % cs_foreman)
+            log.warning('There is no foreman with id %s.' % cs_foreman)
     else:
         out['foreman'] = None
 
     if cs_address:
         out['address'] = cs_address
-        log.info('Данные: (cs_address) в порядке')
+        log.info('Data: (cs_address) is ok')
         return out
     else:
-        log.error('Ошибка с данными: (cs_address) при проверке')
+        log.warning('Error with the data: (cs_address) during verification')
         return None
 
 
@@ -98,7 +98,7 @@ def create_construction_site(data: dict):
         address=data['address'],
         foreman=data['foreman'],
     )
-    log.info('Объект %s был создан' % data["address"])
+    log.info('The %s CS has been created' % data["address"])
 
 
 def edit_construction_site(constr_site_id, data: dict):
@@ -107,7 +107,7 @@ def edit_construction_site(constr_site_id, data: dict):
         constr_site.address = data['address']
         constr_site.foreman = data['foreman']
         constr_site.save(update_fields=['address', 'foreman'])
-        log.info('Объект %s был изменен' % data["address"])
+        log.info('The %s CS has been changed' % data["address"])
 
 
 def create_or_edit_construction_site(data: dict, constr_site_id=None):
@@ -122,7 +122,7 @@ def create_or_edit_construction_site(data: dict, constr_site_id=None):
             else:
                 create_construction_site(prepare_data)
     else:
-        log.error('Ошибка с данными')
+        log.error('Error with the data')
 
 
 def is_construction_site_already_exists(constr_site_title: str, foreman: User) -> bool:
@@ -156,4 +156,4 @@ def restore_construction_site(data: dict[str, User | None]):
         cs.status = True
         cs.deleted_date = None
         cs.save()
-        log.info('Объект %s был восстановлен' % data["address"])
+        log.info('The %s CS has been restored' % data["address"])

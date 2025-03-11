@@ -91,7 +91,7 @@ def edit_user(user_id, data: dict) -> User:
         user.post = data['post']
         user.supervisor_user_id = data['supervisor_user_id']
         user.save()
-        log.info(f"Пользователь {data['last_name']} {data['first_name']} был изменен")
+        log.info(f"User {data['last_name']} {data['first_name']} has been changed")
         return user
     else:
         return User.objects.none()
@@ -110,10 +110,10 @@ def create_new_user(data: dict) -> User | None:
             is_staff=False,
             is_superuser=False
         )
-        log.info('Пользователь %s был добавлен' % data['last_name'])
+        log.info('User %s has been added' % data['last_name'])
         return user
     except IntegrityError:
-        log.error('create_new_user(): IntegrityError; | username= [%s]', data['username'])
+        log.error('create_new_user(): IntegrityError; | username= [%s]' % data['username'])
         return None
 
 
@@ -130,7 +130,7 @@ def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
     telephone = U.validate_telephone(telephone)
 
     if all((username, first_name, last_name, password)):
-        log.info('Данные: (username, first_name, last_name, password) в порядке')
+        log.info('Data: (username, first_name, last_name, password) is Ok')
         return {
             'username': username,
             'first_name': first_name,
@@ -141,7 +141,7 @@ def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
             'supervisor_user_id': supervisor_user_id
         }
     else:
-        log.error('Ошибка с данными: (username, first_name, last_name, password) при проверке')
+        log.error('Error with data: (username, first_name, last_name, password) during verification')
         return None
 
 
@@ -151,12 +151,12 @@ def add_or_edit_user(data: WSGIRequest.POST, user_id=None):
         if prepare_data:
             return edit_user(user_id, prepare_data)
         else:
-            log.error('Ошибка с данными "user_data" при изменении пользователя')
+            log.error('Error with the "user_data" data when edit the user')
     else:
         if prepare_data:
             return create_new_user(prepare_data)
         else:
-            log.error('Ошибка с данными "user_data" при создании пользователя')
+            log.error('Error with the "user_data" data when creating a user')
 
 
 def delete_user(user_id) -> User:
@@ -164,7 +164,7 @@ def delete_user(user_id) -> User:
     if user:
         user.isArchive = True
         user.save(update_fields=['isArchive'])
-        log.info(f'Пользователь: ({user.last_name} {user.first_name}) был помещен в архив')
+        log.info(f'User: ({user.last_name} {user.first_name}) has been archived')
         return user
     return User.objects.none()
 

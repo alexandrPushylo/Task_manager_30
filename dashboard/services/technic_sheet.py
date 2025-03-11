@@ -46,7 +46,7 @@ def get_technic_sheet(**kwargs) -> TechnicSheet:
         technic_sheet = TechnicSheet.objects.get(**kwargs)
         return technic_sheet
     except TechnicSheet.DoesNotExist:
-        log.error('get_technic_sheet(): TechnicSheet.DoesNotExist')
+        log.warning('get_technic_sheet(): TechnicSheet.DoesNotExist')
         return TechnicSheet.objects.none()
     except TechnicSheet.MultipleObjectsReturned:
         log.error('get_technic_sheet(): TechnicSheet.MultipleObjectsReturned')
@@ -61,12 +61,12 @@ def change_status(technic_sheet_id) -> bool:
     if technic_sheet:
         if technic_sheet.status:
             technic_sheet.status = False
-            log.info(f"technic_sheet с id {technic_sheet_id} установлен статус False")
+            log.info("technic_sheet id %s the status is set to False" % technic_sheet_id)
             technic_sheet.save(update_fields=['status'])
             return False
         else:
             technic_sheet.status = True
-            log.info(f"technic_sheet с id {technic_sheet_id} установлен статус True")
+            log.info("technic_sheet id %s the status is set to True" % technic_sheet_id)
             technic_sheet.save(update_fields=['status'])
             return True
 
@@ -79,7 +79,7 @@ def change_driver(technic_sheet_id, driver_sheet_id):
     technic_sheet = get_technic_sheet(id=technic_sheet_id)
     technic_sheet.driver_sheet = driver_sheet
     technic_sheet.save(update_fields=['driver_sheet'])
-    log.info("Для technic_sheet изменен водитель")
+    log.info("The driver has been changed for technic_sheet")
     if driver_sheet:
         return driver_sheet.status
     else:
@@ -102,7 +102,7 @@ def prepare_technic_sheets(workday: WorkDaySheet):
     autocomplete_driver_to_technic_sheet(workday=workday)
 
     if count_technics != count_technic_sheet:
-        log.info(f"TechnicSheet на {workday.date} не готов")
+        log.info("TechnicSheet for %s is not ready" % workday.date)
 
         driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(isArchive=False, date=workday)
 
@@ -110,10 +110,10 @@ def prepare_technic_sheets(workday: WorkDaySheet):
         last_technic_sheet = get_technic_sheet_queryset(date=last_workday, isArchive=False)
 
         if count_technics > count_technic_sheet:
-            log.info(f"count_technics > count_technic_sheet {count_technics} > {count_technic_sheet}")
+            log.info("count_technics > count_technic_sheet %s > %s" % (count_technics, count_technic_sheet))
 
             if last_technic_sheet.count() == count_technics:  # COPY
-                log.info(f"last_technic_sheet.exists() is {last_technic_sheet.exists()} - Копирование")
+                log.info("last_technic_sheet.exists() is %s - COPY" % last_technic_sheet.exists())
 
                 current_technic_sheet = []
                 for ts in last_technic_sheet:
@@ -131,7 +131,7 @@ def prepare_technic_sheets(workday: WorkDaySheet):
                     )
 
             else:  # CREATE
-                log.info(f"last_technic_sheet.exists() is {last_technic_sheet.exists()} - Создание")
+                log.info("last_technic_sheet.exists() is %s - CREAT" % last_technic_sheet.exists())
 
                 excludes_technics = technic_sheet_list.values_list('technic_id', flat=True)
 
@@ -143,19 +143,19 @@ def prepare_technic_sheets(workday: WorkDaySheet):
             TechnicSheet.objects.bulk_create(current_technic_sheet)
 
         if count_technic_sheet != 0 and count_technics != count_technic_sheet:  # Delete duplicate
-            log.info(f"count_technics < count_technic_sheet {count_technics} < {count_technic_sheet}")
-            log.info(f"Поиск дубликата")
+            log.info("count_technics < count_technic_sheet %s < %s" % (count_technics, count_technic_sheet))
+            log.info("Duplicate Search")
             for technic in technics_list:
                 double_ts = technic_sheet_list.filter(date=workday, technic=technic)
                 if double_ts.count() > 1:
-                    log.info(f"Дубликат {double_ts.first()} удален")
+                    log.info(f"Duplicate was deleted")
                     double_ts.first().delete()
 
         if count_technics == count_technic_sheet:
-            log.info(f"count_technics = count_technic_sheet {count_technics} = {count_technic_sheet}")
+            log.info("count_technics = count_technic_sheet %s = %s" % (count_technics, count_technic_sheet))
 
     else:
-        log.info(f"TechnicSheet на {workday.date} существует")
+        log.info(f"TechnicSheet for %s exists" % workday.date)
 
 
 def is_technic_sheet_exists(workday: WorkDaySheet) -> bool:
@@ -276,7 +276,7 @@ def get_least_busy_technic_sheet(free_technic_sheet_list: list[dict]) -> dict:
     if free_technic_sheet_list:
         least_busy_technic_sheet = sorted(free_technic_sheet_list, key=lambda item: item['count_application'])[0]
         return least_busy_technic_sheet
-    log.error("get_least_busy_technic_sheet(): free_technic_sheet_list is empty")
+    log.warning("get_least_busy_technic_sheet(): free_technic_sheet_list is empty")
     return {}
 
 

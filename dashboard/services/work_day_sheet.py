@@ -21,11 +21,11 @@ def get_workday(_date: date) -> WorkDaySheet:
         workday = WorkDaySheet.objects.get(date=_date)
         return workday
     except WorkDaySheet.DoesNotExist:
-        log.error(f"Workday: {_date} не существует")
+        log.warning(f"Workday: {_date} does not exist")
         status = prepare_workday(_date)
         return get_workday(_date) if status else get_workday(TODAY)
     except ValidationError:
-        log.error("Значение имеет неверный формат даты")
+        log.error("The value has an incorrect date format.")
         return get_workday(TODAY)
 
 
@@ -55,10 +55,10 @@ def prepare_workday(_date: date):
             else:
                 status = True
             WorkDaySheet.objects.update_or_create(date=day, defaults={'status': status})
-        log.info("Prepare workday выполнен")
+        log.info("Prepare workday completed")
         return True
     else:
-        log.info("Prepare workday не выполнен")
+        log.info("Prepare workday not completed")
         return False
 
 
@@ -116,14 +116,14 @@ def change_status(work_day_id):
         workday = WorkDaySheet.objects.get(id=work_day_id)
         if workday.status:
             workday.status = False
-            log.info(f"work_day {workday.date} установлен как выходной")
+            log.info(f"work_day {workday.date} is set as a day off")
         else:
             workday.status = True
-            log.info(f"work_day {workday.date} установлен как рабочий")
+            log.info(f"work_day {workday.date} is set as a working day")
         workday.save(update_fields=['status'])
         return True
     except WorkDaySheet.DoesNotExist:
-        log.error(f"Workday с id {work_day_id} не существует")
+        log.error(f"A workday with the id {work_day_id} does not exist")
         return False
     except ValueError:
         log.error('change_status(): ValueError')
