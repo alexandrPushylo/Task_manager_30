@@ -29,7 +29,7 @@ def create_new_technic(data: dict):
         id_information=data['id_information'],
         description=data['description']
     )
-    log.info(f'Техника {technic.title} [{technic.id_information}] была добавлена')
+    log.info(f'Technic: %s [%s] has been added' % (technic.title, technic.id_information))
 
 
 def edit_technic(technic_id, data: dict):
@@ -42,14 +42,14 @@ def edit_technic(technic_id, data: dict):
         technic.id_information = data['id_information']
         technic.description = data['description']
         technic.save()
-        log.info(f'Техника {technic.title} [{technic.id_information}] была изменена')
+        log.info('Technic %s [%s] has been edit' % (technic.title, technic.id_information))
     except Technic.DoesNotExist:
-        log.error(f'Техники с id={technic_id} не существует')
+        log.warning('Technic id=%s does not exist' % technic_id)
 
 
 def check_technic_data(data: dict) -> dict | None:
     out: dict[str, Any] = {}
-    log.info('Проверка technic_data')
+    log.info('Check technic_data')
     title = data.get('title')
     tech_type = data.get('type')
     id_information = data.get('id_information')
@@ -65,13 +65,13 @@ def check_technic_data(data: dict) -> dict | None:
             driver = User.objects.get(pk=attached_driver)
             out['attached_driver'] = driver
         except User.DoesNotExist:
-            log.error(f'Прикрепленного водителя с id={attached_driver} не существует')
+            log.warning('Attached driver id=%s does not exist' % attached_driver)
             out['attached_driver'] = None
     else:
         out['attached_driver'] = None
 
     if all((title, tech_type, id_information)):
-        log.info(f'Данные: (title, tech_type, id_information) в порядке')
+        log.info(f'Data: (title, tech_type, id_information) is OK')
         out['title'] = title
         out['type'] = tech_type
         out['id_information'] = id_information
@@ -79,7 +79,7 @@ def check_technic_data(data: dict) -> dict | None:
         out['supervisor'] = supervisor
         return out
     else:
-        log.error('Ошибка с данными: (title, tech_type, id_information) при проверке')
+        log.warning('Error with the data: (title, tech_type, id_information) when checking')
         return None
 
 
@@ -89,12 +89,12 @@ def add_or_edit_technic(data: WSGIRequest.POST, technic_id=None):
         if prepare_data:
             edit_technic(technic_id, prepare_data)
         else:
-            log.error('Ошибка с данными "technic_data" при изменении техники')
+            log.error('Error with the "technic_data" data when edit technic')
     else:
         if prepare_data:
             create_new_technic(prepare_data)
         else:
-            log.error('Ошибка с данными "technic_data" при создании техники')
+            log.error('Error with the "technic_data" data when creating technic')
 
 
 def delete_technic(technic_id):
@@ -102,10 +102,10 @@ def delete_technic(technic_id):
         technic = Technic.objects.get(pk=technic_id)
         technic.isArchive = True
         technic.save(update_fields=['isArchive'])
-        log.info(f'Техника {technic.title} [{technic.id_information}] был помещена в архив')
+        log.info('Technic %s [%s] был помещена в архив' % (technic.title, technic.id_information))
         return technic
     except Technic.DoesNotExist:
-        log.error(f'Техники с id={technic_id} не существует')
+        log.warning('Technic id=%s does not exist' % technic_id)
         return None
 
 
@@ -132,10 +132,10 @@ def get_technic(**kwargs) -> Technic:
         technic = Technic.objects.get(**kwargs)
         return technic
     except Technic.DoesNotExist:
-        log.error("get_technic(): Technic.DoesNotExist ")
+        log.warning("get_technic(): Technic.DoesNotExist ")
         return Technic.objects.none()
     except ValueError:
-        log.error("get_technic(): ValueError")
+        log.warning("get_technic(): ValueError")
         return Technic.objects.none()
 
 
@@ -235,7 +235,7 @@ def get_task_description(**kwargs) -> TemplateDescForTechnic:
         description = TemplateDescForTechnic.objects.get(**kwargs)
         return description
     except TemplateDescForTechnic.DoesNotExist:
-        log.error("get_task_description(): TemplateDescForTechnic.DoesNotExist ")
+        log.warning("get_task_description(): TemplateDescForTechnic.DoesNotExist ")
         return TemplateDescForTechnic.objects.none()
     except ValueError:
         log.error("get_task_description(): ValueError")
@@ -269,7 +269,7 @@ def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, desc
             task_description.description = description if description is not None else ''
             task_description.save()
         case _:
-            log.warning('type_mode не валиден set_task_description')
+            log.warning('type_mode is not valid set_task_description')
 
 
 
