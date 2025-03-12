@@ -18,8 +18,11 @@ def get_apps_today(**kwargs) -> ApplicationToday:
     except ApplicationToday.DoesNotExist:
         log.warning("get_apps_today(): ApplicationToday.DoesNotExist")
         return ApplicationToday.objects.none()
+    except ApplicationToday.MultipleObjectsReturned:
+        log.error(f"get_apps_today(): ApplicationToday.MultipleObjectsReturned | [{kwargs}]")
+        return ApplicationToday.objects.none()
     except ValueError:
-        log.error("get_apps_today(): ValueError")
+        log.error(f"get_apps_today(): ValueError | [{kwargs}]")
         return ApplicationToday.objects.none()
 
 
