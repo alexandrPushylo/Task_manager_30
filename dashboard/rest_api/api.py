@@ -106,9 +106,6 @@ class LoginApiView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print(self.request.data)
-        print(self.request.POST)
-        print(self.request.headers)
         username = self.request.data.get("username")
         password = self.request.data.get("password")
         user = authenticate(username=username, password=password)
