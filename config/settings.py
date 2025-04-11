@@ -139,16 +139,16 @@ AUTH_USER_MODEL = 'dashboard.User'
 
 SESSION_COOKIE_SAMESITE = False
 SESSION_COOKIE_SECURE = False
-
+#
 CSRF_COOKIE_SAMESITE = False
 CSRF_COOKIE_SECURE = False
 #
 CSRF_TRUSTED_ORIGINS = ['https://*.localhost','https://*.127.0.0.1', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.42:3000', 'https://localhost:3000', 'https://127.0.0.1:3000', 'https://192.168.1.42:3000']
-CSRF_HEADER_NAME = 'HTTP_X-CSRFTOKEN'
+# CSRF_HEADER_NAME = 'http_x-csrftoken'
 CSRF_COOKIE_NAME = "csrftoken"
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
-# CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFTOKEN', 'csrftoken']
 CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS# ['https://*.localhost','https://*.127.0.0.1', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.42:3000']
 #     "http://localhost:3000",
 #     "http://127.0.0.1:3000",
@@ -156,7 +156,7 @@ CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS# ['https://*.localhost','https://*.1
 CORS_ALLOW_HEADERS = (
     'csrftoken',
     'content-type',
-    'HTTP_X-CSRFTOKEN'
+    'X-CSRFTOKEN'
 )
 
 # CSRF_COOKIE_SECURE = False
