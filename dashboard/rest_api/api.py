@@ -5,8 +5,6 @@ from rest_framework import permissions, status
 from rest_framework.generics import ListAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView, ListCreateAPIView, \
     RetrieveUpdateAPIView, RetrieveAPIView
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_protect
-import json
 
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -32,9 +30,12 @@ import dashboard.services.parametr as PARAMETER_SERVICE
 
 
 #   USER------------------------------------------------------
+
 class UserApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
     queryset = USERS_SERVICE.get_user_queryset()
+
     def delete(self, request, *args, **kwargs):
         user = USERS_SERVICE.get_user(pk=self.kwargs["pk"])
         user.isArchive = True
@@ -81,7 +82,6 @@ class DataBaseApiView(APIView):
             current_workday = WORK_DAY_SERVICE.get_workday(U.TODAY)
 
         queryset = {
-            "current_user": S.UserSerializer(self.request.user).data,
             "today": U.TODAY,
             "current_weekday": U.get_weekday(U.TODAY),
             "prev_work_day": WORK_DAY_SERVICE.get_prev_workday(current_workday.date).date,
@@ -89,16 +89,45 @@ class DataBaseApiView(APIView):
             "weekday": U.get_weekday(current_workday.date),
             "view_mode": U.get_view_mode(current_workday.date),
             "accept_mode": U.get_accept_mode(workday=current_workday),
-            "is_authenticated": self.request.user.is_authenticated
         }
         return queryset
+
     def get(self, request):
         return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
+class IsAuthenticatedApiView(APIView):
+    def get_object(self):
+        queryset = {
+            "is_authenticated": False,
+            "user_id": None
+        }
+        if self.request.user.is_authenticated:
+            queryset['is_authenticated'] = True
+            queryset['user_id'] = self.request.user.id
+        return queryset
+
+    def get(self, request):
+        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
+class GetCurrentUserApiView(APIView):
+    serializer_class = S.UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_object(self):
+        return S.UserSerializer(self.request.user).data
+
+    def get(self, request):
+        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
+
+
+class GetTokenApiView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request):
+        if self.request.user.is_authenticated:
+            return JsonResponse({"csrftoken": self.request.META.get('CSRF_COOKIE')}, status=status.HTTP_200_OK)
+        return JsonResponse({"error": "Не авторизован"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LoginApiView(APIView):
@@ -111,7 +140,8 @@ class LoginApiView(APIView):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            return JsonResponse({"message": "Успешно"}, status=status.HTTP_200_OK)
+            csrftoken = self.request.META.get('CSRF_COOKIE')
+            return JsonResponse({"message": "Успешно", "csrftoken": csrftoken}, status=status.HTTP_200_OK)
         else:
             return JsonResponse({"error": "Не верный логин или пароль"}, status=status.HTTP_401_UNAUTHORIZED)
 

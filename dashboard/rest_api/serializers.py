@@ -24,16 +24,25 @@ import dashboard.services.parametr as PARAMETER_SERVICE
 class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = M.User.objects.create_user(
-            username=validated_data["username"],
-            first_name=validated_data["first_name"],
-            last_name=validated_data["last_name"],
-            telephone=validated_data["telephone"],
-            post=validated_data["post"],
-            supervisor_user_id=validated_data["supervisor_user_id"],
+            username=validated_data.get("username"),
+            first_name=validated_data.get("first_name"),
+            last_name=validated_data.get("last_name"),
+            password=validated_data.get("password"),
+            telephone=validated_data.get("telephone"),
+            post=validated_data.get("post"),
+            supervisor_user_id=validated_data.get("supervisor_user_id"),
         )
-        user.set_password(validated_data["password"])
         user.save()
         return user
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr == 'password':
+                instance.set_password(value)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
 
     class Meta:
         model = M.User
@@ -47,8 +56,9 @@ class UserSerializer(serializers.ModelSerializer):
             "telegram_id_chat",
             "post",
             "supervisor_user_id",
-            "isArchive",
+            "isArchive"
         )
+        sort_fields = ('last_name', "username")
 
 
 class UserPostSerializer(serializers.Serializer):
@@ -57,7 +67,6 @@ class UserPostSerializer(serializers.Serializer):
 
 
 class DataBaseSerializer(serializers.Serializer):
-    current_user = UserSerializer()
     today = serializers.DateField(format="%Y-%m-%d")
     current_weekday = serializers.CharField(max_length=30)
     prev_work_day = serializers.DateField(format="%Y-%m-%d")
@@ -65,7 +74,6 @@ class DataBaseSerializer(serializers.Serializer):
     weekday = serializers.CharField(max_length=30)
     view_mode = serializers.CharField(max_length=30)
     accept_mode = serializers.BooleanField()
-    is_authenticated = serializers.BooleanField()
 
 
 class LoginSerializer(serializers.Serializer):
