@@ -72,7 +72,7 @@ def check_technic_data(data: dict) -> dict | None:
 
     if all((title, tech_type, id_information)):
         log.info(f'Data: (title, tech_type, id_information) is OK')
-        out['title'] = title
+        out['title'] = title.strip()
         out['type'] = tech_type
         out['id_information'] = id_information
         out['description'] = description
