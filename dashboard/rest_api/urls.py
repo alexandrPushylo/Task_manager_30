@@ -1,7 +1,7 @@
 from django.urls import path, re_path, include
 # from .api import get_users, get_user_details, get_user_posts, get_foreman, delete_user, edit_user
 
-from .api import UsersApiView, UserPostsApiView, ForemanApiView, UserApiView
+from .api import UsersApiView, UserPostsApiView, UserApiView, GetUsersByPostApiView
 from .api import TechnicsApiView, TechnicApiView
 from .api import ConstructionSitesApiView, ConstructionSiteApiView
 
@@ -21,13 +21,13 @@ urlpatterns = [
     path('users/', UsersApiView.as_view(), name='get_users'),
     path('user/<int:pk>/', UserApiView.as_view(), name='user_details'),
     path('get_user_posts/', UserPostsApiView.as_view(), name='get_user_posts'),
-    path('get_foreman/', ForemanApiView.as_view(), name='get_foreman'),
+    path('get_users_by_post/<str:post>/', GetUsersByPostApiView.as_view(), name='get_users_by_post'),
 
-    path('technic', TechnicsApiView.as_view(), name='get_technics'),
-    path('technic/<int:pk>', TechnicApiView.as_view(), name='technic_details'),
+    path('technics/', TechnicsApiView.as_view(), name='get_technics'),
+    path('technic/<int:pk>/', TechnicApiView.as_view(), name='technic_details'),
 
-    path('construction_site', ConstructionSitesApiView.as_view(), name='construction_sites'),
-    path('construction_site/<int:pk>', ConstructionSiteApiView.as_view(), name='construction_site_details'),
+    path('construction_sites/', ConstructionSitesApiView.as_view(), name='construction_sites'),
+    path('construction_site/<int:pk>/', ConstructionSiteApiView.as_view(), name='construction_site_details'),
 
     path('work_day_sheet', WorkDaySheetsApiView.as_view(), name='get_work_day_sheet'),
     path('work_day_sheet/<int:pk>', WorkDaySheetApiView.as_view(), name='work_day_sheet_details'),
