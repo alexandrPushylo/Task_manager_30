@@ -884,3 +884,11 @@ def is_redirect_to_dashboard(request_meta: dict) -> bool:
         return True
     else:
         return False
+
+def validate_post(post: str)-> bool:
+    """
+    Валидация должности пользователя
+    :param post:
+    :return:
+    """
+    return True if post in ASSETS.UserPosts.get_set() else False
