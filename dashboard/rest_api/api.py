@@ -73,11 +73,13 @@ class UserPostsApiView(ListAPIView):
 class GetUsersByPostApiView(ListAPIView):
     serializer_class = S.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    # queryset = USERS_SERVICE.get_user_queryset().filter(post=A.UserPosts.FOREMAN.title).values()
     def get_queryset(self):
         is_valid_post = U.validate_post(self.kwargs['post'])
         if is_valid_post:
-            return USERS_SERVICE.get_user_queryset().filter(post=self.kwargs['post']).values()
+            return USERS_SERVICE.get_user_queryset().filter(
+                post=self.kwargs['post'],
+                isArchive=False
+            ).values()
         return []
 
 #   SPEC----------------------------------------
