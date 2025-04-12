@@ -183,6 +183,26 @@ class TechnicApiView(RetrieveUpdateDestroyAPIView):
         return HttpResponse(status=204)
 
 
+class GetTechnicTypeApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return {"technic_types": TECHNIC_SERVICE.get_technic_type()}
+
+    def get(self, request):
+        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
+
+
+
+#   TECHNIC_TYPE--------------------------------------------------
+
+    # def get_object(self):
+    #     return S.UserSerializer(self.request.user).data
+    #
+    # def get(self, request):
+    #     return JsonResponse(self.queryset, status=status.HTTP_200_OK)
+
+
 #   CONSTRUCTION_SITE--------------------------------------------------
 class ConstructionSitesApiView(ListCreateAPIView):
     serializer_class = S.ConstructionSiteSerializer

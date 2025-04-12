@@ -1,3 +1,5 @@
+from typing import List
+
 from django.core.handlers.wsgi import WSGIRequest  # type: ignore
 
 from dashboard.types import Any
@@ -271,5 +273,10 @@ def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, desc
         case _:
             log.warning('type_mode is not valid set_task_description')
 
-
-
+def get_technic_type() -> list:
+    """
+    Получить список всех типов техники
+    :return:
+    """
+    technic_types = sorted(set(Technic.objects.all().values_list('type', flat=True)))
+    return technic_types
