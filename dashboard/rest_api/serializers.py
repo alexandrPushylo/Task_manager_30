@@ -93,6 +93,20 @@ class ConstructionSiteSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class WorkDaysSheetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    date = serializers.DateField(format="%Y-%m-%d")
+    status = serializers.BooleanField()
+    isArchive = serializers.BooleanField()
+    is_all_application_send = serializers.BooleanField()
+    accept_mode = serializers.ChoiceField(choices=(
+        (A.AcceptMode.AUTO.value, A.AcceptMode.AUTO.value),
+        (A.AcceptMode.MANUAL.value, A.AcceptMode.MANUAL.value),
+        (A.AcceptMode.OFF.value, A.AcceptMode.OFF.value)))
+
+    weekday = serializers.CharField(max_length=30)
+
+
 class WorkDaySheetSerializer(serializers.ModelSerializer):
     class Meta:
         model = M.WorkDaySheet

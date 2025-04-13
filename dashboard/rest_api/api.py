@@ -226,13 +226,25 @@ class ConstructionSiteApiView(RetrieveUpdateDestroyAPIView):
 
 #   WORK_DAY_SHEET--------------------------------------------------
 class WorkDaySheetsApiView(ListAPIView):
-    serializer_class = S.WorkDaySheetSerializer
+    serializer_class = S.WorkDaysSheetSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = WORK_DAY_SERVICE.get_workday_queryset(
-        date__gte=U.TODAY-timedelta(days=3),
-        date__lte=U.TODAY+timedelta(days=7),
-    )
 
+    def get_queryset(self):
+        queryset_raw = WORK_DAY_SERVICE.get_workday_queryset(
+            date__gte=U.TODAY - timedelta(days=3),
+            date__lte=U.TODAY + timedelta(days=7),
+        )
+
+        queryset = [{
+            "id": item.id,
+            "date": item.date,
+            "status": item.status,
+            "isArchive": item.isArchive,
+            "is_all_application_send": item.is_all_application_send,
+            "accept_mode": item.accept_mode,
+            "weekday": U.get_weekday(item.date),
+        } for item in queryset_raw]
+        return queryset
 
 class WorkDaySheetApiView(RetrieveUpdateAPIView):
     serializer_class = S.WorkDaySheetSerializer
