@@ -195,16 +195,6 @@ class GetTechnicTypeApiView(APIView):
         return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
-
-#   TECHNIC_TYPE--------------------------------------------------
-
-    # def get_object(self):
-    #     return S.UserSerializer(self.request.user).data
-    #
-    # def get(self, request):
-    #     return JsonResponse(self.queryset, status=status.HTTP_200_OK)
-
-
 #   CONSTRUCTION_SITE--------------------------------------------------
 class ConstructionSitesApiView(ListCreateAPIView):
     serializer_class = S.ConstructionSiteSerializer
@@ -250,7 +240,6 @@ class WorkDaySheetApiView(RetrieveUpdateAPIView):
     serializer_class = S.WorkDaySheetSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = WORK_DAY_SERVICE.get_workday_queryset()
-
 
 #   DRIVER_SHEET--------------------------------------------------
 class DriverSheetsApiView(ListAPIView):
