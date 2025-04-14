@@ -129,11 +129,7 @@ class DriverSheetSerializer(serializers.ModelSerializer):
     # date = DateSerializer()
     class Meta:
         model = M.DriverSheet
-        fields = (
-            "id",
-            "driver",
-            "date"
-        )
+        fields = "__all__"
 
 
 class TechnicSheetSerializer(serializers.ModelSerializer):
