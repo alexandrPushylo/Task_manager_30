@@ -94,8 +94,23 @@ class DataBaseApiView(APIView):
             current_workday = WORK_DAY_SERVICE.get_workday(U.TODAY)
 
         queryset = {
-            "today": U.TODAY,
-            "current_weekday": U.get_weekday(U.TODAY),
+            "today": {
+                "date": U.TODAY,
+                "weekday": U.get_weekday(U.TODAY),
+                "day": U.TODAY.day,
+                "month": U.TODAY.month,
+                "year": U.TODAY.year,
+                "month_name": A.MONTHS_T[U.TODAY.month-1],
+            },
+            "current_date": {
+                "date": current_workday.date,
+                "weekday": U.get_weekday(current_workday.date),
+                "day": current_workday.date.day,
+                "month": current_workday.date.month,
+                "year": current_workday.date.year,
+                "month_name": A.MONTHS_T[current_workday.date.month-1],
+                "status": current_workday.status
+            },
             "prev_work_day": WORK_DAY_SERVICE.get_prev_workday(current_workday.date).date,
             "next_work_day": WORK_DAY_SERVICE.get_next_workday(current_workday.date).date,
             "weekday": U.get_weekday(current_workday.date),

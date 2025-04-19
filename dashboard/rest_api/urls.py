@@ -44,7 +44,7 @@ urlpatterns = [
     path('application_today/', ApplicationTodayApiView.as_view(), name='get_application_today'),
     path('application_technic/<int:app_today_id>/', ApplicationTechnicApiView.as_view(), name='get_application_technic'),
 
-    path('get_data', DataBaseApiView.as_view(), name='get_data'),
+    path('get_data/', DataBaseApiView.as_view(), name='get_data'),
     path('get_token', GetTokenApiView.as_view(), name='get_token'),
     path('is_authenticated/', IsAuthenticatedApiView.as_view(), name='is_authenticated'),
     path('get_current_user/', GetCurrentUserApiView.as_view(), name='get_current_user'),
