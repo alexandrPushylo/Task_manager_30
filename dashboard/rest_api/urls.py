@@ -5,7 +5,7 @@ from .api import UsersApiView, UserPostsApiView, UserApiView, GetUsersByPostApiV
 from .api import TechnicsApiView, TechnicApiView, GetTechnicTypeApiView
 from .api import ConstructionSitesApiView, ConstructionSiteApiView
 
-from .api import WorkDaySheetsApiView, WorkDaySheetApiView
+from .api import WorkDaySheetsApiView, WorkDaySheetApiView, GetWorkDayApiView, GetPrevOrNextWorkDayApiView
 from .api import DriverSheetsApiView, DriverSheetApiView
 from .api import TechnicSheetsApiView, TechnicSheetApiView
 
@@ -29,6 +29,10 @@ urlpatterns = [
 
     path('construction_sites/', ConstructionSitesApiView.as_view(), name='construction_sites'),
     path('construction_site/<int:pk>/', ConstructionSiteApiView.as_view(), name='construction_site_details'),
+
+    path('get_work_day/', GetWorkDayApiView.as_view(), name='get_work_day'),
+    path('get_prev_next_work_day/', GetPrevOrNextWorkDayApiView.as_view(), name='next_work_day'),
+
 
     path('work_day_sheet/', WorkDaySheetsApiView.as_view(), name='get_work_day_sheet'),
     path('work_day_sheet/<int:pk>/', WorkDaySheetApiView.as_view(), name='work_day_sheet_details'),

@@ -68,6 +68,7 @@ class UserPostSerializer(serializers.Serializer):
 
 class DataBaseSerializer(serializers.Serializer):
     today = serializers.DateField(format="%Y-%m-%d")
+    current_day = serializers.DateField(format="%Y-%m-%d")
     current_weekday = serializers.CharField(max_length=30)
     prev_work_day = serializers.DateField(format="%Y-%m-%d")
     next_work_day = serializers.DateField(format="%Y-%m-%d")
@@ -111,6 +112,15 @@ class WorkDaySheetSerializer(serializers.ModelSerializer):
     class Meta:
         model = M.WorkDaySheet
         fields = "__all__"
+
+
+class WorkDaysSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    date = serializers.DateField(format="%Y-%m-%d")
+    day = serializers.IntegerField()
+    month = serializers.IntegerField()
+    status = serializers.BooleanField()
+    weekday = serializers.CharField(max_length=30)
 
 
 class DateSerializer(serializers.ModelSerializer):

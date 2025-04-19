@@ -236,6 +236,53 @@ class WorkDaySheetsApiView(ListAPIView):
         } for item in queryset_raw]
         return queryset
 
+
+class GetPrevOrNextWorkDayApiView(APIView):
+    serializer_class = S.WorkDaysSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        side = self.request.GET.get("side")
+        if side == "prev":
+            queryset_raw = WORK_DAY_SERVICE.get_prev_workday(current_day)
+        elif side == "next":
+            queryset_raw = WORK_DAY_SERVICE.get_next_workday(current_day)
+        else:
+            queryset_raw = WORK_DAY_SERVICE.get_workday(current_day)
+
+        return {
+            "id": queryset_raw.id,
+            "date": queryset_raw.date,
+            "status": queryset_raw.status,
+            "accept_mode": queryset_raw.accept_mode,
+            "weekday": U.get_weekday(queryset_raw.date)
+        }
+    def get(self, request):
+        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
+
+
+
+class GetWorkDayApiView(ListAPIView):
+    serializer_class = S.WorkDaysSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset_raw = WORK_DAY_SERVICE.get_workday_queryset(
+            date__gte=U.TODAY - timedelta(days=1),
+            date__lte=U.TODAY + timedelta(days=3),
+        ).reverse()
+
+        queryset = [{
+            "id": item.id,
+            "date": item.date,
+            "day": item.date.day,
+            "month": item.date.month,
+            "status": item.status,
+            "weekday": U.get_weekday(item.date)[:3],
+        } for item in queryset_raw]
+        return queryset
+
 class WorkDaySheetApiView(RetrieveUpdateAPIView):
     serializer_class = S.WorkDaySheetSerializer
     permission_classes = [permissions.IsAuthenticated]
