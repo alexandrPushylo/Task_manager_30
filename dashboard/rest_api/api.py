@@ -64,12 +64,6 @@ class UserPostsApiView(ListAPIView):
         return posts
 
 
-# class ForemanApiView(ListAPIView):
-#     serializer_class = S.UserSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#     queryset = USERS_SERVICE.get_user_queryset().filter(post=A.UserPosts.FOREMAN.title).values()
-
-
 class GetUsersByPostApiView(ListAPIView):
     serializer_class = S.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -113,7 +107,6 @@ class DataBaseApiView(APIView):
             },
             "prev_work_day": WORK_DAY_SERVICE.get_prev_workday(current_workday.date).date,
             "next_work_day": WORK_DAY_SERVICE.get_next_workday(current_workday.date).date,
-            "weekday": U.get_weekday(current_workday.date),
             "view_mode": U.get_view_mode(current_workday.date),
             "accept_mode": U.get_accept_mode(workday=current_workday),
         }

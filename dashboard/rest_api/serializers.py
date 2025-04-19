@@ -104,7 +104,6 @@ class WorkDaysSheetSerializer(serializers.Serializer):
         (A.AcceptMode.AUTO.value, A.AcceptMode.AUTO.value),
         (A.AcceptMode.MANUAL.value, A.AcceptMode.MANUAL.value),
         (A.AcceptMode.OFF.value, A.AcceptMode.OFF.value)))
-
     weekday = serializers.CharField(max_length=30)
 
 
