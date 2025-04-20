@@ -212,6 +212,7 @@ class ConstructionSitesApiView(ListCreateAPIView):
 
 class ConstructionSiteApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ConstructionSiteSerializer
+    permission_classes = [permissions.IsAuthenticated]
     queryset = CONSTR_SITE_SERVICE.get_construction_site_queryset()
 
     def delete(self, request, *args, **kwargs):
@@ -329,13 +330,19 @@ class TechnicSheetApiView(RetrieveUpdateAPIView):
 
 
 #   APPLICATION TODAY--------------------------------------------------
-class ApplicationTodayApiView(ListAPIView):
+class ApplicationsTodayApiView(ListCreateAPIView):
     serializer_class = S.ApplicationTodaySerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         current_day = self.request.GET.get("current_day", U.TODAY)
         return APP_TODAY_SERVICE.get_apps_today_queryset(date__date=current_day)
+
+
+class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
+    serializer_class = S.ApplicationTodaySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
 
 
 #   APPLICATION TECHNIC--------------------------------------------------
