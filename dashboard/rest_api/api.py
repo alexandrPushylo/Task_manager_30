@@ -372,3 +372,30 @@ class ApplicationTechnicApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTechnicSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_TECHNIC_SERVICE.get_apps_technic_queryset()
+
+#   APPLICATION MATERIAL--------------------------------------------------
+
+class ApplicationsMaterialApiView(ListCreateAPIView):
+    serializer_class = S.ApplicationMaterialSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        return APP_MATERIAL_SERVICE.get_apps_material_queryset(application_today__date__date=current_day)
+
+
+class ApplicationMaterialByATApiView(ListAPIView):
+    serializer_class = S.ApplicationMaterialSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.kwargs["app_today_id"]:
+            app_today_id = self.kwargs["app_today_id"]
+            return APP_MATERIAL_SERVICE.get_apps_material_queryset(application_today = app_today_id)
+        else:
+            return []
+
+
+class ApplicationMaterialApiView(RetrieveUpdateDestroyAPIView):
+    serializer_class = S.ApplicationMaterialSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = APP_MATERIAL_SERVICE.get_apps_material_queryset()
