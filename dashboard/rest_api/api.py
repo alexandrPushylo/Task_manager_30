@@ -346,10 +346,29 @@ class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
 
 
 #   APPLICATION TECHNIC--------------------------------------------------
-class ApplicationTechnicApiView(ListAPIView):
+class ApplicationsTechnicApiView(ListCreateAPIView):
+    serializer_class = S.ApplicationTechnicSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get_queryset(self):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        return APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today__date__date=current_day)
+
+
+class ApplicationTechnicByATApiView(ListAPIView):
     serializer_class = S.ApplicationTechnicSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        app_today_id = self.kwargs["app_today_id"]
-        return APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today = app_today_id)
+        if self.kwargs["app_today_id"]:
+            app_today_id = self.kwargs["app_today_id"]
+            return APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today = app_today_id)
+        else:
+            return []
+        # app_today_id = self.kwargs["app_today_id"]
+        # return APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today = app_today_id)
+
+
+class ApplicationTechnicApiView(RetrieveUpdateDestroyAPIView):
+    serializer_class = S.ApplicationTechnicSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = APP_TECHNIC_SERVICE.get_apps_technic_queryset()
