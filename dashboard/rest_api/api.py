@@ -419,3 +419,23 @@ class GetPriorityIdList(APIView):
         return JsonResponse(self.get_queryset(), status=status.HTTP_200_OK)
 
 
+class GetConflictTechnicSheetIdList(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        workday = WORK_DAY_SERVICE.get_workday(current_day)
+        technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            date=workday, driver_sheet__isnull=False, status=True, isArchive=False
+        )
+        priority_id_list = U.get_priority_id_list(technic_sheet=technic_sheet_list)
+        busiest_technic_title_list = U.get_busiest_technic_title(technic_sheet_list)
+        conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
+            busiest_technic_title=busiest_technic_title_list,
+            priority_id_list=priority_id_list,
+            get_only_id_list=True,
+        )
+        return {"conflict_technic_sheet": conflict_technic_sheet}
+
+    def get(self, request):
+        return JsonResponse(self.get_queryset(), status=status.HTTP_200_OK)

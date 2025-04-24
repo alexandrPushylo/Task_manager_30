@@ -16,7 +16,7 @@ from .api import ApplicationMaterialByATApiView, ApplicationsMaterialApiView, Ap
 from .api import DataBaseApiView, GetTokenApiView, IsAuthenticatedApiView, GetCurrentUserApiView
 from .api import LoginApiView, LogoutApiView
 
-from .api import GetPriorityIdList
+from .api import GetPriorityIdList, GetConflictTechnicSheetIdList
 
 
 urlpatterns = [
@@ -26,6 +26,8 @@ urlpatterns = [
     path('get_users_by_post/<str:post>/', GetUsersByPostApiView.as_view(), name='get_users_by_post'),
 
     path('get_priority_id_list/', GetPriorityIdList.as_view(), name='get_priority_id_list'),
+    path('get_conflict_id_list/', GetConflictTechnicSheetIdList.as_view(), name='get_conflict_id_list'),
+
     path('technics/', TechnicsApiView.as_view(), name='get_technics'),
     path('technic/<int:pk>/', TechnicApiView.as_view(), name='technic_details'),
     path('get_technic_type/', GetTechnicTypeApiView.as_view(), name='get_technic_type'),
