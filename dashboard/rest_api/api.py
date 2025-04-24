@@ -399,3 +399,23 @@ class ApplicationMaterialApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationMaterialSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_MATERIAL_SERVICE.get_apps_material_queryset()
+
+
+#   Services--------------------------------------------------------------
+
+class GetPriorityIdList(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        workday = WORK_DAY_SERVICE.get_workday(current_day)
+        technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            date=workday, driver_sheet__isnull=False, status=True, isArchive=False
+        )
+        priority_id_list = U.get_priority_id_list(technic_sheet=technic_sheet_list)
+        return {"priority_id_list": list(priority_id_list)}
+
+    def get(self, request):
+        return JsonResponse(self.get_queryset(), status=status.HTTP_200_OK)
+
+
