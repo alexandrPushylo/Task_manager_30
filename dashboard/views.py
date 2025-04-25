@@ -807,26 +807,7 @@ def delete_technic_view(request):
         if USERS_SERVICE.is_administrator(request.user) or USERS_SERVICE.is_mechanic(request.user):
             technic_id = request.GET.get('tech_id')
             if technic_id:
-                technic = TECHNIC_SERVICE.delete_technic(technic_id)
-                if technic:
-
-                    _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
-                        technic=technic, date__date__gte=U.TODAY
-                    )
-
-                    _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-                        technic_sheet__in=_technic_sheet
-                    )
-                    _application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
-                        date__date__gte=U.TODAY
-                    )
-
-                    _application_technic.delete()
-                    _technic_sheet.delete()
-
-                    for _app_today in _application_today:
-                        APP_TODAY_SERVICE.validate_application_today(application_today=_app_today)
-                        # U.check_application_today(_app_today)
+                U.delete_technic(technic_id)
         return HttpResponseRedirect(ENDPOINTS.TECHNICS)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 

@@ -900,3 +900,29 @@ def validate_post(post: str)-> bool:
     user = USERS_SERVICE.delete_user(user_id)
     if user:
         DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=user, date__date__gte=TODAY).delete()
+
+def delete_technic(technic_id: int):
+    """
+    Удаление техники
+    :param technic_id:
+    :return:
+    """
+    technic = TECHNIC_SERVICE.delete_technic(technic_id)
+    if technic:
+
+        _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            technic=technic, date__date__gte=TODAY
+        )
+
+        _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            technic_sheet__in=_technic_sheet
+        )
+        _application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            date__date__gte=TODAY
+        )
+
+        _application_technic.delete()
+        _technic_sheet.delete()
+
+        for _app_today in _application_today:
+            APP_TODAY_SERVICE.validate_application_today(application_today=_app_today)

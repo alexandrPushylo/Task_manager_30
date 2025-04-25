@@ -187,9 +187,9 @@ class TechnicApiView(RetrieveUpdateDestroyAPIView):
     queryset = TECHNIC_SERVICE.get_technics_queryset()
 
     def delete(self, request, *args, **kwargs):
-        technic = TECHNIC_SERVICE.get_technic(pk=self.kwargs["pk"])
-        technic.isArchive = True
-        technic.save(update_fields=['isArchive'])
+        technic_id = self.kwargs.get('pk')
+        if U.is_valid_get_request(technic_id):
+            U.delete_technic(technic_id)
         return HttpResponse(status=204)
 
 
