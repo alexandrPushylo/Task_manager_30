@@ -37,9 +37,9 @@ class UserApiView(RetrieveUpdateDestroyAPIView):
     queryset = USERS_SERVICE.get_user_queryset()
 
     def delete(self, request, *args, **kwargs):
-        user = USERS_SERVICE.get_user(pk=self.kwargs["pk"])
-        user.isArchive = True
-        user.save(update_fields=['isArchive'])
+        user_id = self.kwargs.get('pk')
+        if U.is_valid_get_request(user_id):
+            U.delete_user(user_id)
         return HttpResponse(status=204)
 
 

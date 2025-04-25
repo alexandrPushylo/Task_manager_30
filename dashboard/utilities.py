@@ -891,4 +891,12 @@ def validate_post(post: str)-> bool:
     :param post:
     :return:
     """
-    return True if post in ASSETS.UserPosts.get_set() else False
+    return True if post in ASSETS.UserPosts.get_set() else Falsedef delete_user(user_id: int):
+    """
+    Удаление пользователя
+    :param user_id:
+    :return:
+    """
+    user = USERS_SERVICE.delete_user(user_id)
+    if user:
+        DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=user, date__date__gte=TODAY).delete()

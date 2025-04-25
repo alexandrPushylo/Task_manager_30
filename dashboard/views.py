@@ -895,9 +895,7 @@ def delete_user_view(request):
         if USERS_SERVICE.is_administrator(request.user):
             user_id = request.GET.get('user_id')
             if U.is_valid_get_request(user_id):
-                _user = USERS_SERVICE.delete_user(user_id)
-                if _user:
-                    DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=_user, date__date__gte=U.TODAY).delete()
+                U.delete_user(user_id=user_id)
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 
