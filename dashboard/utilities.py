@@ -891,7 +891,11 @@ def validate_post(post: str)-> bool:
     :param post:
     :return:
     """
-    return True if post in ASSETS.UserPosts.get_set() else Falsedef delete_user(user_id: int):
+    return True if post in ASSETS.UserPosts.get_set() else False
+
+#   ================================================================
+
+def delete_user(user_id: int):
     """
     Удаление пользователя
     :param user_id:
