@@ -183,3 +183,9 @@ class ApplicationTodaySerializer(serializers.ModelSerializer):
             "date",
             "isArchive",
         )
+
+class AcceptModeSerializer(serializers.Serializer):
+    accept_mode = serializers.ChoiceField(choices=(
+        (A.AcceptMode.AUTO.value, A.AcceptMode.AUTO.value),
+        (A.AcceptMode.MANUAL.value, A.AcceptMode.MANUAL.value),
+        (A.AcceptMode.OFF.value, A.AcceptMode.OFF.value)))

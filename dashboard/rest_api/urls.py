@@ -17,6 +17,7 @@ from .api import DataBaseApiView, GetTokenApiView, IsAuthenticatedApiView, GetCu
 from .api import LoginApiView, LogoutApiView
 
 from .api import GetPriorityIdList, GetConflictTechnicSheetIdList
+from .api import ChangeAcceptModeApiView
 
 
 urlpatterns = [
@@ -56,6 +57,8 @@ urlpatterns = [
     path('applications_material/', ApplicationsMaterialApiView.as_view(), name='get_applications_material'),
     path('application_material/<int:pk>/', ApplicationMaterialApiView.as_view(), name='get_application_material'),
     path('application_material/by_application_today/<int:app_today_id>/', ApplicationMaterialByATApiView.as_view(), name='get_application_materialByAT'),
+
+    path('spec/change_accept_mode/', ChangeAcceptModeApiView.as_view(), name='change_accept_mode'),
 
     path('get_data/', DataBaseApiView.as_view(), name='get_data'),
     path('get_token', GetTokenApiView.as_view(), name='get_token'),

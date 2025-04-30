@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import permissions, status
 from rest_framework.generics import ListAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView, ListCreateAPIView, \
-    RetrieveUpdateAPIView, RetrieveAPIView
+    RetrieveUpdateAPIView, RetrieveAPIView, UpdateAPIView
 from django.http import HttpResponse, JsonResponse
 
 from rest_framework.permissions import AllowAny
@@ -148,6 +148,30 @@ class GetTokenApiView(APIView):
         if self.request.user.is_authenticated:
             return JsonResponse({"csrftoken": self.request.META.get('CSRF_COOKIE')}, status=status.HTTP_200_OK)
         return JsonResponse({"error": "Не авторизован"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ChangeAcceptModeApiView(UpdateAPIView):
+    serializer_class = S.AcceptModeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        workday = WORK_DAY_SERVICE.get_workday(current_day)
+        print(workday)
+        if U.is_valid_get_request('accept_mode'):
+            accept_mode = U.get_AcceptMode(self.request.data.get('accept_mode'))
+            U.set_accept_mode(workday, accept_mode)
+            return JsonResponse({"message": "Успешно"}, status=status.HTTP_200_OK)
+        return JsonResponse({"error": "Не верный параметр"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    # def patch(self, request):
+    #     current_day = self.request.GET.get("current_day", U.TODAY)
+    #     workday = WORK_DAY_SERVICE.get_workday(current_day)
+    #     if U.is_valid_get_request('accept_mode'):
+    #         U.set_accept_mode(workday, request.data.get('accept_mode'))
+    #         return JsonResponse({"message": "Успешно"}, status=status.HTTP_200_OK)
+    #     return JsonResponse({"error": "Не верный параметр"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginApiView(APIView):

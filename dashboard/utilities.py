@@ -730,6 +730,15 @@ def get_accept_mode(workday: WorkDaySheet) -> bool:
         elif workday.accept_mode == ASSETS.AcceptMode.OFF.value:
             return False
 
+def get_AcceptMode(accept_mode: str) -> ASSETS.AcceptMode:
+    """ Получить режим accept mode"""
+    if accept_mode == ASSETS.AcceptMode.AUTO.value:
+        return ASSETS.AcceptMode.AUTO
+    elif accept_mode == ASSETS.AcceptMode.MANUAL.value:
+        return ASSETS.AcceptMode.MANUAL
+    elif accept_mode == ASSETS.AcceptMode.OFF.value:
+        return ASSETS.AcceptMode.OFF
+
 
 def set_accept_mode(current_day: WorkDaySheet, mode: ASSETS.AcceptMode):
     """
