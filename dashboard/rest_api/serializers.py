@@ -56,7 +56,18 @@ class UserSerializer(serializers.ModelSerializer):
             "telegram_id_chat",
             "post",
             "supervisor_user_id",
-            "isArchive"
+            "isArchive",
+            "is_show_panel",
+            "is_show_saved_app",
+            "is_show_absent_app",
+            "is_show_technic_app",
+            "is_show_material_app",
+            "filter_construction_site",
+            "filter_foreman",
+            "filter_technic",
+            "sort_by",
+            "color_title",
+            "font_size"
         )
         sort_fields = ('last_name', "username")
 
