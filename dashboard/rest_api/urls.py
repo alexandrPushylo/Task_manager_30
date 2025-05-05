@@ -16,7 +16,7 @@ from .api import ApplicationMaterialByATApiView, ApplicationsMaterialApiView, Ap
 from .api import DataBaseApiView, GetTokenApiView, IsAuthenticatedApiView, GetCurrentUserApiView
 from .api import LoginApiView, LogoutApiView
 
-from .api import GetPriorityIdList, GetConflictTechnicSheetIdList
+from .api import GetPriorityIdList, GetConflictTechnicSheetIdList, GetStatusListAppToday
 from .api import ChangeAcceptModeApiView
 
 
@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('get_priority_id_list/', GetPriorityIdList.as_view(), name='get_priority_id_list'),
     path('get_conflict_id_list/', GetConflictTechnicSheetIdList.as_view(), name='get_conflict_id_list'),
+    path('get_status_list_app_today/', GetStatusListAppToday.as_view(), name='get_status_list_app_today'),
 
     path('technics/', TechnicsApiView.as_view(), name='get_technics'),
     path('technic/<int:pk>/', TechnicApiView.as_view(), name='technic_details'),

@@ -25,6 +25,7 @@
                         <input type="hidden" 
                                id="orig_application_description"
                                value="{% if application_today.description %}{{ application_today.description }}{% endif %}">
+                        
                         <div id="div_application_desc" 
                              class="row "
                              {% if not application_today.description %}style="display: none" {% endif %}

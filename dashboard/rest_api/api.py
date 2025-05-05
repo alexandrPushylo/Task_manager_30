@@ -463,3 +463,25 @@ class GetConflictTechnicSheetIdList(APIView):
 
     def get(self, request):
         return JsonResponse(self.get_queryset(), status=status.HTTP_200_OK)
+
+
+class GetStatusListAppToday(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        current_day = self.request.GET.get("current_day", U.TODAY)
+        workday = WORK_DAY_SERVICE.get_workday(current_day)
+
+        applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            order_by=("status",),
+            isArchive=False,
+            date=workday,
+            # construction_site__in=construction_sites,
+        )
+        status_list_application_today = U.get_status_lists_of_apps_today(
+                applications_today=applications_today
+            )
+        return {"status_list_application_today": status_list_application_today}
+
+    def get(self, request):
+        return JsonResponse(self.get_queryset(), status=status.HTTP_200_OK)
