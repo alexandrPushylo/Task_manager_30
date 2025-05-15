@@ -33,7 +33,7 @@ def create_app_today(**kwargs) -> ApplicationToday:
     :return: объект ApplicationToday
     """
     try:
-        application_today = ApplicationToday.objects.create(**kwargs)
+        application_today, created = ApplicationToday.objects.get_or_create(**kwargs)
         return application_today
     except ValueError:
         log.error("get_or_create_app_today(): ValueError")
