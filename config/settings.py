@@ -38,14 +38,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'debug_toolbar',
     'dashboard.apps.DashboardConfig',
+    'rest_framework',
+    'corsheaders',
 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -131,3 +135,30 @@ SESSION_COOKIE_AGE = 86400 * 31  # 86400 sec = 1 day
 SESSION_SAVE_EVERY_REQUEST = True
 
 AUTH_USER_MODEL = 'dashboard.User'
+
+
+SESSION_COOKIE_SAMESITE = False
+SESSION_COOKIE_SECURE = False
+#
+CSRF_COOKIE_SAMESITE = False
+CSRF_COOKIE_SECURE = False
+#
+CSRF_TRUSTED_ORIGINS = ['https://*.localhost','https://*.127.0.0.1', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.42:3000', 'https://localhost:3000', 'https://127.0.0.1:3000', 'https://192.168.1.42:3000']
+# CSRF_HEADER_NAME = 'http_x-csrftoken'
+CSRF_COOKIE_NAME = "csrftoken"
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFTOKEN', 'csrftoken']
+CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS# ['https://*.localhost','https://*.127.0.0.1', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.42:3000']
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
+CORS_ALLOW_HEADERS = (
+    'csrftoken',
+    'content-type',
+    'X-CSRFTOKEN'
+)
+
+# CSRF_COOKIE_SECURE = False
+# CSRF_COOKIE_HTTPONLY = False
+# CSRF_COOKIE_HTTPONLY = True

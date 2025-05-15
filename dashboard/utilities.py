@@ -730,6 +730,15 @@ def get_accept_mode(workday: WorkDaySheet) -> bool:
         elif workday.accept_mode == ASSETS.AcceptMode.OFF.value:
             return False
 
+def get_AcceptMode(accept_mode: str) -> ASSETS.AcceptMode:
+    """ Получить режим accept mode"""
+    if accept_mode == ASSETS.AcceptMode.AUTO.value:
+        return ASSETS.AcceptMode.AUTO
+    elif accept_mode == ASSETS.AcceptMode.MANUAL.value:
+        return ASSETS.AcceptMode.MANUAL
+    elif accept_mode == ASSETS.AcceptMode.OFF.value:
+        return ASSETS.AcceptMode.OFF
+
 
 def set_accept_mode(current_day: WorkDaySheet, mode: ASSETS.AcceptMode):
     """
@@ -884,3 +893,49 @@ def is_redirect_to_dashboard(request_meta: dict) -> bool:
         return True
     else:
         return False
+
+def validate_post(post: str)-> bool:
+    """
+    Валидация должности пользователя
+    :param post:
+    :return:
+    """
+    return True if post in ASSETS.UserPosts.get_set() else False
+
+#   ================================================================
+
+def delete_user(user_id: int):
+    """
+    Удаление пользователя
+    :param user_id:
+    :return:
+    """
+    user = USERS_SERVICE.delete_user(user_id)
+    if user:
+        DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=user, date__date__gte=TODAY).delete()
+
+def delete_technic(technic_id: int):
+    """
+    Удаление техники
+    :param technic_id:
+    :return:
+    """
+    technic = TECHNIC_SERVICE.delete_technic(technic_id)
+    if technic:
+
+        _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            technic=technic, date__date__gte=TODAY
+        )
+
+        _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            technic_sheet__in=_technic_sheet
+        )
+        _application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            date__date__gte=TODAY
+        )
+
+        _application_technic.delete()
+        _technic_sheet.delete()
+
+        for _app_today in _application_today:
+            APP_TODAY_SERVICE.validate_application_today(application_today=_app_today)

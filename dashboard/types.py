@@ -29,6 +29,9 @@ class UserPostType(NamedTuple):
                 for item in
                 (self.ADMINISTRATOR, self.FOREMAN, self.MASTER, self.DRIVER, self.MECHANIC, self.SUPPLY, self.EMPLOYEE)}
 
+    def get_set(self) -> set[str]:
+        return set(self.get_dict().keys())
+
 
 class ApplicationTodayType(NamedTuple):
     """Тип для application_today.status"""
