@@ -181,8 +181,17 @@ class ApplicationTechnicSerializer(serializers.ModelSerializer):
 
 
 class ApplicationTodaySerializer(serializers.ModelSerializer):
-    # date = WorkDaySheetSerializer()
-    # construction_site = ConstructionSiteSerializer()
+    def create(self, validated_data):
+        app_today, created = M.ApplicationToday.objects.get_or_create(
+            construction_site=validated_data.get("construction_site"),
+            date=validated_data.get("date"),
+            status=validated_data.get("status"),
+            # description=validated_data.get("description"),
+            # isArchive=validated_data.get("isArchive", False),
+            # is_application_send=validated_data.get("is_application_send", False),
+            # is_edited=validated_data.get("is_edited", False),
+        )
+        return app_today
 
     class Meta:
         model = M.ApplicationToday

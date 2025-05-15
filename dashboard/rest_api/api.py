@@ -97,6 +97,7 @@ class DataBaseApiView(APIView):
                 "month_name": A.MONTHS_T[U.TODAY.month-1],
             },
             "current_date": {
+                "id": current_workday.pk,
                 "date": current_workday.date,
                 "weekday": U.get_weekday(current_workday.date),
                 "day": current_workday.date.day,
@@ -367,6 +368,28 @@ class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
+
+class ApplicationTodayByCWApiView(RetrieveUpdateDestroyAPIView):
+    serializer_class = S.ApplicationTodaySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
+
+    def get_object(self):
+        construction_site_id = self.request.GET.get("construction_site_id")
+        workday_id = self.request.GET.get("workday_id")
+        # app = APP_TODAY_SERVICE.get_apps_today(
+        #     construction_site_id=construction_site_id,
+        #     date_id=workday_id
+        # )
+        app, created = APP_TODAY_SERVICE.ApplicationToday.objects.get_or_create(
+            construction_site_id=construction_site_id,
+            date_id=workday_id
+        )
+
+        return app
+
+    # def get(self, request):
+    #     return JsonResponse(self.get_object() if self.get_object() else {}, status=status.HTTP_200_OK)
 
 
 #   APPLICATION TECHNIC--------------------------------------------------

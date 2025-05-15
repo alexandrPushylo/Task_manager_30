@@ -9,7 +9,7 @@ from .api import WorkDaySheetsApiView, WorkDaySheetApiView, GetWorkDayApiView, G
 from .api import DriverSheetsApiView, DriverSheetApiView
 from .api import TechnicSheetsApiView, TechnicSheetApiView
 
-from .api import ApplicationsTodayApiView, ApplicationTodayApiView
+from .api import ApplicationsTodayApiView, ApplicationTodayApiView, ApplicationTodayByCWApiView
 from .api import ApplicationTechnicByATApiView, ApplicationsTechnicApiView, ApplicationTechnicApiView
 from .api import ApplicationMaterialByATApiView, ApplicationsMaterialApiView, ApplicationMaterialApiView
 
@@ -50,6 +50,8 @@ urlpatterns = [
 
     path('applications_today/', ApplicationsTodayApiView.as_view(), name='get_applications_today'),
     path('application_today/<int:pk>/', ApplicationTodayApiView.as_view(), name='get_application_today'),
+
+    path('application_today/get_or_create/', ApplicationTodayByCWApiView.as_view(), name='get_application_today_CW'),
 
     path('applications_technic/', ApplicationsTechnicApiView.as_view(), name='get_applications_technic'),
     path('application_technic/<int:pk>/', ApplicationTechnicApiView.as_view(), name='get_application_technic'),
