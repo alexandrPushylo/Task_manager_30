@@ -461,6 +461,26 @@ class ApplicationTechnicApiView(RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_TECHNIC_SERVICE.get_apps_technic_queryset()
 
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.technic_sheet.decrement_count_application()
+        return self.destroy(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(instance.technic_sheet)
+        return self.update(request, *args, **kwargs)
+
+
+    def patch(self, request, *args, **kwargs):
+        prev_instance = self.get_object()
+        prev_instance.technic_sheet.decrement_count_application()
+        new_technic_sheet = request.data.get("technic_sheet")
+        if new_technic_sheet:
+            TECHNIC_SHEET_SERVICE.get_technic_sheet(id=new_technic_sheet).increment_count_application()
+        return self.partial_update(request, *args, **kwargs)
+
+
 #   APPLICATION MATERIAL--------------------------------------------------
 
 class ApplicationsMaterialApiView(ListCreateAPIView):
