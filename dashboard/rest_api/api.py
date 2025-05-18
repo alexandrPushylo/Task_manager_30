@@ -228,6 +228,19 @@ class GetTechnicTypeApiView(APIView):
         return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
+class GetTechnicTitleApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        date = self.request.GET.get("current_day", U.TODAY)
+        technic_sheet =  TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(date__date=date)
+        technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheet)
+        return {"technic_title": technic_title}
+
+    def get(self, request):
+        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
+
+
 #   CONSTRUCTION_SITE--------------------------------------------------
 class ConstructionSitesApiView(ListCreateAPIView):
     serializer_class = S.ConstructionSiteSerializer
@@ -352,6 +365,34 @@ class TechnicSheetApiView(RetrieveUpdateAPIView):
     serializer_class = S.TechnicSheetSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset()
+
+
+class GetTechnicSheetWithTechTitleApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        date = self.request.GET.get("current_day", U.TODAY)
+        workday = WORK_DAY_SERVICE.get_workday(date)
+
+        technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            select_related=('technic', 'driver_sheet__driver'),
+            isArchive=False,
+            driver_sheet__isnull=False,
+            date=workday
+        )
+        technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
+
+        workload = []
+        for title in technic_title:
+            workload.append({
+                "title": title,
+                "technic_sheet_ids": list(technic_sheets.filter(technic__title=title).values_list("id", flat=True)),
+                "driver_sheet_ids": list(technic_sheets.filter(technic__title=title).values_list("driver_sheet__id", flat=True))
+            })
+        return {"data": workload}
+
+    def get(self, request):
+        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
 #   APPLICATION TODAY--------------------------------------------------

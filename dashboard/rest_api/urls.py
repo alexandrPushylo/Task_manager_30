@@ -2,12 +2,12 @@ from django.urls import path, re_path, include
 # from .api import get_users, get_user_details, get_user_posts, get_foreman, delete_user, edit_user
 
 from .api import UsersApiView, UserPostsApiView, UserApiView, GetUsersByPostApiView
-from .api import TechnicsApiView, TechnicApiView, GetTechnicTypeApiView
+from .api import TechnicsApiView, TechnicApiView, GetTechnicTypeApiView, GetTechnicTitleApiView
 from .api import ConstructionSitesApiView, ConstructionSiteApiView
 
 from .api import WorkDaySheetsApiView, WorkDaySheetApiView, GetWorkDayApiView, GetPrevOrNextWorkDayApiView
 from .api import DriverSheetsApiView, DriverSheetApiView
-from .api import TechnicSheetsApiView, TechnicSheetApiView
+from .api import TechnicSheetsApiView, TechnicSheetApiView, GetTechnicSheetWithTechTitleApiView
 
 from .api import ApplicationsTodayApiView, ApplicationTodayApiView, ApplicationTodayByCWApiView
 from .api import ApplicationTechnicByATApiView, ApplicationsTechnicApiView, ApplicationTechnicApiView
@@ -33,6 +33,7 @@ urlpatterns = [
     path('technics/', TechnicsApiView.as_view(), name='get_technics'),
     path('technic/<int:pk>/', TechnicApiView.as_view(), name='technic_details'),
     path('get_technic_type/', GetTechnicTypeApiView.as_view(), name='get_technic_type'),
+    path('get_technic_title/', GetTechnicTitleApiView.as_view(), name='get_technic_title'),
 
     path('construction_sites/', ConstructionSitesApiView.as_view(), name='construction_sites'),
     path('construction_site/<int:pk>/', ConstructionSiteApiView.as_view(), name='construction_site_details'),
@@ -47,6 +48,8 @@ urlpatterns = [
     path('driver_sheet/<int:pk>/', DriverSheetApiView.as_view(), name='driver_sheet_details'),
     path('technic_sheet/', TechnicSheetsApiView.as_view(), name='get_technic_sheet'),
     path('technic_sheet/<int:pk>/', TechnicSheetApiView.as_view(), name='technic_sheet_details'),
+
+    path('get_technic_sheet_with_tech_title/', GetTechnicSheetWithTechTitleApiView.as_view(), name='get_technic_sheet_with_tech_title'),
 
     path('applications_today/', ApplicationsTodayApiView.as_view(), name='get_applications_today'),
     path('application_today/<int:pk>/', ApplicationTodayApiView.as_view(), name='get_application_today'),

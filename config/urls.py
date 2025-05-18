@@ -61,31 +61,33 @@ schema_view = get_schema_view(
 # router = routers.DefaultRouter()
 
 urlpatterns = [
-                  path('', include('dashboard.urls')),
-                  # path('', include(router.urls)),
-                  path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                  path('api/', include('dashboard.rest_api.urls')),
+    path('', include('dashboard.urls')),
+    # path('', include(router.urls)),
+    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # path('api/', include('dashboard.rest_api.urls')),
 
-                  path('admin/', admin.site.urls),
-                  path('login/', login_view, name='login'),
-                  path('logout/', logout_view, name='logout'),
-                  path('register/', register_view, name='register'),
-                  path('restore_pwd/', restore_password_view, name='restore_password'),
-                  path('settings/', settings_view, name='settings'),
-                  path('templates_for_spec_constr_site/', task_desc_for_spec_constr_site_view, name='tasks_for_spec_constr_site'),
-                  path('calculate_all_applications/', calculate_all_applications, name='calculate_all_applications'),
+    path('admin/', admin.site.urls),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('register/', register_view, name='register'),
+    path('restore_pwd/', restore_password_view, name='restore_password'),
+    path('settings/', settings_view, name='settings'),
+    path('templates_for_spec_constr_site/', task_desc_for_spec_constr_site_view, name='tasks_for_spec_constr_site'),
+    path('calculate_all_applications/', calculate_all_applications, name='calculate_all_applications'),
 
-                  path('change_app_status/', change_status_application_today, name='change_app_status'),
-                  path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),
-                  # path('ck_app_stat/', check_application_status, name='check_application_status'),
-                  path('validate_app_today', validate_application_today_view, name='validate_application_today'),
-                  path('test/', def_test, name='test'),
-                  path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-                  path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-                  path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-                  # re_path(r'^.*', routing)
+    path('change_app_status/', change_status_application_today, name='change_app_status'),
+    path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),
+    # path('ck_app_stat/', check_application_status, name='check_application_status'),
+    path('validate_app_today', validate_application_today_view, name='validate_application_today'),
+    path('test/', def_test, name='test'),
 
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('api/', include('dashboard.rest_api.urls')),
+    path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    # re_path(r'^.*', routing)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if TECH_SUPPORT_MODE:
     urlpatterns = [re_path(r'^.*', maintenance_view)] + urlpatterns
