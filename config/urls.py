@@ -83,11 +83,11 @@ urlpatterns = [
 
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/', include('dashboard.rest_api.urls')),
-    
+
     path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    # re_path(r'^.*', routing)
+    re_path(r'^.*', routing)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if TECH_SUPPORT_MODE:
