@@ -262,7 +262,7 @@ def edit_application_view(request):
             _application_today = APP_TODAY_SERVICE.create_app_today(
                 construction_site=construction_site,
                 date=current_day,
-                status=_default_status
+                # status=_default_status
             )
             return _application_today
 
