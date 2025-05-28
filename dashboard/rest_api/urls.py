@@ -1,8 +1,7 @@
 from django.urls import path, re_path, include
-# from .api import get_users, get_user_details, get_user_posts, get_foreman, delete_user, edit_user
 
 from .api import UsersApiView, UserPostsApiView, UserApiView, GetUsersByPostApiView
-from .api import TechnicsApiView, TechnicApiView, GetTechnicTypeApiView, GetTechnicTitleApiView
+from .api import TechnicsApiView, TechnicApiView, GetTechnicTypeApiView
 from .api import ConstructionSitesApiView, ConstructionSiteApiView
 
 from .api import WorkDaySheetsApiView, WorkDaySheetApiView, GetWorkDayApiView, GetPrevOrNextWorkDayApiView
@@ -33,7 +32,6 @@ urlpatterns = [
     path('technics/', TechnicsApiView.as_view(), name='get_technics_API'),
     path('technic/<int:pk>/', TechnicApiView.as_view(), name='technic_details_API'),
     path('get_technic_type/', GetTechnicTypeApiView.as_view(), name='get_technic_type_API'),
-    path('get_technic_title/', GetTechnicTitleApiView.as_view(), name='get_technic_title_API'),
 
     path('construction_sites/', ConstructionSitesApiView.as_view(), name='construction_sites_API'),
     path('construction_site/<int:pk>/', ConstructionSiteApiView.as_view(), name='construction_site_details_API'),

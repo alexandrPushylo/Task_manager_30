@@ -228,19 +228,6 @@ class GetTechnicTypeApiView(APIView):
         return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
-class GetTechnicTitleApiView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        date = self.request.GET.get("current_day", U.TODAY)
-        technic_sheet =  TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(date__date=date)
-        technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheet)
-        return {"technic_title": technic_title}
-
-    def get(self, request):
-        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
-
-
 #   CONSTRUCTION_SITE--------------------------------------------------
 class ConstructionSitesApiView(ListCreateAPIView):
     serializer_class = S.ConstructionSiteSerializer
