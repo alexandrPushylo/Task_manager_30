@@ -358,6 +358,7 @@ class GetTechnicSheetWithTechTitleApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        is_for_add = self.request.GET.get("for_add", False)
         date = self.request.GET.get("current_day", U.TODAY)
         workday = WORK_DAY_SERVICE.get_workday(date)
 
@@ -367,14 +368,25 @@ class GetTechnicSheetWithTechTitleApiView(APIView):
             driver_sheet__isnull=False,
             date=workday
         )
-        technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
+        if is_for_add:
+            technic_title = TECHNIC_SERVICE.get_distinct_technic_title(
+                technic_sheets=technic_sheets.filter(
+                    status=True,
+                    driver_sheet__status=True,
+                )
+            )
+        else:
+            technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
 
         workload = []
         for title in technic_title:
+            filtered_technic_sheets = technic_sheets.filter(technic__title=title)
             workload.append({
                 "title": title,
-                "technic_sheet_ids": list(technic_sheets.filter(technic__title=title).values_list("id", flat=True)),
-                "driver_sheet_ids": list(technic_sheets.filter(technic__title=title).values_list("driver_sheet__id", flat=True))
+                "technic_sheet_ids": list(filtered_technic_sheets.values_list("id", flat=True)),
+                "driver_sheet_ids": list(filtered_technic_sheets.values_list("driver_sheet__id", flat=True)),
+                "is_exists_free": not all(
+                    filtered_technic_sheets.values_list('count_application', flat=True))
             })
         return {"data": workload}
 
