@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView, GenericAPIView, RetrieveUpdateD
 from django.http import HttpResponse, JsonResponse
 
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import dashboard.rest_api.serializers as S
@@ -439,6 +440,16 @@ class ApplicationsTechnicApiView(ListCreateAPIView):
     def get_queryset(self):
         current_day = self.request.GET.get("current_day", U.TODAY)
         return APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today__date__date=current_day)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        cur_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(id=request.data.get("technic_sheet"))
+        if cur_technic_sheet:
+            cur_technic_sheet.increment_count_application()
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ApplicationTechnicByATApiView(ListAPIView):
