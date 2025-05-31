@@ -409,6 +409,24 @@ class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
+    def delete(self, request, *args, **kwargs):
+        if request.user.post in A.UserPosts.get_set():
+            instance = self.get_object()
+
+            if USERS_SERVICE.is_supply(request.user):
+                supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
+                app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                    application_today__date=instance.date,
+                    isArchive=False,
+                    technic_sheet__technic__in=supply_technic_list
+                ).exclude(application_today=instance)
+                app_technic_list.update(isChecked=False)
+            APP_TODAY_SERVICE.delete_application_today(instance)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
 
 class ApplicationTodayByCWApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
@@ -418,19 +436,11 @@ class ApplicationTodayByCWApiView(RetrieveUpdateDestroyAPIView):
     def get_object(self):
         construction_site_id = self.request.GET.get("construction_site_id")
         workday_id = self.request.GET.get("workday_id")
-        # app = APP_TODAY_SERVICE.get_apps_today(
-        #     construction_site_id=construction_site_id,
-        #     date_id=workday_id
-        # )
         app, created = APP_TODAY_SERVICE.ApplicationToday.objects.get_or_create(
             construction_site_id=construction_site_id,
             date_id=workday_id
         )
-
         return app
-
-    # def get(self, request):
-    #     return JsonResponse(self.get_object() if self.get_object() else {}, status=status.HTTP_200_OK)
 
 
 #   APPLICATION TECHNIC--------------------------------------------------
