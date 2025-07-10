@@ -1363,15 +1363,17 @@ def material_application_supply_view(request):
             if operation == 'accept_application_material' and U.is_valid_get_request(application_material_id):
 
                 application_material = APP_MATERIAL_SERVICE.get_app_material(pk=application_material_id)
-
-                if application_material_description != application_material.description or not application_material.isChecked:
-                    application_material.description = application_material_description
-                    application_material.isChecked = True
-                    application_material.save()
-                    return HttpResponse(b"true")
+                if application_material:
+                    if application_material_description != application_material.description or not application_material.isChecked:
+                        application_material.description = application_material_description
+                        application_material.isChecked = True
+                        application_material.save()
+                        return HttpResponse(b"true")
+                    else:
+                        application_material.isChecked = False
+                        application_material.save()
+                        return HttpResponse(b"false")
                 else:
-                    application_material.isChecked = False
-                    application_material.save()
                     return HttpResponse(b"false")
 
         application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(
