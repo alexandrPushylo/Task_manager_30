@@ -135,6 +135,7 @@ function reject_or_accept_app_tech(appTechnicId){
                 app_tech_description.prop('disabled', true);
                 app_tech_description.addClass('border border-1 border-danger');
                 MESS_STATUS_OK();
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
             }else if (response==='accept'){
                 btn_accept.hide();
                 btn_reject.show();
@@ -145,6 +146,7 @@ function reject_or_accept_app_tech(appTechnicId){
                 app_tech_description.removeClass('border border-1 border-danger');
                 app_tech_description.val(app_tech_description.val().replace('ОТКЛОНЕНА\n',''));
                 MESS_STATUS_OK();
+                $('#btn_apply_for_edit_app').text('СОХРАНИТЬ');
             }
             else {
                 MESS_STATUS_FAIL();

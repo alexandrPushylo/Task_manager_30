@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView, GenericAPIView, RetrieveUpdateD
 from django.http import HttpResponse, JsonResponse
 
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import dashboard.rest_api.serializers as S
@@ -228,19 +229,6 @@ class GetTechnicTypeApiView(APIView):
         return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
 
 
-class GetTechnicTitleApiView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        date = self.request.GET.get("current_day", U.TODAY)
-        technic_sheet =  TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(date__date=date)
-        technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheet)
-        return {"technic_title": technic_title}
-
-    def get(self, request):
-        return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
-
-
 #   CONSTRUCTION_SITE--------------------------------------------------
 class ConstructionSitesApiView(ListCreateAPIView):
     serializer_class = S.ConstructionSiteSerializer
@@ -371,6 +359,7 @@ class GetTechnicSheetWithTechTitleApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        is_for_add = self.request.GET.get("for_add", False)
         date = self.request.GET.get("current_day", U.TODAY)
         workday = WORK_DAY_SERVICE.get_workday(date)
 
@@ -380,14 +369,25 @@ class GetTechnicSheetWithTechTitleApiView(APIView):
             driver_sheet__isnull=False,
             date=workday
         )
-        technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
+        if is_for_add:
+            technic_title = TECHNIC_SERVICE.get_distinct_technic_title(
+                technic_sheets=technic_sheets.filter(
+                    status=True,
+                    driver_sheet__status=True,
+                )
+            )
+        else:
+            technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
 
         workload = []
         for title in technic_title:
+            filtered_technic_sheets = technic_sheets.filter(technic__title=title)
             workload.append({
                 "title": title,
-                "technic_sheet_ids": list(technic_sheets.filter(technic__title=title).values_list("id", flat=True)),
-                "driver_sheet_ids": list(technic_sheets.filter(technic__title=title).values_list("driver_sheet__id", flat=True))
+                "technic_sheet_ids": list(filtered_technic_sheets.values_list("id", flat=True)),
+                "driver_sheet_ids": list(filtered_technic_sheets.values_list("driver_sheet__id", flat=True)),
+                "is_exists_free": not all(
+                    filtered_technic_sheets.values_list('count_application', flat=True))
             })
         return {"data": workload}
 
@@ -409,6 +409,24 @@ class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
+    def delete(self, request, *args, **kwargs):
+        if request.user.post in A.UserPosts.get_set():
+            instance = self.get_object()
+
+            if USERS_SERVICE.is_supply(request.user):
+                supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
+                app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                    application_today__date=instance.date,
+                    isArchive=False,
+                    technic_sheet__technic__in=supply_technic_list
+                ).exclude(application_today=instance)
+                app_technic_list.update(isChecked=False)
+            APP_TODAY_SERVICE.delete_application_today(instance)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
 
 class ApplicationTodayByCWApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
@@ -418,19 +436,11 @@ class ApplicationTodayByCWApiView(RetrieveUpdateDestroyAPIView):
     def get_object(self):
         construction_site_id = self.request.GET.get("construction_site_id")
         workday_id = self.request.GET.get("workday_id")
-        # app = APP_TODAY_SERVICE.get_apps_today(
-        #     construction_site_id=construction_site_id,
-        #     date_id=workday_id
-        # )
         app, created = APP_TODAY_SERVICE.ApplicationToday.objects.get_or_create(
             construction_site_id=construction_site_id,
             date_id=workday_id
         )
-
         return app
-
-    # def get(self, request):
-    #     return JsonResponse(self.get_object() if self.get_object() else {}, status=status.HTTP_200_OK)
 
 
 #   APPLICATION TECHNIC--------------------------------------------------
@@ -440,6 +450,16 @@ class ApplicationsTechnicApiView(ListCreateAPIView):
     def get_queryset(self):
         current_day = self.request.GET.get("current_day", U.TODAY)
         return APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today__date__date=current_day)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        cur_technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet(id=request.data.get("technic_sheet"))
+        if cur_technic_sheet:
+            cur_technic_sheet.increment_count_application()
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ApplicationTechnicByATApiView(ListAPIView):
@@ -460,6 +480,26 @@ class ApplicationTechnicApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTechnicSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = APP_TECHNIC_SERVICE.get_apps_technic_queryset()
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.technic_sheet.decrement_count_application()
+        return self.destroy(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(instance.technic_sheet)
+        return self.update(request, *args, **kwargs)
+
+
+    def patch(self, request, *args, **kwargs):
+        prev_instance = self.get_object()
+        prev_instance.technic_sheet.decrement_count_application()
+        new_technic_sheet = request.data.get("technic_sheet")
+        if new_technic_sheet:
+            TECHNIC_SHEET_SERVICE.get_technic_sheet(id=new_technic_sheet).increment_count_application()
+        return self.partial_update(request, *args, **kwargs)
+
 
 #   APPLICATION MATERIAL--------------------------------------------------
 

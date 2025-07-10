@@ -262,7 +262,7 @@ def edit_application_view(request):
             _application_today = APP_TODAY_SERVICE.create_app_today(
                 construction_site=construction_site,
                 date=current_day,
-                status=_default_status
+                # status=_default_status
             )
             return _application_today
 
@@ -277,10 +277,6 @@ def edit_application_view(request):
 
         if not current_day.status:
             return render(request, 'content/spec/weekend.html', context)
-        # TODO: clear
-        # context['technics'] = TECHNIC_SERVICE.get_technics_queryset(
-        #     isArchive=False
-        # ).distinct().values_list('title', flat=True)
 
         technic_sheets = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             select_related=('technic', 'driver_sheet__driver'),
@@ -1367,15 +1363,17 @@ def material_application_supply_view(request):
             if operation == 'accept_application_material' and U.is_valid_get_request(application_material_id):
 
                 application_material = APP_MATERIAL_SERVICE.get_app_material(pk=application_material_id)
-
-                if application_material_description != application_material.description or not application_material.isChecked:
-                    application_material.description = application_material_description
-                    application_material.isChecked = True
-                    application_material.save()
-                    return HttpResponse(b"true")
+                if application_material:
+                    if application_material_description != application_material.description or not application_material.isChecked:
+                        application_material.description = application_material_description
+                        application_material.isChecked = True
+                        application_material.save()
+                        return HttpResponse(b"true")
+                    else:
+                        application_material.isChecked = False
+                        application_material.save()
+                        return HttpResponse(b"false")
                 else:
-                    application_material.isChecked = False
-                    application_material.save()
                     return HttpResponse(b"false")
 
         application_materials_list = APP_MATERIAL_SERVICE.get_apps_material_queryset(

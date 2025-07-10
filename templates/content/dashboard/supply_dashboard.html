@@ -110,10 +110,7 @@
                                 {% if applications_technic %}
                                     <div class="ms-1 mt-1">
                                         {% for app_technic in applications_technic %}
-                                            <div class="mt-2" style="background-color: #e7eefa; text-align: center;"   
-                                                    {% if app_technic.is_cancelled %}
-                                                style="color: rgba(97,95,95,0.51)"
-                                            {% endif %}
+                                            <div class="mt-2 {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}" style="background-color: #e7eefa; text-align: center;"   
                                             >
                                                 <span class="ms-1">{{ app_technic.technic_sheet.technic.title }}</span>
                                             {% if app_technic.technic_sheet.driver_sheet.driver.last_name %}
@@ -128,11 +125,8 @@
                                                     <label class="m-0 p-0 row">
                                                 <textarea readonly
                                                           style="font-size: {{ user.font_size }}pt;"
-                                                          class="form-control app_tech_description general_tech_description_font"
-                                                        {% if app_technic.is_cancelled %}
-                                                          style="color: rgba(97,95,95,0.51); font-size: {{ user.font_size }}pt;"
-                                                        {% endif %}
-                                                          >{{ app_technic.description }}</textarea>
+                                                          class="form-control app_tech_description general_tech_description_font {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}"
+                                                >{% if app_technic.is_cancelled %}ОТКЛОНЕНА&#10;{% endif %}{{ app_technic.description }}</textarea>
                                                     </label>
                                                 {% endif %}
                                             </div>

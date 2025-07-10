@@ -59,14 +59,14 @@ def reject_or_accept_apps_technic(app_tech_id) -> str | None:
         if apps_technic.is_cancelled:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = False
-            apps_technic.description = apps_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
+            # apps_technic.description = apps_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
             apps_technic.technic_sheet.increment_count_application()
             apps_technic.save()
             return 'accept'
         else:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = True
-            apps_technic.description = ASSETS.MessagesAssets.reject.value + apps_technic.description
+            # apps_technic.description = ASSETS.MessagesAssets.reject.value + apps_technic.description
             apps_technic.technic_sheet.decrement_count_application()
             apps_technic.save()
             return 'reject'
@@ -81,8 +81,8 @@ def delete_application_technic(application_technic_id) -> str | None:
     """
     application_technic = get_app_technic(pk=application_technic_id)
     if application_technic:
-        # TECHNIC_SHEET_SERVICE.calculate_count_applications(application_technic.technic_sheet.id)
-        application_technic.technic_sheet.decrement_count_application()
+        if application_technic.technic_sheet:
+            application_technic.technic_sheet.decrement_count_application()
         application_technic.delete()
         return 'success'
     return None

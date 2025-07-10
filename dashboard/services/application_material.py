@@ -7,22 +7,22 @@ from logger import getLogger
 log = getLogger(__name__)
 
 
-def get_app_material(**kwargs) -> ApplicationMaterial:
+def get_app_material(**kwargs) -> ApplicationMaterial | None:
     try:
         application_material = ApplicationMaterial.objects.get(**kwargs)
         return application_material
     except ApplicationMaterial.DoesNotExist:
         log.warning("get_app_material(): ApplicationMaterial.DoesNotExist")
-        return ApplicationMaterial.objects.none()
+        return None
 
 
-def create_app_material(**kwargs) -> ApplicationMaterial:
+def create_app_material(**kwargs) -> ApplicationMaterial | None:
     try:
         application_material = ApplicationMaterial.objects.create(**kwargs)
         return application_material
     except ValueError:
         log.error("create_app_material(): ValueError")
-        return ApplicationMaterial.objects.none()
+        return None
 
 
 def get_apps_material_queryset(select_related: tuple = (),
