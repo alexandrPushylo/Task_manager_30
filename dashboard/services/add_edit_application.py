@@ -22,6 +22,7 @@ def get_technic_driver_list(technic_titles: dict, technic_sheets: TechnicSheet.o
         })
     return technic_driver_list
 
+
 def get_technic_driver_list_for_json(technic_titles: dict, technic_sheets: TechnicSheet.objects) -> list:
     """
     :param technic_titles: {technic.title_short: technic.title}
