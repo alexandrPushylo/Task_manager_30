@@ -69,6 +69,12 @@
                     </select>
                 </label>
             </div>
+        
+            {% if error %}
+                <br>
+                <p class="m-0 error_message">{{ error }}</p>                
+            {% endif %}            
+        
             <div class="mt-4 navbar">
                 {% if user_list.id %}
                 <span><a href="{% url 'delete_user' %}?user_id={{ user_list.id }}" class="btn btn-sm btn-outline-danger ">Удалить</a></span>

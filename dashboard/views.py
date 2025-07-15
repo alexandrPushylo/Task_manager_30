@@ -1,5 +1,4 @@
 import json
-from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 
@@ -611,12 +610,15 @@ def register_view(request):
     if request.method == 'GET':
         return render(request, 'content/register.html', context)
     if request.method == 'POST':
-        new_user = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
+        new_user, msg = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         elif new_user is not None and request.user.is_authenticated:
             return HttpResponseRedirect('/')  # TODO redirect if create new user
+        elif new_user is None and msg == ASSETS.UserEditResult.EXISTS:
+            context['error'] = ASSETS.ErrorMessages.user_already_exists.value
+            return render(request, 'content/register.html', context)
         else:
             context['error'] = ASSETS.ErrorMessages.invalid_register.value
             return render(request, 'content/register.html', context)
@@ -860,8 +862,11 @@ def edit_user_view(request):
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
         if request.method == 'POST':
-            _user = USERS_SERVICE.add_or_edit_user(request.POST, user_id)
-            return HttpResponseRedirect(ENDPOINTS.USERS)
+            _user_rez = USERS_SERVICE.add_or_edit_user(request.POST, user_id)
+            if _user_rez[0] is not None:
+                return HttpResponseRedirect(ENDPOINTS.USERS)
+            else:
+                context['error'] = ASSETS.ErrorMessages.user_already_exists.value
 
         return render(request, 'content/users/edit_user.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
@@ -1475,7 +1480,6 @@ def profile_view(request):
                     current_user.telephone = U.validate_telephone(telephone)
                 current_user.save()
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-
 
             if operation == 'changePassword':
                 if U.is_valid_get_request(new_password_0) and U.is_valid_get_request(new_password_1):

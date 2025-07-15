@@ -38,9 +38,11 @@ TIME_REDIRECT_DASHBOARD_FOR_MECHANIC = datetime.time(hour=10, minute=0)
 TIME_REDIRECT_DASHBOARD_FOR_DRIVER = datetime.time(hour=19, minute=0)
 TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE = datetime.time(hour=17, minute=0)
 
+
 class ErrorMessages(Enum):
     invalid_signin = 'Неверный логин или пароль'
     invalid_register = 'Введены не все данные'
+    user_already_exists = 'Данный пользователь уже существует'
 
 
 class MessagesAssets(Enum):
@@ -83,3 +85,10 @@ COLORS = [
     '#9600fa',
     '#fa00ed',
 ]
+
+
+class UserEditResult(Enum):
+    OK = 'ok'
+    EXISTS = 'exists'
+    ERROR = 'error'
+
