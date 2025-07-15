@@ -1,5 +1,5 @@
 from django.db.utils import IntegrityError
-
+from django.db.models import Q
 from dashboard.models import User
 from django.core.handlers.wsgi import WSGIRequest
 
@@ -79,7 +79,7 @@ def get_user_queryset(select_related: tuple = (),
     return user
 
 
-def edit_user(user_id, data: dict) -> User:
+def edit_user(user_id, data: dict) -> tuple[User | None, ASSETS.UserEditResult]:
     user = get_user(pk=user_id)
     if user:
         user.username = data['username']
@@ -92,12 +92,12 @@ def edit_user(user_id, data: dict) -> User:
         user.supervisor_user_id = data['supervisor_user_id']
         user.save()
         log.info(f"User {data['last_name']} {data['first_name']} has been changed")
-        return user
+        return user, ASSETS.UserEditResult.OK
     else:
-        return User.objects.none()
+        return None, ASSETS.UserEditResult.ERROR
 
 
-def create_new_user(data: dict) -> User | None:
+def create_new_user(data: dict) -> tuple[User | None, ASSETS.UserEditResult]:
     try:
         user = User.objects.create_user(
             username=data['username'],
@@ -111,10 +111,13 @@ def create_new_user(data: dict) -> User | None:
             is_superuser=False
         )
         log.info('User %s has been added' % data['last_name'])
-        return user
+        return user, ASSETS.UserEditResult.OK
     except IntegrityError:
         log.error('create_new_user(): IntegrityError; | username= [%s]' % data['username'])
-        return None
+        return None, ASSETS.UserEditResult.EXISTS
+    except Exception as e:
+        log.error('create_new_user(): Unexpected error', e)
+        return None, ASSETS.UserEditResult.ERROR
 
 
 def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
@@ -145,18 +148,23 @@ def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
         return None
 
 
-def add_or_edit_user(data: WSGIRequest.POST, user_id=None):
+def add_or_edit_user(data: WSGIRequest.POST, user_id=None) -> tuple[User | None, ASSETS.UserEditResult]:
     prepare_data = check_user_data(data)
     if user_id:
         if prepare_data:
             return edit_user(user_id, prepare_data)
         else:
             log.error('Error with the "user_data" data when edit the user')
+            return None, ASSETS.UserEditResult.ERROR
     else:
         if prepare_data:
-            return create_new_user(prepare_data)
+            if not is_user_exists(prepare_data):
+                return create_new_user(prepare_data)
+            else:
+                return None, ASSETS.UserEditResult.EXISTS
         else:
             log.error('Error with the "user_data" data when creating a user')
+            return None, ASSETS.UserEditResult.ERROR
 
 
 def delete_user(user_id) -> User:
@@ -171,8 +179,6 @@ def delete_user(user_id) -> User:
 
 def is_supply_driver(current_technic_sheet_id_list: list, supply_technic_list_id_list: list) -> bool:
     if current_technic_sheet_id_list and set(current_technic_sheet_id_list).issubset(supply_technic_list_id_list):
-        # print(current_technic_sheet_id_list)
-        # print(supply_technic_list_id_list)
         return True
     else:
         return False
@@ -192,7 +198,24 @@ def check_user_by_phone(telephone) -> User|None:
         )
     else:
         user = User.objects.none()
-    if user.exists() and user.count()==1:
+    if user.exists() and user.count() == 1:
         return user.first()
     else:
         return None
+
+
+def prepare_str(raw_string: str) -> str:
+    if raw_string:
+        prep_string = raw_string.strip().capitalize()
+        return prep_string
+    else:
+        return raw_string
+
+
+def is_user_exists(user_data: dict) -> bool:
+    fnd_user = User.objects.filter(
+        Q(username=user_data.get('username')) |
+        Q(telephone__isnull=False, telephone=user_data.get('telephone')) |
+        Q(first_name=user_data.get('first_name'), last_name=user_data.get('last_name'))
+    )
+    return fnd_user.exists()
