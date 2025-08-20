@@ -1,9 +1,8 @@
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet  # type: ignore
 
 from dashboard.models import WorkDaySheet
-import dashboard.assets as ASSETS
 import dashboard.utilities as U
 
 from logger import getLogger

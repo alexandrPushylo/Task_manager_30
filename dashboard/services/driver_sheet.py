@@ -1,8 +1,6 @@
-from datetime import date, timedelta
 from django.db.models import QuerySet  # type: ignore
-from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet
+from dashboard.models import DriverSheet, WorkDaySheet, User
 import dashboard.assets as ASSETS
-import dashboard.utilities as U
 
 from logger import getLogger
 
@@ -36,13 +34,13 @@ def get_driver_sheet(**kwargs) -> DriverSheet:
         driver_sheet = DriverSheet.objects.get(**kwargs)
         return driver_sheet
     except DriverSheet.DoesNotExist:
-        log.warning('get_driver_sheet(): DriverSheet.DoesNotExist')
+        log.warning(f'get_driver_sheet({kwargs}): DriverSheet.DoesNotExist')
         return DriverSheet.objects.none()
     except DriverSheet.MultipleObjectsReturned:
-        log.error('get_driver_sheet(): DriverSheet.MultipleObjectsReturned')
+        log.error(f'get_driver_sheet({kwargs}): DriverSheet.MultipleObjectsReturned')
         return DriverSheet.objects.none()
     except ValueError:
-        log.error("get_driver_sheet() - ValueError ")
+        log.error(f"get_driver_sheet{kwargs}() - ValueError ")
         return DriverSheet.objects.none()
 
 
@@ -135,6 +133,3 @@ def is_driver_sheet_exists(workday: WorkDaySheet) -> bool:
         return True
     else:
         return False
-
-
-

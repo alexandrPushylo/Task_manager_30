@@ -2,7 +2,6 @@ from django.core.handlers.wsgi import WSGIRequest
 
 from dashboard.models import Parameter
 from dashboard import variables as VAR
-import dashboard.assets as ASSETS
 from django.db.models import QuerySet  # type: ignore
 
 from logger import getLogger
@@ -15,7 +14,7 @@ def get_parameter(**kwargs) -> Parameter:
         parameter = Parameter.objects.get(**kwargs)
         return parameter
     except Parameter.DoesNotExist:
-        log.error('get_parameter(): DoesNotExist')
+        log.error(f'get_parameter({kwargs}): DoesNotExist')
         return Parameter.objects.none()
 
 

@@ -1,6 +1,5 @@
-from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet, ApplicationTechnic
-from dashboard.services import technic_sheet as TECHNIC_SHEET_SERVICE
-import dashboard.assets as ASSETS
+from dashboard.models import ApplicationTechnic
+
 from django.db.models import QuerySet
 
 from logger import getLogger
@@ -13,7 +12,7 @@ def create_app_technic(**kwargs) -> ApplicationTechnic:
         application_technic = ApplicationTechnic.objects.create(**kwargs)
         return application_technic
     except ValueError:
-        log.error("create_app_technic(): ValueError")
+        log.error(f"create_app_technic({kwargs}): ValueError")
 
 
 def get_app_technic(**kwargs) -> ApplicationTechnic:
@@ -21,7 +20,7 @@ def get_app_technic(**kwargs) -> ApplicationTechnic:
         application_technic = ApplicationTechnic.objects.get(**kwargs)
         return application_technic
     except ApplicationTechnic.DoesNotExist:
-        log.warning('get_app_technic(): ApplicationTechnic.DoesNotExist')
+        log.warning(f'get_app_technic({kwargs}): ApplicationTechnic.DoesNotExist')
 
 
 def get_apps_technic_queryset(select_related: tuple = (),
@@ -59,14 +58,12 @@ def reject_or_accept_apps_technic(app_tech_id) -> str | None:
         if apps_technic.is_cancelled:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = False
-            # apps_technic.description = apps_technic.description.replace(ASSETS.MessagesAssets.reject.value, "")
             apps_technic.technic_sheet.increment_count_application()
             apps_technic.save()
             return 'accept'
         else:
             apps_technic.isChecked = False
             apps_technic.is_cancelled = True
-            # apps_technic.description = ASSETS.MessagesAssets.reject.value + apps_technic.description
             apps_technic.technic_sheet.decrement_count_application()
             apps_technic.save()
             return 'reject'

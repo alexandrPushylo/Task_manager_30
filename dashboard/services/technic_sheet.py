@@ -1,18 +1,11 @@
 import random
 
-from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet, Technic
+from dashboard.models import WorkDaySheet, TechnicSheet
 from django.db.models import F, QuerySet  # type: ignore
-import dashboard.assets as ASSETS
-import dashboard.utilities as U
-import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
-import dashboard.services.construction_site as CONSTR_SITE_SERVICE
 import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
 import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
-import dashboard.services.dashboard as DASHBOARD_SERVICE
-import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
-import dashboard.services.application_material as APP_MATERIAL_SERVICE
 from logger import getLogger
 
 
@@ -46,13 +39,13 @@ def get_technic_sheet(**kwargs) -> TechnicSheet:
         technic_sheet = TechnicSheet.objects.get(**kwargs)
         return technic_sheet
     except TechnicSheet.DoesNotExist:
-        log.warning('get_technic_sheet(): TechnicSheet.DoesNotExist')
+        log.warning(f'get_technic_sheet({kwargs}): TechnicSheet.DoesNotExist')
         return TechnicSheet.objects.none()
     except TechnicSheet.MultipleObjectsReturned:
-        log.error('get_technic_sheet(): TechnicSheet.MultipleObjectsReturned')
+        log.error(f'get_technic_sheet({kwargs}): TechnicSheet.MultipleObjectsReturned')
         return TechnicSheet.objects.none()
     except ValueError:
-        log.error("get_technic_sheet() - ValueError ")
+        log.error(f"get_technic_sheet{kwargs}() - ValueError ")
         return TechnicSheet.objects.none()
 
 
@@ -205,11 +198,6 @@ def decrement_technic_sheet_list(technic_sheet_id_list,  **kwargs):
     :return:
     """
     if technic_sheet_id_list:
-        technic_sheet = get_technic_sheet_queryset(pk__in=technic_sheet_id_list)
-        # for tech_sheet in technic_sheet:
-        #     calculate_count_applications(tech_sheet.id)
-        #     tech_sheet.decrement_count_application()
-
         for technic_sheet_id in technic_sheet_id_list:
             calculate_count_applications(technic_sheet_id, **kwargs)
 
@@ -294,8 +282,6 @@ def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> Technic
             return get_technic_sheet(pk=least_busy_technic_sheet['id'])
         else:
             return None
-        # print(least_busy_technic_sheet)
-        # return get_technic_sheet(pk=least_busy_technic_sheet['id'])
 
 
 def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):

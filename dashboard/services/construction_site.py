@@ -14,10 +14,10 @@ def get_construction_sites(**kwargs) -> ConstructionSite:
         construction_sites = ConstructionSite.objects.get(**kwargs)
         return construction_sites
     except ConstructionSite.DoesNotExist:
-        log.warning('get_construction_sites(): DoesNotExist')
+        log.warning(f'get_construction_sites({kwargs}): DoesNotExist')
         return ConstructionSite.objects.none()
     except ValueError:
-        log.error('get_construction_sites(): ValueError')
+        log.error(f'get_construction_sites({kwargs}): ValueError')
         return ConstructionSite.objects.none()
 
 
@@ -44,10 +44,10 @@ def hide_construction_site(constr_site_id):
     if constr_site:
         if constr_site.status:
             constr_site.status = False
-            log.info('The construction site was hidden')
+            log.info(f'The construction site (pk={constr_site_id}) was hidden')
         else:
             constr_site.status = True
-            log.info('The construction site was displayed')
+            log.info(f'The construction site (pk={constr_site_id}) was displayed')
         constr_site.save(update_fields=['status'])
 
 
@@ -57,11 +57,13 @@ def delete_construction_site(constr_site_id) -> ConstructionSite | None:
         if constr_site.isArchive:
             constr_site.isArchive = False
             constr_site.deleted_date = None
-            log.info('The %s construction site has been restored from the archive' % constr_site.address)
+            log.info(
+                f'The {constr_site.address} construction site (pk={constr_site_id}) has been restored from the archive')
         else:
             constr_site.isArchive = True
             constr_site.deleted_date = U.TODAY
-            log.info('The %s construction site has been archived' % constr_site.address)
+            log.info(
+                f'The {constr_site.address} construction site  (pk={constr_site_id}) has been archived')
 
         constr_site.save(update_fields=['isArchive', 'deleted_date'])
         return constr_site
@@ -80,7 +82,7 @@ def check_data(data: dict) -> dict | None:
             out['foreman'] = foreman
         else:
             out['foreman'] = None
-            log.warning('There is no foreman with id %s.' % cs_foreman)
+            log.warning('There is no foreman with (pk= %s).' % cs_foreman)
     else:
         out['foreman'] = None
 
@@ -94,20 +96,26 @@ def check_data(data: dict) -> dict | None:
 
 
 def create_construction_site(data: dict):
-    ConstructionSite.objects.create(
-        address=data['address'],
-        foreman=data['foreman'],
-    )
-    log.info('The %s CS has been created' % data["address"])
+    try:
+        ConstructionSite.objects.create(
+            address=data['address'],
+            foreman=data['foreman'],
+        )
+        log.info('The %s CS has been created' % data["address"])
+    except Exception as e:
+        log.error(e.with_traceback)
 
 
 def edit_construction_site(constr_site_id, data: dict):
     constr_site = get_construction_sites(pk=constr_site_id)
     if constr_site:
-        constr_site.address = data['address']
-        constr_site.foreman = data['foreman']
-        constr_site.save(update_fields=['address', 'foreman'])
-        log.info('The %s CS has been changed' % data["address"])
+        try:
+            constr_site.address = data['address']
+            constr_site.foreman = data['foreman']
+            constr_site.save(update_fields=['address', 'foreman'])
+            log.info('The %s CS has been changed' % data["address"])
+        except Exception as e:
+            log.error(e.with_traceback)
 
 
 def create_or_edit_construction_site(data: dict, constr_site_id=None):
@@ -122,7 +130,7 @@ def create_or_edit_construction_site(data: dict, constr_site_id=None):
             else:
                 create_construction_site(prepare_data)
     else:
-        log.error('Error with the data')
+        log.error('create_or_edit_construction_site(). Error with the data')
 
 
 def is_construction_site_already_exists(constr_site_title: str, foreman: User) -> bool:
