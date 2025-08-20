@@ -2,7 +2,6 @@ from django.core.handlers.wsgi import WSGIRequest
 
 from dashboard.models import Parameter
 from dashboard import variables as VAR
-import dashboard.assets as ASSETS
 from django.db.models import QuerySet  # type: ignore
 
 from logger import getLogger

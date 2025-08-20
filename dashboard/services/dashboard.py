@@ -1,4 +1,4 @@
-from dashboard.models import WorkDaySheet, ConstructionSite, TechnicSheet
+from dashboard.models import WorkDaySheet, ConstructionSite
 from dashboard.models import (
     ApplicationToday,
     ApplicationTechnic,
@@ -12,8 +12,6 @@ import dashboard.assets as ASSETS
 import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
 import dashboard.services.construction_site as CONSTR_SITE_SERVICE
-import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
-import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
 import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
 
 import dashboard.services.application_today as APP_TODAY_SERVICE
@@ -34,10 +32,8 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
     if request.POST.get("operation") == "change_read_only_mode":
         if request.POST.get("read_only") == "0":
             U.set_accept_mode(current_day, ASSETS.AcceptMode.OFF)
-            # U.change_reception_apps_mode_manual(current_day, False)
         if request.POST.get("read_only") == "1":
             U.set_accept_mode(current_day, ASSETS.AcceptMode.MANUAL)
-            # U.change_reception_apps_mode_manual(current_day, True)
 
     if request.POST.get("operation") == "toggle_panel":
         _hide_panel = "change"
@@ -52,7 +48,8 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         )
     else:
         construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-            isArchive=False, status=True
+            isArchive=False,
+            status=True
         )
 
     if not request.user.is_show_absent_app:
@@ -78,29 +75,27 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
 
     if request.user.is_show_technic_app:
         applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-            isArchive=False, application_today__in=applications_today
+            isArchive=False,
+            application_today__in=applications_today
         )
     else:
         applications_technic = ApplicationTechnic.objects.none()
 
     if request.user.is_show_material_app:
         application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
-            isArchive=False, application_today__in=applications_today
+            isArchive=False,
+            application_today__in=applications_today
         )
     else:
         application_material = ApplicationMaterial.objects.none()
 
-    context["table_working_technic_sheet"] = U.get_table_working_technic_sheet(
-        current_day
-    )
+    context["table_working_technic_sheet"] = U.get_table_working_technic_sheet(current_day)
     context["applications_today_list"] = applications_today
     context["construction_sites"] = construction_sites.values()
 
     for construction_site in context["construction_sites"]:
         foreman_id = construction_site.get("foreman_id")
-        construction_site["foreman"] = (
-            USERS_SERVICE.get_user(pk=foreman_id) if foreman_id else None
-        )
+        construction_site["foreman"] = (USERS_SERVICE.get_user(pk=foreman_id) if foreman_id else None)
 
         construction_site["application_today"] = (
             applications_today.filter(construction_site_id=construction_site["id"])
@@ -109,7 +104,6 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         )
 
         if construction_site["application_today"]:
-
             construction_site["application_today"]["application_material"] = (
                 application_material.filter(
                     application_today_id=construction_site["application_today"]["id"]
@@ -159,23 +153,28 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
 
 
 def get_dashboard_for_foreman_or_master(
-    request, foreman: User, current_day: WorkDaySheet, context: dict
-) -> dict:
+        request,
+        foreman: User,
+        current_day: WorkDaySheet,
+        context: dict
+        ) -> dict:
     VIEW_MODE = context.get("VIEW_MODE")
 
     if VIEW_MODE == ASSETS.ViewMode.ARCHIVE.value:
         construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-            foreman=foreman, applicationtoday__date=current_day
+            foreman=foreman,
+            applicationtoday__date=current_day
         )
     else:
         construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-            foreman=foreman, isArchive=False, status=True
+            foreman=foreman,
+            isArchive=False,
+            status=True
         )
 
     if not request.user.is_show_absent_app:
-        construction_sites = construction_sites.filter(
-            applicationtoday__date=current_day
-        )
+        construction_sites = construction_sites.filter(applicationtoday__date=current_day)
+
     if not request.user.is_show_saved_app:
         construction_sites = construction_sites.exclude(
             applicationtoday__status=ASSETS.ApplicationTodayStatus.SAVED.title
@@ -195,14 +194,16 @@ def get_dashboard_for_foreman_or_master(
 
     if request.user.is_show_technic_app:
         applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-            isArchive=False, application_today__in=applications_today
+            isArchive=False,
+            application_today__in=applications_today
         )
     else:
         applications_technic = ApplicationTechnic.objects.none()
 
     if request.user.is_show_material_app:
         application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
-            isArchive=False, application_today__in=applications_today
+            isArchive=False,
+            application_today__in=applications_today
         )
     else:
         application_material = ApplicationMaterial.objects.none()
@@ -254,8 +255,10 @@ def get_dashboard_for_foreman_or_master(
 
 
 def get_dashboard_for_mechanic(
-    request, current_day: WorkDaySheet, context: dict
-) -> dict:
+        request,
+        current_day: WorkDaySheet,
+        context: dict
+        ) -> dict:
     technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
         select_related=("technic__attached_driver", "driver_sheet__driver"),
         date=current_day,
@@ -300,7 +303,9 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
         address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value
     )
     application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
-        date=current_day, construction_site=construction_site, isArchive=False
+        date=current_day,
+        construction_site=construction_site,
+        isArchive=False
     )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
@@ -376,8 +381,10 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
 
 
 def get_dashboard_for_employee(
-    request, current_day: WorkDaySheet, context: dict
-) -> dict:
+        request,
+        current_day: WorkDaySheet,
+        context: dict
+        ) -> dict:
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
         isArchive=False,
@@ -386,18 +393,18 @@ def get_dashboard_for_employee(
     )
 
     construction_sites = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-        isArchive=False, status=True, applicationtoday__in=applications_today
+        isArchive=False,
+        status=True,
+        applicationtoday__in=applications_today
     )
 
     if request.user.filter_foreman != 0:
         construction_sites = construction_sites.filter(
             foreman_id=request.user.filter_foreman)
 
-
     if request.user.filter_construction_site != 0:
         construction_sites = construction_sites.filter(
             pk=request.user.filter_construction_site)
-
 
     if request.user.is_show_technic_app:
         applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
@@ -413,10 +420,10 @@ def get_dashboard_for_employee(
         applications_technic = applications_technic.filter(
             technic_sheet__technic__title=request.user.filter_technic)
 
-
     if request.user.is_show_material_app:
         application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
-            isArchive=False, application_today__in=applications_today
+            isArchive=False,
+            application_today__in=applications_today
         )
     else:
         application_material = ApplicationMaterial.objects.none()

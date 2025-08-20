@@ -343,8 +343,6 @@ def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bo
                 return False
 
 
-
-
 def set_data_for_filter(request):
     """
     Установка параметров фильтрации

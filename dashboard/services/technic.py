@@ -1,21 +1,11 @@
-from typing import List
-
 from django.core.handlers.wsgi import WSGIRequest  # type: ignore
 
 from dashboard.types import Any
 
-from dashboard.models import Technic, User, WorkDaySheet, TechnicSheet
+from dashboard.models import Technic, User, TechnicSheet
 from dashboard.models import TemplateDescForTechnic
 import dashboard.assets as ASSETS
 from django.db.models import QuerySet  # type: ignore
-import dashboard.services.user as USERS_SERVICE
-import dashboard.services.construction_site as CONSTR_SITE_SERVICE
-import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
-import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
-import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
-import dashboard.services.dashboard as DASHBOARD_SERVICE
-import dashboard.services.application_technic as APP_TECHNIC_SERVICE
-import dashboard.services.application_material as APP_MATERIAL_SERVICE
 
 from logger import getLogger
 
@@ -215,8 +205,8 @@ def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptio
 
 
 def get_task_description_queryset(select_related: tuple = (),
-                          order_by: tuple = (),
-                          **kwargs) -> QuerySet[TemplateDescForTechnic]:
+                                  order_by: tuple = (),
+                                  **kwargs) -> QuerySet[TemplateDescForTechnic]:
     """
     :param select_related:
     :param order_by:
@@ -244,7 +234,7 @@ def get_task_description(**kwargs) -> TemplateDescForTechnic:
         return TemplateDescForTechnic.objects.none()
 
 
-def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, description: str|None):
+def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, description: str | None):
     """
     Установить шаблон задания для "спец объекта" с помощью technic_id.
     :param technic_id:

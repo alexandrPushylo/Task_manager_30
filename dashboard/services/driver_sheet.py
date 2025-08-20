@@ -1,8 +1,6 @@
-from datetime import date, timedelta
 from django.db.models import QuerySet  # type: ignore
-from dashboard.models import DriverSheet, WorkDaySheet, User, TechnicSheet
+from dashboard.models import DriverSheet, WorkDaySheet, User
 import dashboard.assets as ASSETS
-import dashboard.utilities as U
 
 from logger import getLogger
 
@@ -135,6 +133,3 @@ def is_driver_sheet_exists(workday: WorkDaySheet) -> bool:
         return True
     else:
         return False
-
-
-

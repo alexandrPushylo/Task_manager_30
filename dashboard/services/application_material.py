@@ -1,6 +1,5 @@
-from dashboard.models import Technic, User, ApplicationToday, WorkDaySheet, ApplicationMaterial
+from dashboard.models import ApplicationMaterial
 from django.db.models import QuerySet  # type: ignore
-import dashboard.assets as ASSETS
 
 from logger import getLogger
 
