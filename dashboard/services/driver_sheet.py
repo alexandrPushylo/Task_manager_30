@@ -36,13 +36,13 @@ def get_driver_sheet(**kwargs) -> DriverSheet:
         driver_sheet = DriverSheet.objects.get(**kwargs)
         return driver_sheet
     except DriverSheet.DoesNotExist:
-        log.warning('get_driver_sheet(): DriverSheet.DoesNotExist')
+        log.warning(f'get_driver_sheet({kwargs}): DriverSheet.DoesNotExist')
         return DriverSheet.objects.none()
     except DriverSheet.MultipleObjectsReturned:
-        log.error('get_driver_sheet(): DriverSheet.MultipleObjectsReturned')
+        log.error(f'get_driver_sheet({kwargs}): DriverSheet.MultipleObjectsReturned')
         return DriverSheet.objects.none()
     except ValueError:
-        log.error("get_driver_sheet() - ValueError ")
+        log.error(f"get_driver_sheet{kwargs}() - ValueError ")
         return DriverSheet.objects.none()
 
 

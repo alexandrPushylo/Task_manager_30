@@ -13,7 +13,7 @@ def create_app_technic(**kwargs) -> ApplicationTechnic:
         application_technic = ApplicationTechnic.objects.create(**kwargs)
         return application_technic
     except ValueError:
-        log.error("create_app_technic(): ValueError")
+        log.error(f"create_app_technic({kwargs}): ValueError")
 
 
 def get_app_technic(**kwargs) -> ApplicationTechnic:
@@ -21,7 +21,7 @@ def get_app_technic(**kwargs) -> ApplicationTechnic:
         application_technic = ApplicationTechnic.objects.get(**kwargs)
         return application_technic
     except ApplicationTechnic.DoesNotExist:
-        log.warning('get_app_technic(): ApplicationTechnic.DoesNotExist')
+        log.warning(f'get_app_technic({kwargs}): ApplicationTechnic.DoesNotExist')
 
 
 def get_apps_technic_queryset(select_related: tuple = (),

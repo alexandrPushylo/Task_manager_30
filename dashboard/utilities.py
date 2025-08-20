@@ -333,7 +333,7 @@ def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bo
                     try:
                         font_size = int(io_value)
                     except Exception as e:
-                        log.warning("set_data_for_filter(): 'font_size'")
+                        log.error("set_data_for_filter(): 'font_size'")
                         font_size = 10
                 user.font_size = font_size
                 user.save(update_fields=['font_size'])

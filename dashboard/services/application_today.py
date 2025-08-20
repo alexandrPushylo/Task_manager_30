@@ -16,13 +16,13 @@ def get_apps_today(**kwargs) -> ApplicationToday:
         application_today = ApplicationToday.objects.get(**kwargs)
         return application_today
     except ApplicationToday.DoesNotExist:
-        log.warning("get_apps_today(): ApplicationToday.DoesNotExist")
+        log.warning(f"get_apps_today({kwargs}): ApplicationToday.DoesNotExist")
         return ApplicationToday.objects.none()
     except ApplicationToday.MultipleObjectsReturned:
-        log.error(f"get_apps_today(): ApplicationToday.MultipleObjectsReturned | [{kwargs}]")
+        log.error(f"get_apps_today({kwargs}): ApplicationToday.MultipleObjectsReturned")
         return ApplicationToday.objects.none()
     except ValueError:
-        log.error(f"get_apps_today(): ValueError | [{kwargs}]")
+        log.error(f"get_apps_today({kwargs}): ValueError")
         return ApplicationToday.objects.none()
 
 
@@ -36,7 +36,7 @@ def create_app_today(**kwargs) -> ApplicationToday:
         application_today, created = ApplicationToday.objects.get_or_create(**kwargs)
         return application_today
     except ValueError:
-        log.error("get_or_create_app_today(): ValueError")
+        log.error(f"get_or_create_app_today({kwargs}): ValueError")
         return ApplicationToday.objects.none()
 
 

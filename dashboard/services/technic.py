@@ -134,10 +134,10 @@ def get_technic(**kwargs) -> Technic:
         technic = Technic.objects.get(**kwargs)
         return technic
     except Technic.DoesNotExist:
-        log.warning("get_technic(): Technic.DoesNotExist ")
+        log.warning(f"get_technic({kwargs}): Technic.DoesNotExist ")
         return Technic.objects.none()
     except ValueError:
-        log.warning("get_technic(): ValueError")
+        log.warning(f"get_technic({kwargs}): ValueError")
         return Technic.objects.none()
 
 
@@ -237,10 +237,10 @@ def get_task_description(**kwargs) -> TemplateDescForTechnic:
         description = TemplateDescForTechnic.objects.get(**kwargs)
         return description
     except TemplateDescForTechnic.DoesNotExist:
-        log.warning("get_task_description(): TemplateDescForTechnic.DoesNotExist ")
+        log.warning(f"get_task_description({kwargs}): TemplateDescForTechnic.DoesNotExist ")
         return TemplateDescForTechnic.objects.none()
     except ValueError:
-        log.error("get_task_description(): ValueError")
+        log.error(f"get_task_description({kwargs}): ValueError")
         return TemplateDescForTechnic.objects.none()
 
 
@@ -271,7 +271,8 @@ def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, desc
             task_description.description = description if description is not None else ''
             task_description.save()
         case _:
-            log.warning('type_mode is not valid set_task_description')
+            log.warning(f'type_mode - ({type_mode}) is not valid set_task_description()')
+
 
 def get_technic_type() -> list:
     """

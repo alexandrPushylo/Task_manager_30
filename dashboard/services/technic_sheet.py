@@ -46,13 +46,13 @@ def get_technic_sheet(**kwargs) -> TechnicSheet:
         technic_sheet = TechnicSheet.objects.get(**kwargs)
         return technic_sheet
     except TechnicSheet.DoesNotExist:
-        log.warning('get_technic_sheet(): TechnicSheet.DoesNotExist')
+        log.warning(f'get_technic_sheet({kwargs}): TechnicSheet.DoesNotExist')
         return TechnicSheet.objects.none()
     except TechnicSheet.MultipleObjectsReturned:
-        log.error('get_technic_sheet(): TechnicSheet.MultipleObjectsReturned')
+        log.error(f'get_technic_sheet({kwargs}): TechnicSheet.MultipleObjectsReturned')
         return TechnicSheet.objects.none()
     except ValueError:
-        log.error("get_technic_sheet() - ValueError ")
+        log.error(f"get_technic_sheet{kwargs}() - ValueError ")
         return TechnicSheet.objects.none()
 
 

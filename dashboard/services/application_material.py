@@ -12,7 +12,7 @@ def get_app_material(**kwargs) -> ApplicationMaterial | None:
         application_material = ApplicationMaterial.objects.get(**kwargs)
         return application_material
     except ApplicationMaterial.DoesNotExist:
-        log.warning("get_app_material(): ApplicationMaterial.DoesNotExist")
+        log.warning(f"get_app_material({kwargs}): ApplicationMaterial.DoesNotExist")
         return None
 
 
@@ -21,7 +21,7 @@ def create_app_material(**kwargs) -> ApplicationMaterial | None:
         application_material = ApplicationMaterial.objects.create(**kwargs)
         return application_material
     except ValueError:
-        log.error("create_app_material(): ValueError")
+        log.error(f"create_app_material({kwargs}): ValueError")
         return None
 
 
