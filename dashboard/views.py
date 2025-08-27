@@ -4,18 +4,16 @@ from django.http import HttpResponseRedirect, HttpResponse
 
 from dashboard.models import User
 from django.contrib.auth import login, logout, authenticate
-# from dashboard.models import Administrator, Foreman, Master, Mechanic, Driver, Supply, Employee
 from dashboard.models import Technic
 from dashboard.models import ConstructionSite
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet
 from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMaterial
-from dashboard.models import Parameter  # , Telebot
+from dashboard.models import Parameter
 
 import dashboard.assets as ASSETS
 import config.endpoints as ENDPOINTS
 import dashboard.utilities as U
 import dashboard.variables as VAR
-# import dashboard.telegram_bot as T
 
 #   SERVICE--------------------------------------------------
 import dashboard.services.user as USERS_SERVICE
@@ -73,12 +71,6 @@ def routing(request):
 def dashboard_view(request):
     if request.user.is_anonymous:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
-
-    # is_redirect = U.is_redirect_to_dashboard(request.META)
-    # if request.GET.get('current_day') != str(U.TODAY):
-    #     if is_redirect:
-    #         return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={U.TODAY}")
-
     current_day = WORK_DAY_SERVICE.get_current_day(request)
 
     context = {
@@ -261,7 +253,6 @@ def edit_application_view(request):
             _application_today = APP_TODAY_SERVICE.create_app_today(
                 construction_site=construction_site,
                 date=current_day,
-                # status=_default_status
             )
             return _application_today
 
@@ -337,13 +328,13 @@ def edit_application_view(request):
             post_application_material_id = request.POST.get('app_material_id')
             post_application_material_description = request.POST.get('material_description', '')
 
-            post_application_technic_description:str = post_application_technic_description.strip()
-            post_application_today_description:str = post_application_today_description.strip()
-            post_application_material_description:str = post_application_material_description.strip()
+            post_application_technic_description: str = post_application_technic_description.strip()
+            post_application_today_description: str = post_application_today_description.strip()
+            post_application_material_description: str = post_application_material_description.strip()
 
             match operation:
                 case 'add_technic_to_application':
-                    log.info('add_technic_to_application')
+                    log.debug('add_technic_to_application')
                     application_today = _prepare_app_today(post_application_today_id)
                     data = {
                         "status": "fail",
@@ -370,31 +361,33 @@ def edit_application_view(request):
                             some_technic_sheet.increment_count_application()
                         application_today.make_edited()
 
-                        data['status']='ok'
-                        data['technic_title_shrt']=post_technic_title_shrt
-                        data['technic_title']=some_technic_sheet.technic.title
-                        data['technic_sheet_id']=some_technic_sheet.id
-                        data['app_technic_id']=application_technic.id
-                        data['isChecked']=application_technic.isChecked
-                        data['is_cancelled']=application_technic.is_cancelled
-                        data['app_tech_desc']=description
-                        data['font_size']=request.user.font_size
+                        data['status'] = 'ok'
+                        data['technic_title_shrt'] = post_technic_title_shrt
+                        data['technic_title'] = some_technic_sheet.technic.title
+                        data['technic_sheet_id'] = some_technic_sheet.id
+                        data['app_technic_id'] = application_technic.id
+                        data['isChecked'] = application_technic.isChecked
+                        data['is_cancelled'] = application_technic.is_cancelled
+                        data['app_tech_desc'] = description
+                        data['font_size'] = request.user.font_size
                     return HttpResponse(json.dumps(data))
 
                 case 'reject_application_technic':
-                    log.info('reject_application_technic')
+                    log.debug('reject_application_technic')
                     try:
                         application_today = _prepare_app_today(post_application_today_id)
                         if U.is_valid_get_request(post_application_technic_id):
-                            status = APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(app_tech_id=post_application_technic_id)
+                            status = APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(
+                                app_tech_id=post_application_technic_id
+                            )
                             application_today.make_edited()
                             return HttpResponse(status)
                     except Exception as e:
-                        log.error("ERROR: edit_application_view(): reject_application_technic")
+                        log.error(f"ERROR: edit_application_view(): reject_application_technic | {e}")
                         return HttpResponse(b'fail')
 
                 case 'delete_application_technic':
-                    log.info('delete_application_technic')
+                    log.debug('delete_application_technic')
                     application_today = _prepare_app_today(post_application_today_id)
                     if U.is_valid_get_request(post_application_technic_id):
                         status = APP_TECHNIC_SERVICE.delete_application_technic(
@@ -407,7 +400,7 @@ def edit_application_view(request):
                     return HttpResponse(b"error")
 
                 case 'apply_changes_application_technic':
-                    log.info('apply_changes_application_technic')
+                    log.debug('apply_changes_application_technic')
                     application_today = _prepare_app_today(post_application_today_id)
                     if U.is_valid_get_request(post_technic_title_shrt):
                         try:
@@ -437,12 +430,11 @@ def edit_application_view(request):
                             application_today.make_edited()
                             return HttpResponse(b'ok')
                         except Exception as e:
-                            log.error("ERROR: edit_application_view(): apply_changes_application_technic")
+                            log.error(f"ERROR: edit_application_view(): apply_changes_application_technic | {e}")
                             return HttpResponse(b'fail')
 
-
                 case 'save_application_description':
-                    log.info('save_application_description')
+                    log.debug('save_application_description')
                     application_today = _prepare_app_today(post_application_today_id)
                     data = {
                         "status": None,
@@ -461,7 +453,7 @@ def edit_application_view(request):
                     return HttpResponse(json.dumps(data))
 
                 case 'save_application_materials':
-                    log.info('save_application_materials')
+                    log.debug('save_application_materials')
                     application_today = _prepare_app_today(post_application_today_id)
                     application_material = APP_MATERIAL_SERVICE.get_app_material(application_today=application_today)
 
@@ -559,6 +551,7 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(ENDPOINTS.ROUTING_DASHBOARD)
         else:
+            log.warning('Username or Password is incorrect')
             return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
 
@@ -585,6 +578,7 @@ def restore_password_view(request):
                 restore_user.set_password(default_passwd.value)
                 restore_user.save(update_fields=['password'])
                 context['msg_success'] = {'login': restore_user.username, 'password': default_passwd.value}
+                log.info(f"Пароль пользователя {restore_user.username} успешно сброшен")
             else:
                 log.error("Ошибка с параметром 'default_passwd'")
                 context['msg'] = 'Произошла какая-то ошибка'
@@ -595,6 +589,7 @@ def restore_password_view(request):
 
 def logout_view(request):
     if request.user.is_authenticated:
+        log.info(f"Пользователь {request.user.username} вышел из системы")
         logout(request)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -613,14 +608,17 @@ def register_view(request):
         new_user, msg = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
+            log.info("Пользователь успешно зарегистрирован")
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         elif new_user is not None and request.user.is_authenticated:
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         elif new_user is None and msg == ASSETS.UserEditResult.EXISTS:
             context['error'] = ASSETS.ErrorMessages.user_already_exists.value
+            log.warning('User already exists')
             return render(request, 'content/register.html', context)
         else:
             context['error'] = ASSETS.ErrorMessages.invalid_register.value
+            log.warning('Invalid register form')
             return render(request, 'content/register.html', context)
 
     return HttpResponse(status=403)
@@ -924,7 +922,6 @@ def construction_site_view(request):
             else:
                 context['hidden_construction_sites'].append(construction_site)
 
-
         hide_constr_site_id = request.GET.get('hide')
         if U.is_valid_get_request(hide_constr_site_id):
             CONSTR_SITE_SERVICE.hide_construction_site(constr_site_id=hide_constr_site_id)
@@ -1178,7 +1175,6 @@ def conflict_resolution_view(request):
                             some_technic_sheet.increment_count_application()
                         application_technic.priority = priority
                         application_technic.description = description
-                        # application_technic.save()
                         update_list.append(application_technic)
                     ApplicationTechnic.objects.bulk_update(update_list, ['technic_sheet', 'priority', 'description'])
 
@@ -1237,10 +1233,11 @@ def show_technic_application(request):
 
             list_for_updates = []
             for _id, _priority, _description in zip(app_technic_id_list, app_technic_priority, app_technic_description):
-                app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=_id)
-                app_technic.priority = _priority
-                app_technic.description = _description
-                list_for_updates.append(app_technic)
+                if U.is_valid_get_request(_priority) and U.is_valid_get_request(_id):
+                    app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=_id)
+                    app_technic.priority = _priority
+                    app_technic.description = _description
+                    list_for_updates.append(app_technic)
             ApplicationTechnic.objects.bulk_update(objs=list_for_updates, fields=['priority', 'description'])
 
         application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
@@ -1273,7 +1270,6 @@ def show_technic_application(request):
             technic_sheet_list = technic_sheet_list.order_by('technic_sheet__driver_sheet__driver__last_name')
         else:
             technic_sheet_list = technic_sheet_list.order_by('technic_sheet__driver_sheet__driver__last_name')
-
 
         application_technics = []
         for technic_sheet in technic_sheet_list:
@@ -1361,7 +1357,6 @@ def material_application_supply_view(request):
             return render(request, 'content/spec/print_material_application.html', context)
 
         if request.method == 'POST':
-            # print(request.POST)
             application_material_id = request.POST.get('application_material_id')
             application_material_description = request.POST.get('app_material_description')
             operation = request.POST.get('operation')
@@ -1479,6 +1474,7 @@ def profile_view(request):
                 if U.is_valid_get_request(telephone):
                     current_user.telephone = U.validate_telephone(telephone)
                 current_user.save()
+                log.info("Changed profile successfully")
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
             if operation == 'changePassword':
@@ -1486,6 +1482,7 @@ def profile_view(request):
                     if new_password_0 == new_password_1:
                         current_user.set_password(new_password_0)
                         current_user.save()
+                        log.info("Changed password successfully")
                         return HttpResponse(b"accept")
 
             _user_key = request.POST.get('user_key')
@@ -1546,9 +1543,6 @@ def def_test(request):  # TODO: def TEST
 
     if U.is_valid_get_request(admin_mess):
         U.send_application_by_telegram_for_admin(wd, messages=admin_mess)
-
-
-
     return render(request, 'content/tests/change_workday.html', context)
 
 
@@ -1628,6 +1622,7 @@ def calculate_all_applications(request):
     if request.user.is_authenticated:
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         TECHNIC_SHEET_SERVICE.calculate_all_applications_for_ts(current_day)
+        log.info(f"Считаем все заявки на технику за {current_day.date}")
         return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={ current_day.date }")
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
