@@ -1237,10 +1237,11 @@ def show_technic_application(request):
 
             list_for_updates = []
             for _id, _priority, _description in zip(app_technic_id_list, app_technic_priority, app_technic_description):
-                app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=_id)
-                app_technic.priority = _priority
-                app_technic.description = _description
-                list_for_updates.append(app_technic)
+                if U.is_valid_get_request(_priority):
+                    app_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=_id)
+                    app_technic.priority = _priority
+                    app_technic.description = _description
+                    list_for_updates.append(app_technic)
             ApplicationTechnic.objects.bulk_update(objs=list_for_updates, fields=['priority', 'description'])
 
         application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
