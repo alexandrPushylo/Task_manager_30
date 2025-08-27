@@ -343,7 +343,7 @@ def edit_application_view(request):
 
             match operation:
                 case 'add_technic_to_application':
-                    log.info('add_technic_to_application')
+                    log.debug('add_technic_to_application')
                     application_today = _prepare_app_today(post_application_today_id)
                     data = {
                         "status": "fail",
@@ -382,7 +382,7 @@ def edit_application_view(request):
                     return HttpResponse(json.dumps(data))
 
                 case 'reject_application_technic':
-                    log.info('reject_application_technic')
+                    log.debug('reject_application_technic')
                     try:
                         application_today = _prepare_app_today(post_application_today_id)
                         if U.is_valid_get_request(post_application_technic_id):
@@ -390,11 +390,11 @@ def edit_application_view(request):
                             application_today.make_edited()
                             return HttpResponse(status)
                     except Exception as e:
-                        log.error("ERROR: edit_application_view(): reject_application_technic")
+                        log.error(f"ERROR: edit_application_view(): reject_application_technic | {e}")
                         return HttpResponse(b'fail')
 
                 case 'delete_application_technic':
-                    log.info('delete_application_technic')
+                    log.debug('delete_application_technic')
                     application_today = _prepare_app_today(post_application_today_id)
                     if U.is_valid_get_request(post_application_technic_id):
                         status = APP_TECHNIC_SERVICE.delete_application_technic(
@@ -407,7 +407,7 @@ def edit_application_view(request):
                     return HttpResponse(b"error")
 
                 case 'apply_changes_application_technic':
-                    log.info('apply_changes_application_technic')
+                    log.debug('apply_changes_application_technic')
                     application_today = _prepare_app_today(post_application_today_id)
                     if U.is_valid_get_request(post_technic_title_shrt):
                         try:
@@ -437,12 +437,12 @@ def edit_application_view(request):
                             application_today.make_edited()
                             return HttpResponse(b'ok')
                         except Exception as e:
-                            log.error("ERROR: edit_application_view(): apply_changes_application_technic")
+                            log.error(f"ERROR: edit_application_view(): apply_changes_application_technic | {e}")
                             return HttpResponse(b'fail')
 
 
                 case 'save_application_description':
-                    log.info('save_application_description')
+                    log.debug('save_application_description')
                     application_today = _prepare_app_today(post_application_today_id)
                     data = {
                         "status": None,
@@ -461,7 +461,7 @@ def edit_application_view(request):
                     return HttpResponse(json.dumps(data))
 
                 case 'save_application_materials':
-                    log.info('save_application_materials')
+                    log.debug('save_application_materials')
                     application_today = _prepare_app_today(post_application_today_id)
                     application_material = APP_MATERIAL_SERVICE.get_app_material(application_today=application_today)
 
@@ -559,6 +559,7 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(ENDPOINTS.ROUTING_DASHBOARD)
         else:
+            log.warning('Username or Password is incorrect')
             return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
 
@@ -585,6 +586,7 @@ def restore_password_view(request):
                 restore_user.set_password(default_passwd.value)
                 restore_user.save(update_fields=['password'])
                 context['msg_success'] = {'login': restore_user.username, 'password': default_passwd.value}
+                log.info(f"Пароль пользователя {restore_user.username} успешно сброшен")
             else:
                 log.error("Ошибка с параметром 'default_passwd'")
                 context['msg'] = 'Произошла какая-то ошибка'
@@ -595,6 +597,7 @@ def restore_password_view(request):
 
 def logout_view(request):
     if request.user.is_authenticated:
+        log.info(f"Пользователь {request.user.username} вышел из системы")
         logout(request)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -613,14 +616,17 @@ def register_view(request):
         new_user, msg = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
+            log.info("Пользователь успешно зарегистрирован")
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         elif new_user is not None and request.user.is_authenticated:
             return HttpResponseRedirect('/')  # TODO redirect if create new user
         elif new_user is None and msg == ASSETS.UserEditResult.EXISTS:
             context['error'] = ASSETS.ErrorMessages.user_already_exists.value
+            log.warning('User already exists')
             return render(request, 'content/register.html', context)
         else:
             context['error'] = ASSETS.ErrorMessages.invalid_register.value
+            log.warning('Invalid register form')
             return render(request, 'content/register.html', context)
 
     return HttpResponse(status=403)
@@ -1480,6 +1486,7 @@ def profile_view(request):
                 if U.is_valid_get_request(telephone):
                     current_user.telephone = U.validate_telephone(telephone)
                 current_user.save()
+                log.info("Changed profile successfully")
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
             if operation == 'changePassword':
@@ -1487,6 +1494,7 @@ def profile_view(request):
                     if new_password_0 == new_password_1:
                         current_user.set_password(new_password_0)
                         current_user.save()
+                        log.info("Changed password successfully")
                         return HttpResponse(b"accept")
 
             _user_key = request.POST.get('user_key')
@@ -1629,6 +1637,7 @@ def calculate_all_applications(request):
     if request.user.is_authenticated:
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         TECHNIC_SHEET_SERVICE.calculate_all_applications_for_ts(current_day)
+        log.info(f"Считаем все заявки на технику за {current_day.date}")
         return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={ current_day.date }")
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 

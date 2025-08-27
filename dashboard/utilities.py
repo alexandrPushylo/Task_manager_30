@@ -45,8 +45,8 @@ def convert_str_to_date(str_date: str) -> date:
             return _day
         elif isinstance(str_date, date):
             return str_date
-    except:
-        log.warning('convert_str_to_date(): Error date')
+    except Exception as e:
+        log.warning(f'convert_str_to_date(): {e}')
 
 
 def get_weekday(_date: date) -> str | None:
@@ -115,7 +115,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
 def prepare_sheets(work_day: WorkDaySheet):
     DRIVER_SHEET_SERVICE.prepare_driver_sheet(workday=work_day)
     TECHNIC_SHEET_SERVICE.prepare_technic_sheets(workday=work_day)
-    log.info("Prepare sheets done")
+    log.info(f"{work_day.date} => Prepare sheets done")
 
 
 def get_busiest_technic_title(technic_sheet: QuerySet[TechnicSheet]) -> list:
@@ -333,7 +333,7 @@ def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bo
                     try:
                         font_size = int(io_value)
                     except Exception as e:
-                        log.error("set_data_for_filter(): 'font_size'")
+                        log.error(f"set_data_for_filter(): 'font_size' | {e}")
                         font_size = 10
                 user.font_size = font_size
                 user.save(update_fields=['font_size'])
