@@ -9,7 +9,8 @@ from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet
 from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMaterial
 from dashboard.models import Parameter
 
-from dashboard.utilities import TODAY, timedelta
+from dashboard.utilities import TODAY
+from datetime import timedelta
 
 
 @admin.register(User)
