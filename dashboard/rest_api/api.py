@@ -110,7 +110,7 @@ class DataBaseApiView(APIView):
             "prev_work_day": WORK_DAY_SERVICE.get_prev_workday(current_workday.date).date,
             "next_work_day": WORK_DAY_SERVICE.get_next_workday(current_workday.date).date,
             "view_mode": U.get_view_mode(current_workday.date),
-            "accept_mode": U.get_accept_mode(workday=current_workday),
+            "accept_mode": U.get_accept_mode_by_date(workday=current_workday),
         }
         return queryset
 
@@ -161,7 +161,7 @@ class ChangeAcceptModeApiView(UpdateAPIView):
         workday = WORK_DAY_SERVICE.get_workday(current_day)
         print(workday)
         if U.is_valid_get_request('accept_mode'):
-            accept_mode = U.get_AcceptMode(self.request.data.get('accept_mode'))
+            accept_mode = U.get_accept_mode(self.request.data.get('accept_mode'))
             U.set_accept_mode(workday, accept_mode)
             return JsonResponse({"message": "Успешно"}, status=status.HTTP_200_OK)
         return JsonResponse({"error": "Не верный параметр"}, status=status.HTTP_400_BAD_REQUEST)

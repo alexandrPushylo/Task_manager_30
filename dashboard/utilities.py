@@ -705,7 +705,7 @@ def get_view_mode(_date: date) -> str:
         return 'None'
 
 
-def get_accept_mode(workday: WorkDaySheet) -> bool:
+def get_accept_mode_by_date(workday: WorkDaySheet) -> bool:
     """
     Получить режим accept mode
     True - заявки принимаются
@@ -728,7 +728,8 @@ def get_accept_mode(workday: WorkDaySheet) -> bool:
         elif workday.accept_mode == ASSETS.AcceptMode.OFF.value:
             return False
 
-def get_AcceptMode(accept_mode: str) -> ASSETS.AcceptMode:
+
+def get_accept_mode(accept_mode: str) -> ASSETS.AcceptMode:
     """ Получить режим accept mode"""
     if accept_mode == ASSETS.AcceptMode.AUTO.value:
         return ASSETS.AcceptMode.AUTO
