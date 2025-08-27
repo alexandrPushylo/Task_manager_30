@@ -1,20 +1,15 @@
 from config.creds import USE_TELEGRAM
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite, ApplicationMaterial
 from django.db.models.query import QuerySet
-from django.db.models import Q
 from dashboard.models import ApplicationToday, ApplicationTechnic
-from dashboard.models import Technic
-# from dashboard.models import Administrator, Foreman, Master, Mechanic, Driver, Supply, Employee
 from dashboard.models import User
-from dashboard.models import Parameter
 from logger import getLogger
 
 #   ------------------------------------------------------------------------------------------------------------------
 
 
-from datetime import date, timedelta, datetime
+from datetime import date, datetime
 import random
-import config.endpoints as ENDPOINTS
 import dashboard.assets as ASSETS
 import dashboard.telegram_bot as T
 import dashboard.variables as VAR
@@ -24,7 +19,6 @@ import dashboard.services.construction_site as CONSTR_SITE_SERVICE
 import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
 import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
 import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
-import dashboard.services.dashboard as DASHBOARD_SERVICE
 import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
@@ -34,7 +28,7 @@ import dashboard.services.parametr as PARAMETER_SERVICE
 log = getLogger(__name__)
 
 TODAY = date.today()
-NOW = lambda : datetime.now().time()
+NOW = lambda: datetime.now().time()
 
 
 def convert_str_to_date(str_date: str) -> date:
@@ -70,15 +64,17 @@ def get_weekday(_date: date) -> str | None:
 
 
 def autocomplete_technic_sheet(technic_sheet: TechnicSheet.objects):
-    empty_technic_sheet = technic_sheet.filter(driver_sheet__isnull=True,
-                                               technic__attached_driver__isnull=False
-                                               )
+    empty_technic_sheet = technic_sheet.filter(
+        driver_sheet__isnull=True,
+        technic__attached_driver__isnull=False
+    )
     if empty_technic_sheet.exists():
         driver_sheet_list = DriverSheet.objects.filter(isArchive=False, status=True)
         for technic_sheet in empty_technic_sheet:
-            driver_sheet = driver_sheet_list.filter(date=technic_sheet.date,
-                                                    driver=technic_sheet.technic.attached_driver
-                                                    ).first()
+            driver_sheet = driver_sheet_list.filter(
+                date=technic_sheet.date,
+                driver=technic_sheet.technic.attached_driver
+            ).first()
             technic_sheet.driver_sheet = driver_sheet
             technic_sheet.save()
 
@@ -108,7 +104,7 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     context['next_work_day'] = WORK_DAY_SERVICE.get_next_workday(current_workday.date)
     context['weekday'] = get_weekday(current_workday.date)
     context['VIEW_MODE'] = get_view_mode(current_workday.date)
-    context['ACCEPT_MODE'] = get_accept_mode(workday=current_workday)
+    context['ACCEPT_MODE'] = get_accept_mode_by_date(workday=current_workday)
     return context
 
 
@@ -244,7 +240,6 @@ def accept_app_tech_to_supply(app_tech_id, application_today_id):
             application_technic.technic_sheet.save()
             application_technic.save()
 
-
         cs_address = application_technic.application_today.construction_site.address
         cs_foreman = application_technic.application_today.construction_site.foreman
         cs_foreman__last_name = cs_foreman.last_name if cs_foreman is not None else None
@@ -291,11 +286,10 @@ def get_table_working_technic_sheet(current_day: WorkDaySheet):
         isArchive=False,
         date=current_day
     )
-    # return _technic_sheet.order_by('technic__title', 'driver_sheet__driver__last_name')
     return _technic_sheet.order_by('driver_sheet__driver__last_name')
 
 
-def change_view_props(io_name:str, io_status:str, io_value:str, user:User) -> bool:
+def change_view_props(io_name: str, io_status: str, io_value: str, user: User) -> bool:
     if io_status == 'true':
         status = True
     elif io_status == 'false':
@@ -681,7 +675,7 @@ def set_spec_task(technic_sheet_id):
             else:
                 description = ''
         case _:
-            description=''
+            description = ''
 
     application_technic.description = description
     application_technic.save()
@@ -882,6 +876,7 @@ def validate_telephone(telephone: str, length=9, use_pref=True) -> str | None:
         else:
             return None
 
+
 def is_redirect_to_dashboard(request_meta: dict) -> bool:
     """
     Перенаправить ли на главную страницу
@@ -893,7 +888,8 @@ def is_redirect_to_dashboard(request_meta: dict) -> bool:
     else:
         return False
 
-def validate_post(post: str)-> bool:
+
+def validate_post(post: str) -> bool:
     """
     Валидация должности пользователя
     :param post:
@@ -902,6 +898,7 @@ def validate_post(post: str)-> bool:
     return True if post in ASSETS.UserPosts.get_set() else False
 
 #   ================================================================
+
 
 def delete_user(user_id: int):
     """
@@ -913,6 +910,7 @@ def delete_user(user_id: int):
     if user:
         DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=user, date__date__gte=TODAY).delete()
 
+
 def delete_technic(technic_id: int):
     """
     Удаление техники
@@ -921,11 +919,10 @@ def delete_technic(technic_id: int):
     """
     technic = TECHNIC_SERVICE.delete_technic(technic_id)
     if technic:
-
         _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
-            technic=technic, date__date__gte=TODAY
+            technic=technic,
+            date__date__gte=TODAY
         )
-
         _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
             technic_sheet__in=_technic_sheet
         )
