@@ -80,6 +80,8 @@ def delete_application_technic(application_technic_id) -> str | None:
     if application_technic:
         if application_technic.technic_sheet:
             application_technic.technic_sheet.decrement_count_application()
-        application_technic.delete()
+        # application_technic.delete()
+        application_technic.isArchive = True
+        application_technic.save(update_fields=['isArchive'])
         return 'success'
     return None
