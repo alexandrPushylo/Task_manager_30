@@ -549,6 +549,7 @@ def login_view(request):
                 user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            log.info(f"Пользователь {user.username} зашел в систему")
             return HttpResponseRedirect(ENDPOINTS.ROUTING_DASHBOARD)
         else:
             log.warning('Username or Password is incorrect')
