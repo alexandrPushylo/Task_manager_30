@@ -36,9 +36,9 @@ class Command(BaseCommand):
         print(error_logfile_size)
 
         if info_logfile_size > 0:
-            os.popen(f"cp {path_info_log_file} {path_info_target}")
+            os.popen(f"mv {path_info_log_file} {path_info_target}")
         if error_logfile_size > 0:
-            os.popen(f"cp {path_error_log_file} {path_error_target}")
+            os.popen(f"mv {path_error_log_file} {path_error_target}")
 
         # print(os.path.getsize(path_log_dir + error_log_file))
         # with open(path_log_dir + info_log_file, "w") as info_log:
