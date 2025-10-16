@@ -33,11 +33,10 @@ class Command(BaseCommand):
         error_logfile_size = os.path.getsize(path_error_log_file)
 
         if info_logfile_size > 0:
-            os.popen(f"mv {path_info_log_file} {path_info_target}")
-            os.popen(f"touch {path_info_log_file}")
+            os.popen(f"cp {path_info_log_file} {path_info_target}")
+            open(path_info_log_file, 'w').close()
             log.info(f"Moved {path_info_log_file} to {info_target}")
-
         if error_logfile_size > 0:
-            os.popen(f"mv {path_error_log_file} {path_error_target}")
-            os.popen(f"touch {path_error_log_file}")
+            os.popen(f"cp {path_error_log_file} {path_error_target}")
+            open(path_error_log_file, 'w').close()
             log.info(f"Moved {path_error_log_file} to {error_target}")
