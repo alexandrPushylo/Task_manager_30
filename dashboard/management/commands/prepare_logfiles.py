@@ -36,6 +36,3 @@ class Command(BaseCommand):
             os.popen(f"mv {path_info_log_file} {path_info_target}")
         if error_logfile_size > 0:
             os.popen(f"mv {path_error_log_file} {path_error_target}")
-
-        os.path.getsize(path_info_log_file)
-        os.path.getsize(path_error_log_file)
