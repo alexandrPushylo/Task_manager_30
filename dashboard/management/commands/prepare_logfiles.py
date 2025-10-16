@@ -32,32 +32,9 @@ class Command(BaseCommand):
         info_logfile_size = os.path.getsize(path_info_log_file)
         error_logfile_size = os.path.getsize(path_error_log_file)
 
-        print(info_logfile_size)
-        print(error_logfile_size)
-
         if info_logfile_size > 0:
             os.popen(f"mv {path_info_log_file} {path_info_target}")
+            log.info(f"Moved {path_info_log_file} to {path_info_target}")
         if error_logfile_size > 0:
             os.popen(f"mv {path_error_log_file} {path_error_target}")
-
-        # print(os.path.getsize(path_log_dir + error_log_file))
-        # with open(path_log_dir + info_log_file, "w") as info_log:
-        #     print(os.path.getsize(path_log_dir + info_log_file))
-        #     # print(len(info_log.read()))
-        #
-        # with open(path_log_dir + error_log_file, "w") as error_log:
-        #     print(sys.getsizeof(error_log))
-
-
-
-
-
-# name = 'db.sqlite3'
-# out = r"backup"
-#
-# if not os.path.exists(out):
-#     os.makedirs(out)
-#
-# target = f'{out}{os.sep}{datetime.date.today()}_{datetime.datetime.now().time().strftime("%H-%M")}.sqlite3'
-#
-# os.popen(f"cp {name} {target}")
+            log.info(f"Moved {path_error_log_file} to {path_error_target}")     
