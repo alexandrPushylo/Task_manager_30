@@ -14,9 +14,9 @@ class Command(BaseCommand):
         log = getLogger(__name__)
 
         info_log_file = "info.log"
-        info_target = f'info_{datetime.date.today()}.log'
+        info_target = f'info_{datetime.date.today()}:{datetime.datetime.now()}.log'
         error_log_file = "errors.log"
-        error_target = f'error_{datetime.date.today()}.log'
+        error_target = f'error_{datetime.date.today()}:{datetime.datetime.now()}.log'
 
         path_log_dir = os.path.join(settings.BASE_DIR, 'logs')
 
