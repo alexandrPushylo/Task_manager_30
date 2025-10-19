@@ -79,7 +79,10 @@
             {% for construction_site in construction_sites %}
                 <div class="application_items bg-transparent">
                     {#                {% if construction_site.application_today %}#}
-                    <div class="application_items_border border border-3
+                    <div class="border border-3
+                                {% if not construction_site.application_today.isArchive %} application_items_border
+                                {% else %} application_items_border_for_del
+                                {% endif %}
                                 {% if construction_site.application_today.status == 'saved' %} border-warning
                                 {% elif construction_site.application_today.status == 'submitted' %} border-primary
                                 {% elif construction_site.application_today.status == 'approved' %} border-success
@@ -100,7 +103,11 @@
                                     {% elif construction_site.application_today.status == 'send' %}
                                         <p class="p-0 application_status text-info fw-bold">Заявка отправлена</p>
                                     {% else %}
-                                        <p class="p-0 application_status">Заявка отсутствует</p>
+                                        {% if construction_site.application_today.isArchive %}
+                                            <p class="p-0 application_status">Заявка удалена</p>
+                                        {% else %}
+                                            <p class="p-0 application_status">Заявка отсутствует</p>
+                                        {% endif %}
                                     {% endif %}
                                 {% else %}
                                     <p class="p-0 application_status">Заявка отсутствует</p>
@@ -125,7 +132,9 @@
                                             Примечание к объекту:</p>
                                             <textarea readonly
                                                       style="font-size: {{ user.font_size }}pt;"
-                                                      class="form-control border border-0 app_tech_description general_application_description_font">{{ construction_site.application_today.description }}
+                                                      class="form-control border border-0 app_tech_description general_application_description_font
+                                                            {% if construction_site.application_today.isArchive %}text-decoration-line-through{% endif %}"
+                                            >{{ construction_site.application_today.description }}
                                     </textarea>
                                         </label>
                                     </div>
@@ -135,7 +144,7 @@
                             <div class="card-text">
                                 {% if construction_site.application_today %}
                                     {% if construction_site.application_today.application_technic %}
-                                        <div class="mt-1">
+                                        <div class="mt-1 {% if construction_site.application_today.isArchive %}text-decoration-line-through{% endif %}">
                                             {% for app_technic in construction_site.application_today.application_technic %}
                                                 
                                                 <div class="mt-2" style="background-color: #e7eefa; text-align: center;">
@@ -171,7 +180,10 @@
                                                         <label class="m-0 p-0 row">
                                                             <textarea readonly
                                                                       style="font-size: {{ user.font_size }}pt;"
-                                                                      class="form-control app_tech_description general_tech_description_font {% if app_technic.is_cancelled %}AP-cancelled-title {% elif app_technic.isChecked %}AP-isChecked-title {% endif %}"
+                                                                      class="form-control app_tech_description general_tech_description_font 
+                                                                      {% if construction_site.application_today.isArchive %}text-decoration-line-through{% endif %}
+                                                                            {% if app_technic.is_cancelled %}AP-cancelled-title 
+                                                                            {% elif app_technic.isChecked %}AP-isChecked-title {% endif %}"
                                                             >{% if app_technic.is_cancelled %}ОТКЛОНЕНА&#10;{% endif %}{{ app_technic.description }}</textarea>
                                                          </label>
                                                     {% endif %}
@@ -190,14 +202,18 @@
                                                 <span style="font-size: small; color: green;">Подтверждено</span>
                                                 <textarea readonly aria-label=""
                                                           style="font-size: {{ user.font_size }}pt;"
-                                                          class="form-control border border-1 border-success material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
+                                                          class="form-control border border-1 border-success material_description general_mat_description_font 
+                                                                {% if construction_site.application_today.isArchive %}text-decoration-line-through{% endif %}"
+                                                >{{ construction_site.application_today.application_material.description }}</textarea>
 
                                             {% else %}
                                                 <span class="small fw-bold">Список материалов:</span>
                                                 <span style="font-size: small; color: red;">Не подтверждено</span>
                                                 <textarea readonly aria-label=""
                                                           style="font-size: {{ user.font_size }}pt;"
-                                                          class="form-control border border-1 border-danger material_description general_mat_description_font">{{ construction_site.application_today.application_material.description }}</textarea>
+                                                          class="form-control border border-1 border-danger material_description general_mat_description_font 
+                                                                {% if construction_site.application_today.isArchive %}text-decoration-line-through{% endif %}"
+                                                >{{ construction_site.application_today.application_material.description }}</textarea>
                                             {% endif %}
                                             <hr class="p-0 m-0">
                                         </div>
@@ -213,17 +229,24 @@
                                             {% if construction_site.application_today.status == 'saved' %}
                                                 <p class="m-0 fw-bolder text-warning">Ожидание подачи заявки</p>
                                             {% else %}
-                                                <button type="button" class="btn btn-outline-danger"
-                                                        onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}')"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i>
-                                                </button>
+                                                {% if construction_site.application_today.isArchive %}
+                                                    <a class="btn btn-outline-success"
+                                                            href="{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}&action=restore"
+                                                    ><i class="fa-solid fa-trash-can-arrow-up"></i></a>
+                                                {% else %}
+                                                    <button type="button" class="btn btn-outline-danger"
+                                                            onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ construction_site.application_today.id }}')"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                {% endif %}
 
 
                                                 <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
                                                    class="btn btn-outline-primary px-5"
-                                                   aria-current="page"><i
-                                                        class="fa-regular fa-pen-to-square"></i></a>
+                                                   aria-current="page">{% if construction_site.application_today.isArchive %}<i
+                                                    class="fa-solid fa-plus"></i>{% else %}<i
+                                                    class="fa-regular fa-pen-to-square"></i>{% endif %}</a>
                                             {% endif %}
 
                                             {% if construction_site.application_today.status == 'submitted' %}
@@ -243,8 +266,7 @@
 
                                             <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
                                                class="btn btn-sm btn-outline-primary" style="width: 90%"
-                                               aria-current="page"><i
-                                                    class="fa-solid fa-plus"></i></a>
+                                               aria-current="page"><i class="fa-solid fa-plus"></i></a>
 
                                         {% endif %}
                                     </div>

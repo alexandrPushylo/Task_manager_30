@@ -194,6 +194,11 @@
     border-radius: 10px;
     box-shadow: 5px 5px 20px 5px;
 }
+.application_items_border_for_del {
+    /*border: 1px solid;*/
+    border-radius: 10px;
+    /*box-shadow: 5px 5px 20px 5px;*/
+}
 
 .application_status {
     margin: 0 0 0;

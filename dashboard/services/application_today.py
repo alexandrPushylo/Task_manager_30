@@ -34,7 +34,12 @@ def create_app_today(**kwargs) -> ApplicationToday:
     """
     try:
         application_today, created = ApplicationToday.objects.get_or_create(**kwargs)
-        return application_today
+        if not created:
+            if application_today.isArchive:
+                application_today.delete()
+                return ApplicationToday.objects.create(**kwargs)
+
+            return application_today
     except ValueError:
         log.error(f"get_or_create_app_today({kwargs}): ValueError")
         return ApplicationToday.objects.none()
@@ -77,7 +82,26 @@ def delete_application_today(application_today: ApplicationToday):
         application_today=application_today
         ).values_list('technic_sheet', flat=True)
     TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list, exclude_app_tech=application_today.id)
-    application_today.delete()
+    application_today.isArchive = True
+    application_today.status = ASSETS.ApplicationTodayStatus.ABSENT.title
+    application_today.save(update_fields=['isArchive', 'status'])
+
+
+def restore_application_today(application_today: ApplicationToday, status: str):
+    """
+    Восстановить application_today: ApplicationToday и деинкрементировать technic_sheet
+    :param status:
+    :param application_today:
+    :return:
+    """
+    technic_sheet_id_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        isArchive=False,
+        application_today=application_today
+        ).values_list('technic_sheet', flat=True)
+    TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list)
+    application_today.isArchive = False
+    application_today.status = status
+    application_today.save(update_fields=['isArchive', 'status'])
 
 
 def validate_application_today(application_today: ApplicationToday, default_status: str | None = None) -> bool:

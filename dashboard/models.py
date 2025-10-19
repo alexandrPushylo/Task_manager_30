@@ -190,6 +190,8 @@ class ApplicationToday(models.Model):
             self.status = self.APPROVED
         elif self.status == self.APPROVED:
             self.status = self.SEND
+        else:
+            self.status = self.ABSENT
             # self.is_application_send = True
         self.save(update_fields=['status'])
 

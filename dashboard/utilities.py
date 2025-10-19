@@ -170,7 +170,8 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     :return: set(.., ...)
     """
     technic_sheet = technic_sheet.exclude(
-        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title,
+
     )
     technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
     application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(

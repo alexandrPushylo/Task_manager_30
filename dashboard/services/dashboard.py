@@ -63,7 +63,7 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
 
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
-        isArchive=False,
+        # isArchive=False,
         date=current_day,
         construction_site__in=construction_sites,
     )
@@ -135,9 +135,16 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         context["construction_sites"], key=U.sorting_application_status
     )
 
+    exclude_technic_sheet_id_list = (applications_today
+                                     .filter(isArchive=True)
+                                     .values_list('applicationtechnic__technic_sheet_id', flat=True))
+
     technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
-        date=current_day, driver_sheet__isnull=False, status=True, isArchive=False
-    )
+        date=current_day,
+        driver_sheet__isnull=False,
+        status=True,
+        isArchive=False
+    ).exclude(id__in=exclude_technic_sheet_id_list)
 
     priority_id_list = U.get_priority_id_list(technic_sheet=technic_sheet_list)
     context["priority_id_list"] = priority_id_list
@@ -182,7 +189,7 @@ def get_dashboard_for_foreman_or_master(
 
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
-        isArchive=False,
+        # isArchive=False,
         date=current_day,
         construction_site__in=construction_sites,
     )
@@ -305,7 +312,7 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
     application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         date=current_day,
         construction_site=construction_site,
-        isArchive=False
+        # isArchive=False
     )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
