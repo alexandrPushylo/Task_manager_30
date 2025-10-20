@@ -170,7 +170,8 @@ def get_priority_id_list(technic_sheet: QuerySet[TechnicSheet]) -> set:
     :return: set(.., ...)
     """
     technic_sheet = technic_sheet.exclude(
-        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+        applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title,
+
     )
     technic_sheet_list_id_list = technic_sheet.filter(count_application__gt=0, driver_sheet__status=True).values('id')
     application_technic_list = tuple(APP_TECHNIC_SERVICE.get_apps_technic_queryset(
@@ -217,6 +218,8 @@ def sorting_application_status(item):
         return 5
     if status == ASSETS.ApplicationTodayStatus.SEND.title:
         return 5
+    if status == ASSETS.ApplicationTodayStatus.DELETED.title:
+        return 7
     if status == ASSETS.ApplicationTodayStatus.ABSENT.title:
         return 9
 
@@ -299,6 +302,10 @@ def change_view_props(io_name: str, io_status: str, io_value: str, user: User) -
 
     if status is not None:
         match io_name:
+            case 'is_show_deleted_app':
+                user.is_show_deleted_app = status
+                user.save(update_fields=['is_show_deleted_app'])
+                return True
             case 'is_show_saved_app':
                 user.is_show_saved_app = status
                 user.save(update_fields=['is_show_saved_app'])

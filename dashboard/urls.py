@@ -5,7 +5,7 @@ urlpatterns = [
     path('', V.routing, name='routing'),
     path('dashboard/', V.dashboard_view, name='dashboard'),
     path('edit_application/', V.edit_application_view, name='edit_application'),
-    path('clear_application/', V.clear_application_today, name='clear_application'),
+    path('clear_or_restore_application/', V.clear_or_restore_application_today, name='clear_application'),
 
     path('work_days/', V.workday_sheet_view, name='work_days'),
     path('driver_sheet/', V.driver_sheet_view, name='driver_sheet'),

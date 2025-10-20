@@ -55,18 +55,27 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
     if not request.user.is_show_absent_app:
         construction_sites = construction_sites.filter(
             applicationtoday__date=current_day
+        ).exclude(
+            applicationtoday__status=ASSETS.ApplicationTodayStatus.ABSENT.title
         )
+        if not request.user.is_show_deleted_app:
+            construction_sites = construction_sites.exclude(
+                applicationtoday__status=ASSETS.ApplicationTodayStatus.DELETED.title
+            )
+
     if not request.user.is_show_saved_app:
         construction_sites = construction_sites.exclude(
             applicationtoday__status=ASSETS.ApplicationTodayStatus.SAVED.title
         )
-
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
-        isArchive=False,
         date=current_day,
         construction_site__in=construction_sites,
     )
+    if not request.user.is_show_deleted_app:
+        applications_today = applications_today.filter(
+            isArchive=False
+        )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
         applications_today=applications_today
@@ -135,9 +144,16 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
         context["construction_sites"], key=U.sorting_application_status
     )
 
+    exclude_technic_sheet_id_list = (applications_today
+                                     .filter(isArchive=True)
+                                     .values_list('applicationtechnic__technic_sheet_id', flat=True))
+
     technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
-        date=current_day, driver_sheet__isnull=False, status=True, isArchive=False
-    )
+        date=current_day,
+        driver_sheet__isnull=False,
+        status=True,
+        isArchive=False
+    ).exclude(id__in=exclude_technic_sheet_id_list)
 
     priority_id_list = U.get_priority_id_list(technic_sheet=technic_sheet_list)
     context["priority_id_list"] = priority_id_list
@@ -173,7 +189,15 @@ def get_dashboard_for_foreman_or_master(
         )
 
     if not request.user.is_show_absent_app:
-        construction_sites = construction_sites.filter(applicationtoday__date=current_day)
+        construction_sites = construction_sites.filter(
+            applicationtoday__date=current_day
+        ).exclude(
+            applicationtoday__status=ASSETS.ApplicationTodayStatus.ABSENT.title
+        )
+        if not request.user.is_show_deleted_app:
+            construction_sites = construction_sites.exclude(
+                applicationtoday__status=ASSETS.ApplicationTodayStatus.DELETED.title
+            )
 
     if not request.user.is_show_saved_app:
         construction_sites = construction_sites.exclude(
@@ -182,10 +206,13 @@ def get_dashboard_for_foreman_or_master(
 
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
-        isArchive=False,
         date=current_day,
         construction_site__in=construction_sites,
     )
+    if not request.user.is_show_deleted_app:
+        applications_today = applications_today.filter(
+            isArchive=False
+        )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
         applications_today=applications_today
@@ -305,8 +332,12 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
     application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         date=current_day,
         construction_site=construction_site,
-        isArchive=False
+        # isArchive=False
     )
+    if not request.user.is_show_deleted_app:
+        application_today = application_today.filter(
+            isArchive=False
+        )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
         applications_today=application_today
@@ -326,11 +357,12 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
 
         elif application_technic_id and operation == "accept":
             if not application_today_id:
-                _application_today = ApplicationToday.objects.create(
+                _application_today = APP_TODAY_SERVICE.create_app_today(
                     date=current_day,
-                    construction_site=construction_site,
-                    status=ASSETS.ApplicationTodayStatus.SAVED.title,
+                    construction_site=construction_site
                 )
+                _application_today.status = ASSETS.ApplicationTodayStatus.SAVED.title
+                _application_today.save(update_fields=["status"])
                 application_today_id = _application_today.id
             U.accept_app_tech_to_supply(application_technic_id, application_today_id)
 

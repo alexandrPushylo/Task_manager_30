@@ -171,7 +171,7 @@ def dashboard_view(request):
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def clear_application_today(request):
+def clear_or_restore_application_today(request):
     if request.user.is_authenticated:
         if any((
                 USERS_SERVICE.is_administrator(request.user),
@@ -181,6 +181,7 @@ def clear_application_today(request):
         )):
             foreman = USERS_SERVICE.get_foreman(request.user)
             app_today_id = request.GET.get('app_today_id')
+            action = request.GET.get('action', 'delete')
             if app_today_id:
                 application_today = APP_TODAY_SERVICE.get_apps_today(pk=app_today_id)
                 if not application_today:
@@ -192,13 +193,27 @@ def clear_application_today(request):
 
                 elif USERS_SERVICE.is_supply(request.user):
                     supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
-                    app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-                        application_today__date=application_today.date,
-                        isArchive=False,
-                        technic_sheet__technic__in=supply_technic_list
-                    ).exclude(application_today=application_today)
-                    app_technic_list.update(isChecked=False)
-                APP_TODAY_SERVICE.delete_application_today(application_today)
+                    if action == 'restore':
+                        app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                            application_today__date=application_today.date,
+                            isArchive=False,
+                            technic_sheet__technic__in=supply_technic_list,
+                            id_orig_app__gte=0
+                        ).exclude(application_today=application_today)
+                        app_technic_list.update(isChecked=True)
+                    else:
+                        app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+                            application_today__date=application_today.date,
+                            isArchive=False,
+                            technic_sheet__technic__in=supply_technic_list
+                        ).exclude(application_today=application_today)
+                        app_technic_list.update(isChecked=False)
+
+                if action == 'restore':
+                    default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
+                    APP_TODAY_SERVICE.restore_application_today(application_today, default_status)
+                else:
+                    APP_TODAY_SERVICE.delete_application_today(application_today)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
@@ -1644,7 +1659,7 @@ def spec_page_view(request):
 
         try:
             with open(file_url, 'rt') as f:
-                file = f.readlines()
+                file = f.readlines()[-200:]
         except FileNotFoundError:
             file = 'FileNotFoundError'
             log.error('spec_page_view(): FileNotFoundError')

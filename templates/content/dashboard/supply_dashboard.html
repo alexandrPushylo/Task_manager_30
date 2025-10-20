@@ -63,6 +63,7 @@
             <div class="application_items">
 
                 <div class="application_items_border border border-2
+                                
                                 {% if application_today.status == 'saved' %} border-warning
                                 {% elif application_today.status == 'submitted' %} border-primary
                                 {% elif application_today.status == 'approved' %} border-success
@@ -80,7 +81,11 @@
                                 {% elif application_today.status == 'send' %}
                                     <p class="p-0 application_status text-info fw-bold">Заявка отправлена</p>
                                 {% else %}
-                                    <p class="p-0 application_status">Заявка отсутствует</p>
+                                    {% if application_today.isArchive %}
+                                            <p class="p-0 application_status">Заявка удалена</p>
+                                        {% else %}
+                                            <p class="p-0 application_status">Заявка отсутствует</p>
+                                        {% endif %}
                                 {% endif %}
                             {% else %}
                                 <p class="p-0 application_status">Заявка отсутствует</p>
@@ -99,7 +104,9 @@
                                         Примечание к объекту:</p>
                                         <textarea readonly
                                                   style="font-size: {{ user.font_size }}pt;"
-                                                  class="form-control border border-0 app_tech_description general_application_description_font">{{ application_today.description }}
+                                                  class="form-control border border-0 app_tech_description general_application_description_font
+                                                  {% if application_today.isArchive %}text-decoration-line-through{% endif %}"
+                                        >{{ application_today.description }}
                                     </textarea>
                                     </label>
                                 </div>
@@ -108,7 +115,7 @@
                         <div class="card-text">
                             {% if application_today %}
                                 {% if applications_technic %}
-                                    <div class="ms-1 mt-1">
+                                    <div class="ms-1 mt-1 {% if application_today.isArchive %}text-decoration-line-through{% endif %}">
                                         {% for app_technic in applications_technic %}
                                             <div class="mt-2 {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}" style="background-color: #e7eefa; text-align: center;"   
                                             >
@@ -125,7 +132,9 @@
                                                     <label class="m-0 p-0 row">
                                                 <textarea readonly
                                                           style="font-size: {{ user.font_size }}pt;"
-                                                          class="form-control app_tech_description general_tech_description_font {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}"
+                                                          class="form-control app_tech_description general_tech_description_font
+                                                          {% if application_today.isArchive %}text-decoration-line-through{% endif %}
+                                                            {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}"
                                                 >{% if app_technic.is_cancelled %}ОТКЛОНЕНА&#10;{% endif %}{{ app_technic.description }}</textarea>
                                                     </label>
                                                 {% endif %}
@@ -164,15 +173,22 @@
 
                                     {% if application_today and applications_technic or application_today and applications_material %}
 
-                                        <button type="button" class="btn btn-outline-danger"
-                                                    onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ application_today.id }}')"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i>
-                                            </button>                                       
+                                        {% if application_today.isArchive %}
+                                                    <a class="btn btn-outline-success"
+                                                            href="{% url 'clear_application' %}?app_today_id={{ application_today.id }}&action=restore"
+                                                    ><i class="fa-solid fa-trash-can-arrow-up"></i></a>
+                                                {% else %}
+                                                    <button type="button" class="btn btn-outline-danger"
+                                                            onclick="prepareModalDeleteApplication('{% url 'clear_application' %}?app_today_id={{ application_today.id }}')"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#delete_app"><i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                {% endif %}                                       
                                         
                                         <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                           class="btn btn-outline-primary" aria-current="page"><i
-                                                class="fa-regular fa-pen-to-square"></i></a>
+                                           class="btn btn-outline-primary" aria-current="page">{% if application_today.isArchive %}<i
+                                                    class="fa-solid fa-plus"></i>{% else %}<i
+                                                    class="fa-regular fa-pen-to-square"></i>{% endif %}</a>
 
                                         {% if application_today.status == 'saved' and not ACCEPT_MODE %}
                                             <a href="{% url 'change_app_status' %}?application_today_id={{ application_today.id }}"

@@ -13,6 +13,7 @@ UserPosts = UserPostType(
 )
 
 ApplicationTodayStatus = ApplicationTodayType(
+    TitleDescriptionType('deleted', 'Удалена'),
     TitleDescriptionType('absent', 'Отсутствует'),
     TitleDescriptionType('saved', 'Сохранена'),
     TitleDescriptionType('submitted', 'Подана'),

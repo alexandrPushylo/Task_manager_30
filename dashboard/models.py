@@ -18,6 +18,7 @@ class User(AbstractUser):
     is_show_absent_app = models.BooleanField(default=True, verbose_name="Показывать отсутствующие заявки")
     is_show_technic_app = models.BooleanField(default=True, verbose_name="Показывать заявки на технику")
     is_show_material_app = models.BooleanField(default=True, verbose_name="Показывать заявки на материалы")
+    is_show_deleted_app = models.BooleanField(default=False, verbose_name="Показывать удаленные заявки")
 
     filter_construction_site = models.IntegerField(default=0, verbose_name="Фильтр по строительному объекту")
     filter_foreman = models.IntegerField(default=0, verbose_name="Фильтр по прорабу")
@@ -162,6 +163,7 @@ class TechnicSheet(models.Model):
 
 #   Applications--------------------------------------------------------------
 class ApplicationToday(models.Model):
+    DELETED = 'deleted'
     ABSENT = 'absent'
     SAVED = 'saved'
     SUBMITTED = 'submitted'
@@ -190,12 +192,15 @@ class ApplicationToday(models.Model):
             self.status = self.APPROVED
         elif self.status == self.APPROVED:
             self.status = self.SEND
+        else:
+            self.status = self.ABSENT
             # self.is_application_send = True
         self.save(update_fields=['status'])
 
     def make_edited(self):
         self.is_edited = True
         self.save(update_fields=['is_edited'])
+
 
 
     def __str__(self): return f"{self.construction_site} [{self.date.date}] - {self.status}"
