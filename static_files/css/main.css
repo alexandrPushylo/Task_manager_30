@@ -59,7 +59,7 @@
 
 /* REGISTER FORM ************/
 
-#register_form {
+#register_form{
     min-width: max-content;
     max-width: 30vw;
     padding: 5px 5px 5px 10px;
@@ -68,9 +68,15 @@
     border-radius: 2%;
     box-shadow: 5px 5px 20px 5px;
 }
-/*#form_register div, label{*/
-/*    width: 100%;*/
-/*}*/
+#messages_div{
+    max-width: 90vw;
+}
+@media (max-width: 500px) {
+    #messages_div{
+        max-width: 90vw;
+    }
+}
+
 #form_register label{
     font-weight: bolder;
 }

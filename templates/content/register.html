@@ -2,56 +2,70 @@
 {% block content %}
     
     <div id="register_form" class="container-sm translate-middle-x position-absolute start-50 mt-5">
-        <form method="post" id="form_register">{% csrf_token %}
-            <div>
-                <label class="w-100">Логин (Фамилия)*
-                    <input type="text" class="form-control" name="username" placeholder="напр: Петров" required>
-                </label>
-            </div>
-            <div>
-                <label class="w-100">Пароль*
-                    <input type="password" class="form-control" name="password" placeholder="1234" required>
-                </label>
-            </div>
-            <div>
-                <label class="w-100">Имя*
-                    <input type="text" class="form-control" name="first_name" placeholder="Петр" required>
-                </label>
-            </div>
-            <div>
-                <label class="w-100">Фамилия*
-                    <input type="text" class="form-control" name="last_name" placeholder="напр: Петров" required>
-                </label>
-            </div>
-            <div>
-                <label class="w-100">Телефон
-                    <span style="margin: 0; font-weight: normal; font-size: 8pt">
-                        <span>в формате: +375291234567</span>
-                    </span>
-                    <input type="tel" 
-                           class="form-control" 
-                           name="telephone"
-                           placeholder="+375(25)1234567">
-                </label>
-            </div>
-            <div class="mt-2">
-                <label>Должность
-                    <select id="post_select" class="form-control" name="post" onchange="selectPost(this)">
-                        {% for post, title in user_posts.items %}
-                            {% if post == 'employee' %}<option selected value="{{ post }}">{{ title }}</option>
-                            {% else %}<option value="{{ post }}">{{ title }}</option>
-                            {% endif %}
-                        
-                        {% endfor %}
-                    </select>
-                </label>
-            </div>
-
-            {% if error %}
-                <p class="m-0 error_message">{{ error }}</p>
-            {% endif %}
-            <br>
-            <button type="submit" class="btn btn-success" form="form_register" style="float: right">Зарегистрировать</button>
-        </form>
+        <div id="register_div" style="display: none">
+            <form method="post" id="form_register">{% csrf_token %}
+                <div>
+                    <label class="w-100">Логин (Фамилия)*
+                        <input type="text" class="form-control" name="username" placeholder="напр: Петров" required>
+                    </label>
+                </div>
+                <div>
+                    <label class="w-100">Пароль*
+                        <input type="password" class="form-control" name="password" placeholder="1234" required>
+                    </label>
+                </div>
+                <div>
+                    <label class="w-100">Имя*
+                        <input type="text" class="form-control" name="first_name" placeholder="Петр" required>
+                    </label>
+                </div>
+                <div>
+                    <label class="w-100">Фамилия*
+                        <input type="text" class="form-control" name="last_name" placeholder="напр: Петров" required>
+                    </label>
+                </div>
+                <div>
+                    <label class="w-100">Телефон
+                        <span style="margin: 0; font-weight: normal; font-size: 8pt">
+                            <span>в формате: +375291234567</span>
+                        </span>
+                        <input type="tel" 
+                               class="form-control" 
+                               name="telephone"
+                               placeholder="+375(25)1234567">
+                    </label>
+                </div>
+                <div class="mt-2">
+                    <label>Должность
+                        <select id="post_select" class="form-control" name="post" onchange="selectPost(this)">
+                            {% for post, title in user_posts.items %}
+                                {% if post == 'employee' %}<option selected value="{{ post }}">{{ title }}</option>
+                                {% else %}<option value="{{ post }}">{{ title }}</option>
+                                {% endif %}
+                            
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                
+                {% if error %}
+                    <p class="m-0 error_message">{{ error }}</p>
+                {% endif %}
+                <br>
+                <button type="submit" class="btn btn-success" form="form_register" style="float: right">Зарегистрировать</button>
+            </form>
+        </div>
+        <div id="messages_div"
+             class="alert alert-success"
+             style="display: block; text-align: center;"
+        >
+            <p>Если вы <span class="fw-bolder">уже зарегистрированные</span>, но забыли пароль,
+                <br> то вы можете <a href="{% url 'restore_password' %}">сбросить пароль</a></p>
+            <button id="btn_reg_mess" 
+                    type="button"
+                    class="btn btn-primary end-0"
+                    onclick="$('#register_div').show();$('#messages_div').hide();"
+            >Понятно</button>
+        </div>
     </div>
 {% endblock %}
