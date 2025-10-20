@@ -8,13 +8,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             
-        {% if user.post in 'administrator foreman master employee' %}
+        {% if user.post in 'administrator foreman master employee supply' %}
             <div class="modal-body form-switch">            
                 {% if user.post == 'administrator' %}
                 <div>
                     <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
                            onchange="changeViewProps(this)"
-                           name="is_show_saved_app" 
+                           name="is_show_saved_app"
                            {% if user.is_show_saved_app %}checked{% endif %}/>
                     <span>Показывать сохраненные заявки</span>
                 </div>{% endif %}
@@ -26,9 +26,19 @@
                            onchange="changeViewProps(this)"
                            {% if user.is_show_absent_app %}checked{% endif %}/>
                     <span>Показывать отсутствующие заявки</span>
-                </div>{% endif %}
+                </div>
+                {% endif %}
                 
-                {% if user.post in 'administrator foreman master employee' %}
+                {% if user.post in 'administrator foreman master supply' %}
+                    <div>
+                    <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
+                           onchange="changeViewProps(this)"
+                           name="is_show_deleted_app" 
+                           {% if user.is_show_deleted_app %}checked{% endif %}/>
+                    <span>Показывать удаленные заявки</span>
+                    </div>
+                {% endif %}
+                {% if user.post in 'administrator foreman master employee' %}    
                     <div>
                         <input aria-label="" type="checkbox" role="switch" class="form-check-input mx-1"
                                name="is_show_technic_app"

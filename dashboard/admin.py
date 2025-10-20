@@ -28,6 +28,7 @@ class CustomUserAdmin(UserAdmin):
         )}),
         (_("Post"), {"fields": ("post", "supervisor_user_id")}),
         (_("Filter"), {"fields": ("is_show_panel",
+                                  "is_show_deleted_app",
                                   "is_show_saved_app",
                                   "is_show_absent_app",
                                   "is_show_technic_app",

@@ -35,6 +35,7 @@ class UserPostType(NamedTuple):
 
 class ApplicationTodayType(NamedTuple):
     """Тип для application_today.status"""
+    DELETED: TitleDescriptionType
     ABSENT: TitleDescriptionType
     SAVED: TitleDescriptionType
     SUBMITTED: TitleDescriptionType
@@ -43,7 +44,7 @@ class ApplicationTodayType(NamedTuple):
 
     def get_dict(self) -> dict[str, str]:
         return {item.title: item.description
-                for item in (self.ABSENT, self.SAVED, self.SUBMITTED, self.APPROVED, self.SEND)}
+                for item in (self.DELETED, self.ABSENT, self.SAVED, self.SUBMITTED, self.APPROVED, self.SEND)}
 
     def get_set(self) -> set[str]:
         return set(self.get_dict().values())

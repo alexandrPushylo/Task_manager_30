@@ -55,18 +55,27 @@ def get_dashboard_for_admin(request, current_day: WorkDaySheet, context: dict) -
     if not request.user.is_show_absent_app:
         construction_sites = construction_sites.filter(
             applicationtoday__date=current_day
+        ).exclude(
+            applicationtoday__status=ASSETS.ApplicationTodayStatus.ABSENT.title
         )
+        if not request.user.is_show_deleted_app:
+            construction_sites = construction_sites.exclude(
+                applicationtoday__status=ASSETS.ApplicationTodayStatus.DELETED.title
+            )
+
     if not request.user.is_show_saved_app:
         construction_sites = construction_sites.exclude(
             applicationtoday__status=ASSETS.ApplicationTodayStatus.SAVED.title
         )
-
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
-        # isArchive=False,
         date=current_day,
         construction_site__in=construction_sites,
     )
+    if not request.user.is_show_deleted_app:
+        applications_today = applications_today.filter(
+            isArchive=False
+        )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
         applications_today=applications_today
@@ -180,7 +189,15 @@ def get_dashboard_for_foreman_or_master(
         )
 
     if not request.user.is_show_absent_app:
-        construction_sites = construction_sites.filter(applicationtoday__date=current_day)
+        construction_sites = construction_sites.filter(
+            applicationtoday__date=current_day
+        ).exclude(
+            applicationtoday__status=ASSETS.ApplicationTodayStatus.ABSENT.title
+        )
+        if not request.user.is_show_deleted_app:
+            construction_sites = construction_sites.exclude(
+                applicationtoday__status=ASSETS.ApplicationTodayStatus.DELETED.title
+            )
 
     if not request.user.is_show_saved_app:
         construction_sites = construction_sites.exclude(
@@ -189,10 +206,13 @@ def get_dashboard_for_foreman_or_master(
 
     applications_today = APP_TODAY_SERVICE.get_apps_today_queryset(
         order_by=("status",),
-        # isArchive=False,
         date=current_day,
         construction_site__in=construction_sites,
     )
+    if not request.user.is_show_deleted_app:
+        applications_today = applications_today.filter(
+            isArchive=False
+        )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
         applications_today=applications_today
@@ -314,6 +334,10 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
         construction_site=construction_site,
         # isArchive=False
     )
+    if not request.user.is_show_deleted_app:
+        application_today = application_today.filter(
+            isArchive=False
+        )
 
     status_list_application_today = U.get_status_lists_of_apps_today(
         applications_today=application_today
@@ -333,11 +357,12 @@ def get_dashboard_for_supply(request, current_day: WorkDaySheet, context: dict) 
 
         elif application_technic_id and operation == "accept":
             if not application_today_id:
-                _application_today = ApplicationToday.objects.create(
+                _application_today = APP_TODAY_SERVICE.create_app_today(
                     date=current_day,
-                    construction_site=construction_site,
-                    status=ASSETS.ApplicationTodayStatus.SAVED.title,
+                    construction_site=construction_site
                 )
+                _application_today.status = ASSETS.ApplicationTodayStatus.SAVED.title
+                _application_today.save(update_fields=["status"])
                 application_today_id = _application_today.id
             U.accept_app_tech_to_supply(application_technic_id, application_today_id)
 

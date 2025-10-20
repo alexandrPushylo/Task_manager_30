@@ -39,7 +39,7 @@ def create_app_today(**kwargs) -> ApplicationToday:
                 application_today.delete()
                 return ApplicationToday.objects.create(**kwargs)
 
-            return application_today
+        return application_today
     except ValueError:
         log.error(f"get_or_create_app_today({kwargs}): ValueError")
         return ApplicationToday.objects.none()
@@ -83,7 +83,7 @@ def delete_application_today(application_today: ApplicationToday):
         ).values_list('technic_sheet', flat=True)
     TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list, exclude_app_tech=application_today.id)
     application_today.isArchive = True
-    application_today.status = ASSETS.ApplicationTodayStatus.ABSENT.title
+    application_today.status = ASSETS.ApplicationTodayStatus.DELETED.title
     application_today.save(update_fields=['isArchive', 'status'])
 
 
