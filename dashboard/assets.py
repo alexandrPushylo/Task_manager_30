@@ -25,6 +25,7 @@ SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES = (
     ApplicationTodayStatus.SUBMITTED.title,
     ApplicationTodayStatus.APPROVED.title,
     ApplicationTodayStatus.SEND.title)
+SHOW_APPLICATIONS_FOR_MECHANIC_WITH_STATUSES = SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES
 
 SORT_BY = {'driver': 'Водителю', 'technic': 'Технике'}
 

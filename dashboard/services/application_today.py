@@ -67,6 +67,8 @@ def get_apps_today_queryset(select_related: tuple = (),
 def get_default_status_for_apps_today(user: User) -> str:
     if USERS_SERVICE.is_administrator(user):
         return ASSETS.ApplicationTodayStatus.SUBMITTED.title
+    elif USERS_SERVICE.is_mechanic(user):
+        return ASSETS.ApplicationTodayStatus.SUBMITTED.title
     else:
         return ASSETS.ApplicationTodayStatus.SAVED.title
 
@@ -112,8 +114,14 @@ def validate_application_today(application_today: ApplicationToday, default_stat
     :return: True if application_today is valid and save, else False and delete
     """
     app_today_description = application_today.description is not None and application_today.description != ''
-    app_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(application_today=application_today).exists()
-    app_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(application_today=application_today).exists()
+    app_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+        application_today=application_today,
+        isArchive=False,
+    ).exists()
+    app_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
+        application_today=application_today,
+        isArchive=False,
+    ).exists()
     if any((app_today_description, app_technic, app_material)):
         if application_today.is_edited and default_status:
             application_today.status = default_status
