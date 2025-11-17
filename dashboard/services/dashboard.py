@@ -13,6 +13,7 @@ import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
 import dashboard.services.construction_site as CONSTR_SITE_SERVICE
 import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
+import dashboard.services.add_edit_application as ADD_EDIT_APP_SERVICE
 
 import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
@@ -300,7 +301,7 @@ def get_dashboard_for_mechanic(
     application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
         select_related=("application_today__construction_site__foreman",),
         application_today__date=current_day,
-        application_today__status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
+        application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_MECHANIC_WITH_STATUSES,
         isArchive=False,
         is_cancelled=False,
     )

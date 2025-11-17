@@ -38,6 +38,8 @@
         {% include 'includes/weekday_current_day.html' %}
         {% include 'includes/btn_modal_view_props.html' %}
         {% include 'includes/btn_add_driver_and_technic.html' %}
+        {% include 'includes/btn_add_technic_to_app.html' %}
+    
     </div>
     
 
@@ -75,21 +77,20 @@
                     </div>
                     {% for application_technic in applications_technic %}
                         {% if technic_sheet.id == application_technic.technic_sheet_id and application_technic.applications %}
-                            {% for app_tech in application_technic.applications %}
-                                {% if app_tech.description %}
+                            {% for app_tech in application_technic.applications %}                                
                                     <div class="card-body p-1">
                                         <span class="fw-bolder form-text">{{ app_tech.application_today__construction_site__address }}</span>
                                         {% if app_tech.application_today__construction_site__foreman__last_name %}
                                             <span class="fw-bolder form-text">({{ app_tech.application_today__construction_site__foreman__last_name }})</span>
                                         {% endif %}
-
-                                        <textarea
-                                                style="font-size: {{ user.font_size }}pt;"
-                                                class="form-control p-1 text_area_description general_tech_description_font"
-                                                aria-label="With textarea"
-                                        >{{ app_tech.description }}</textarea>
-                                    </div>
-                                {% endif %}
+                                        {% if app_tech.description %}
+                                            <textarea
+                                                    style="font-size: {{ user.font_size }}pt;"
+                                                    class="form-control p-1 text_area_description general_tech_description_font"
+                                                    aria-label="With textarea"
+                                            >{{ app_tech.description }}</textarea>
+                                        {% endif %}
+                                    </div>                                
 
                             {% endfor %}
                         {% endif %}
@@ -102,6 +103,7 @@
     </div>
     
     {% include 'includes/modal_view_props.html' %}
+{#    {% include 'includes/modal_edit_technics.html' %}#}
 {% endblock %}
 
 {% block footer %}
