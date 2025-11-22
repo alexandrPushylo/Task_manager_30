@@ -271,12 +271,19 @@ def edit_application_view(request):
             )
             return _application_today
 
-        def _prepare_app_today(app_today_id):
-            if U.is_valid_get_request(app_today_id):
-                _application_today = APP_TODAY_SERVICE.get_apps_today(pk=app_today_id)
+        def _prepare_app_today(app_today_id: int, construction_site_id: int, date_id: int):
+            if all((app_today_id, construction_site_id, date_id)):
+                _application_today = APP_TODAY_SERVICE.get_apps_today(
+                    pk=app_today_id,
+                    construction_site_id=construction_site_id,
+                    date_id=date_id
+                )
+                if _application_today:
+                    return _application_today
+                else:
+                    return _create_app_today()
             else:
-                _application_today = _create_app_today()
-            return _application_today
+                return _create_app_today()
 
         context['is_changeable_material'] = U.get_accept_to_change_materials_app(current_workday=current_day)
 
@@ -346,11 +353,14 @@ def edit_application_view(request):
             post_application_technic_description: str = post_application_technic_description.strip()
             post_application_today_description: str = post_application_today_description.strip()
             post_application_material_description: str = post_application_material_description.strip()
-
             match operation:
                 case 'add_technic_to_application':
                     log.debug('add_technic_to_application')
-                    application_today = _prepare_app_today(post_application_today_id)
+                    application_today = _prepare_app_today(
+                        app_today_id=post_application_today_id,
+                        construction_site_id=construction_site.id,
+                        date_id=current_day.id
+                    )
                     data = {
                         "status": "fail",
                         "app_today_id": application_today.id,
@@ -359,7 +369,7 @@ def edit_application_view(request):
                     if U.is_valid_get_request(post_technic_title_shrt):
                         if not U.is_valid_get_request(post_technic_sheet_id):
                             technic_title_dict = [*filter(lambda item: item['short_title'] == post_technic_title_shrt,
-                                                         technic_titles_dict)][0]
+                                                          technic_titles_dict)][0]
                             technic_title = technic_title_dict.get('title')
                             some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
                                 technic_title=technic_title, workday=current_day
@@ -390,7 +400,11 @@ def edit_application_view(request):
                 case 'reject_application_technic':
                     log.debug('reject_application_technic')
                     try:
-                        application_today = _prepare_app_today(post_application_today_id)
+                        application_today = _prepare_app_today(
+                            app_today_id=post_application_today_id,
+                            construction_site_id=construction_site.id,
+                            date_id=current_day.id
+                        )
                         if U.is_valid_get_request(post_application_technic_id):
                             status = APP_TECHNIC_SERVICE.reject_or_accept_apps_technic(
                                 app_tech_id=post_application_technic_id
@@ -403,7 +417,11 @@ def edit_application_view(request):
 
                 case 'delete_application_technic':
                     log.debug('delete_application_technic')
-                    application_today = _prepare_app_today(post_application_today_id)
+                    application_today = _prepare_app_today(
+                        app_today_id=post_application_today_id,
+                        construction_site_id=construction_site.id,
+                        date_id=current_day.id
+                    )
                     if U.is_valid_get_request(post_application_technic_id):
                         status = APP_TECHNIC_SERVICE.delete_application_technic(
                             application_technic_id=post_application_technic_id)
@@ -416,13 +434,19 @@ def edit_application_view(request):
 
                 case 'apply_changes_application_technic':
                     log.debug('apply_changes_application_technic')
-                    application_today = _prepare_app_today(post_application_today_id)
+                    application_today = _prepare_app_today(
+                        app_today_id=post_application_today_id,
+                        construction_site_id=construction_site.id,
+                        date_id=current_day.id
+                    )
                     if U.is_valid_get_request(post_technic_title_shrt):
                         try:
                             application_technic = APP_TECHNIC_SERVICE.get_app_technic(pk=post_application_technic_id)
 
                             if not U.is_valid_get_request(post_technic_sheet_id):
-                                technic_title_dict = [*filter(lambda item: item['short_title'] == post_technic_title_shrt, technic_titles_dict)][0]
+                                technic_title_dict = [
+                                    *filter(lambda item: item['short_title'] == post_technic_title_shrt,
+                                            technic_titles_dict)][0]
                                 technic_title = technic_title_dict.get('title')
 
                                 some_technic_sheet = TECHNIC_SHEET_SERVICE.get_some_technic_sheet(
@@ -450,7 +474,11 @@ def edit_application_view(request):
 
                 case 'save_application_description':
                     log.debug('save_application_description')
-                    application_today = _prepare_app_today(post_application_today_id)
+                    application_today = _prepare_app_today(
+                        app_today_id=post_application_today_id,
+                        construction_site_id=construction_site.id,
+                        date_id=current_day.id
+                    )
                     data = {
                         "status": None,
                         "app_today_id": application_today.pk,
@@ -469,7 +497,11 @@ def edit_application_view(request):
 
                 case 'save_application_materials':
                     log.debug('save_application_materials')
-                    application_today = _prepare_app_today(post_application_today_id)
+                    application_today = _prepare_app_today(
+                        app_today_id=post_application_today_id,
+                        construction_site_id=construction_site.id,
+                        date_id=current_day.id
+                    )
                     application_material = APP_MATERIAL_SERVICE.get_app_material(application_today=application_today)
 
                     data = {
@@ -723,8 +755,8 @@ def technic_sheet_view(request):
 
             if operation == 'changeDriverForTechnic' and U.is_valid_get_request(technic_sheet_id):
                 status = TECHNIC_SHEET_SERVICE.change_driver(
-                        technic_sheet_id=technic_sheet_id,
-                        driver_sheet_id=driver_sheet_id)
+                    technic_sheet_id=technic_sheet_id,
+                    driver_sheet_id=driver_sheet_id)
                 if status:
                     return HttpResponse(b"true")
                 elif status is None:
@@ -1531,7 +1563,6 @@ def def_test(request):  # TODO: def TEST
     # for work_day in work_days:
     #     work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
 
-
     if request.GET.get('chat_id'):
         chat_id = request.GET.get('chat_id')
         print(
@@ -1640,7 +1671,7 @@ def calculate_all_applications(request):
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         TECHNIC_SHEET_SERVICE.calculate_all_applications_for_ts(current_day)
         log.info(f"Считаем все заявки на технику за {current_day.date}")
-        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={ current_day.date }")
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={current_day.date}")
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
