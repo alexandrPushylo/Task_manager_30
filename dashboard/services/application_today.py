@@ -11,22 +11,22 @@ from logger import getLogger
 log = getLogger(__name__)
 
 
-def get_apps_today(**kwargs) -> ApplicationToday:
+def get_apps_today(**kwargs) -> ApplicationToday | None:
     try:
         application_today = ApplicationToday.objects.get(**kwargs)
         return application_today
     except ApplicationToday.DoesNotExist:
         log.warning(f"get_apps_today({kwargs}): ApplicationToday.DoesNotExist")
-        return ApplicationToday.objects.none()
+        return None
     except ApplicationToday.MultipleObjectsReturned:
         log.error(f"get_apps_today({kwargs}): ApplicationToday.MultipleObjectsReturned")
-        return ApplicationToday.objects.none()
+        return None
     except ValueError:
         log.error(f"get_apps_today({kwargs}): ValueError")
-        return ApplicationToday.objects.none()
+        return None
 
 
-def create_app_today(**kwargs) -> ApplicationToday:
+def create_app_today(**kwargs) -> ApplicationToday | None:
     """
     Создать объект ApplicationToday
     :param kwargs:
@@ -42,7 +42,7 @@ def create_app_today(**kwargs) -> ApplicationToday:
         return application_today
     except ValueError:
         log.error(f"get_or_create_app_today({kwargs}): ValueError")
-        return ApplicationToday.objects.none()
+        return None
 
 
 def get_apps_today_queryset(select_related: tuple = (),
