@@ -27,6 +27,7 @@ pyTelegramBotAPI==4.14.0
 pytz==2025.1
 pywebpush==1.9.4
 PyYAML==6.0.2
+redis==7.1.0
 requests==2.31.0
 six==1.16.0
 sqlparse==0.4.4
