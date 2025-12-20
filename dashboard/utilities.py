@@ -93,10 +93,12 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     :param current_workday:
     :return:
     """
-    workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3).reverse().values()
-    for workday in workdays:
-        workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
-    context['work_days'] = workdays
+    # workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=TODAY, before_days=1, after_days=3)[::-1]
+    # print(workdays)
+    # for workday in workdays:
+    #     workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
+    # context['work_days'] = workdays
+    context['work_days'] = WORK_DAY_SERVICE.get_range_workdays_with_weekdays(TODAY, 1, 3)
 
     context['today'] = TODAY
     context['current_weekday'] = get_weekday(TODAY)
@@ -942,3 +944,7 @@ def delete_technic(technic_id: int):
 
         for _app_today in _application_today:
             APP_TODAY_SERVICE.validate_application_today(application_today=_app_today)
+
+
+def validate_cache_name(raw_name: str) -> str:
+    return raw_name.strip().replace(" ",'')

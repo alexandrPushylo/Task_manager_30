@@ -1,7 +1,14 @@
 from django.db import models
-# from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 from django.contrib.auth.models import AbstractUser
 from .assets import UserPosts, AcceptMode
+
+
+def convert_to_dict(instance: models.Model, *args, **kwargs):
+        return model_to_dict(instance, *args, **kwargs)
+
+def get_cache_name(instance: models.Model):
+        return f"{instance.__class__.__name__}:{instance.id}"
 
 
 class User(AbstractUser):
@@ -28,6 +35,12 @@ class User(AbstractUser):
     color_title = models.CharField(max_length=8, null=False, default='#000000', verbose_name='Цвет названия объекта')
     font_size = models.IntegerField(default=10, verbose_name='Размер шрифта для описания заявки')
 
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, exclude=['password'], *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
+
     def __str__(self):
         return f"{self.last_name} {self.first_name}"
 
@@ -51,6 +64,12 @@ class Technic(models.Model):
                                           default=UserPosts.MECHANIC.title)
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
 
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
+
     def __str__(self):
         return f"{self.title} ({self.attached_driver}) [{self.id_information}]"
 
@@ -66,6 +85,13 @@ class TemplateDescForTechnic(models.Model):
 
     is_auto_mode = models.BooleanField(default=True, verbose_name='Автоматический режим')
     is_default_mode = models.BooleanField(default=False, verbose_name='Режим по умолчанию')
+
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
+
 
     def __str__(self):
         return f"[{'auto' if self.is_auto_mode else 'default' if self.is_default_mode else 'manual'}] {self.technic} ({self.description}) "
@@ -85,6 +111,13 @@ class ConstructionSite(models.Model):
     deleted_date = models.DateField(null=True, blank=True, verbose_name="Дата удаления")
     status = models.BooleanField(default=True, verbose_name="Статус объекта")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
+
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
+
 
     def __str__(self): return f"{self.address} ({self.foreman})"
 
@@ -109,6 +142,12 @@ class WorkDaySheet(models.Model):
         self.is_all_application_send = True
         self.save(update_fields=['is_all_application_send'])
 
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
+
     def __str__(self):
         return f"{self.date}"
 
@@ -123,6 +162,12 @@ class DriverSheet(models.Model):
     status = models.BooleanField(default=True, verbose_name="Статус водителя")
     date = models.ForeignKey(WorkDaySheet, on_delete=models.CASCADE, verbose_name="Дата")
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
+
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
 
     def __str__(self): return f"{self.driver} [{'Работает' if self.status else 'Не работает'}]"
 
@@ -149,6 +194,12 @@ class TechnicSheet(models.Model):
         if self.count_application > 0:
             self.count_application = self.count_application - 1
             self.save(update_fields=['count_application'])
+
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
 
     def __str__(self): return f"{self.technic}"
 
@@ -194,14 +245,17 @@ class ApplicationToday(models.Model):
             self.status = self.SEND
         else:
             self.status = self.ABSENT
-            # self.is_application_send = True
         self.save(update_fields=['status'])
 
     def make_edited(self):
         self.is_edited = True
         self.save(update_fields=['is_edited'])
 
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
 
+    def get_cache_name(self):
+        return get_cache_name(self)
 
     def __str__(self): return f"{self.construction_site} [{self.date.date}] - {self.status}"
 
@@ -222,6 +276,12 @@ class ApplicationTechnic(models.Model):
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
     is_cancelled = models.BooleanField(default=False, verbose_name='Отменена?')
 
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
+
     def __str__(self): return f"{self.application_today} {self.technic_sheet}"
 
     class Meta:
@@ -237,6 +297,12 @@ class ApplicationMaterial(models.Model):
     isChecked = models.BooleanField(default=False, verbose_name='Проверенна?')
     isArchive = models.BooleanField(default=False, verbose_name="Архивирован?")
     is_cancelled = models.BooleanField(default=False, verbose_name='Отменена?')
+
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
 
     def __str__(self): return f"{self.application_today} - {self.description}"
 
@@ -258,6 +324,12 @@ class Parameter(models.Model):
     time = models.TimeField(null=True, blank=True)
     date = models.DateField(null=True, blank=True)
     permissions = models.CharField(max_length=32, verbose_name='Разрешения', blank=True, null=True)
+
+    def to_dict(self, *args, **kwargs):
+        return convert_to_dict(self, *args, **kwargs)
+
+    def get_cache_name(self):
+        return get_cache_name(self)
 
     def __str__(
             self): return f'{self.title}  {self.name} - {self.value} - [{self.flag}] -- ({self.time}:{self.date})'

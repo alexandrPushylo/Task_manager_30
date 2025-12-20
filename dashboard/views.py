@@ -1702,15 +1702,22 @@ def spec_page_view(request):
 
 
 def test_page_view(request):
-    mess = cache.get('user')
-    if mess is None:
-        print("go to DB")
-
-        user = USERS_SERVICE.get_user(id=request.user.id)
-        if user:
-            cache.set(f'user', 'OK', timeout=5)
-
-    print(mess)
+    import time
+    start_time = time.time()
 
 
-    return HttpResponse(mess)
+    ss = WORK_DAY_SERVICE.get_prev_workday()
+    print(ss)
+
+    # print(wd)
+    # print(wd[::-1])
+
+
+
+
+
+
+
+    end_time = time.time()
+    print(end_time - start_time)
+    return HttpResponse('mess')
