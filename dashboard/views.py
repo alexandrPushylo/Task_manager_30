@@ -1713,4 +1713,4 @@ def test_page_view(request):
     print(mess)
 
 
-    return HttpResponse({"ok":"1"}, content_type='application/json')
+    return HttpResponse(mess)
