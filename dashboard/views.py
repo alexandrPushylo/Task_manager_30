@@ -1,4 +1,6 @@
 import json
+
+from django.core.cache import cache
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 
@@ -1697,3 +1699,18 @@ def spec_page_view(request):
 
         return HttpResponse(file, content_type='text/plain')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
+
+def test_page_view(request):
+    mess = cache.get('user')
+    if mess is None:
+        print("go to DB")
+
+        user = USERS_SERVICE.get_user(id=request.user.id)
+        if user:
+            cache.set(f'user', 'OK', timeout=5)
+
+    print(mess)
+
+
+    return HttpResponse({"ok":"1"}, content_type='application/json')
