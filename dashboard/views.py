@@ -45,7 +45,7 @@ def routing(request):
         next_work_day = WORK_DAY_SERVICE.get_next_workday()
         next_app_today = APP_TODAY_SERVICE.get_apps_today_queryset(
             isArchive=False,
-            date=next_work_day
+            date=next_work_day.id
         )
         if USERS_SERVICE.is_administrator(request.user):
             if next_app_today.exists():
@@ -125,7 +125,7 @@ def dashboard_view(request):
 
     #   get dashboard for administrator -----------------------------------------------------------------------
     elif USERS_SERVICE.is_administrator(request.user):
-        context = DASHBOARD_SERVICE.get_dashboard_for_admin(request=request, current_day=current_day, context=context)
+        context = DASHBOARD_SERVICE.get_dashboard_for_admin(request=request, current_day=current_day.id, context=context)
         return render(request, 'content/dashboard/admin_dashboard.html', context)
     #   -------------------------------------------------------------------------------------------------------
 
@@ -691,7 +691,7 @@ def workday_sheet_view(request):
         if request.method == 'POST' and request.POST.get('operation') == 'toggleWorkdayStatus':
             workday_id = request.POST.get('workday_id')
             if U.is_valid_get_request(workday_id):
-                status = WORK_DAY_SERVICE.change_status(work_day_id=workday_id)
+                status = WORK_DAY_SERVICE.change_status(id=workday_id)
                 if status:
                     return HttpResponse(b'ok')
                 else:
@@ -700,11 +700,11 @@ def workday_sheet_view(request):
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context=context, current_workday=current_day)
         current_date = current_day.date
-        workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_date, before_days=3, after_days=7).values()
-
-        for day in workdays:
-            day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
-        context['workdays'] = workdays
+        # workdays = WORK_DAY_SERVICE.get_range_workdays(start_date=current_date, before_days=3, after_days=7).values()
+        #
+        # for day in workdays:
+        #     day['weekday'] = ASSETS.WEEKDAY[day['date'].weekday()]
+        context['workdays'] = WORK_DAY_SERVICE.get_range_workdays_with_weekdays(current_date, 3, 7)
         return render(request, 'content/sheet/workday_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
