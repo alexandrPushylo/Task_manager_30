@@ -655,7 +655,16 @@ def register_view(request):
     if request.method == 'GET':
         return render(request, 'content/register.html', context)
     if request.method == 'POST':
-        new_user, msg = USERS_SERVICE.add_or_edit_user(request.POST, user_id=None)
+        user_data = USERS_SERVICE.EditUserSchema(
+            username=request.POST.get('username'),
+            password=request.POST.get('password'),
+            first_name=request.POST.get('first_name'),
+            last_name=request.POST.get('last_name'),
+            telephone=request.POST.get('telephone'),
+            post=request.POST.get('post'),
+            supervisor_user_id=request.POST.get('supervisor_id'),
+        )
+        new_user, msg = USERS_SERVICE.add_or_edit_user(user_data,user_id=None)
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             log.info("Пользователь успешно зарегистрирован")
@@ -875,15 +884,18 @@ def users_view(request):
         context['current_day'] = current_day
 
         if USERS_SERVICE.is_administrator(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(order_by=('last_name',))
+            users_list = USERS_SERVICE.get_user_queryset()
         elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
-            users_list = (USERS_SERVICE.get_user_queryset(order_by=('last_name',))
-                          .exclude(post=ASSETS.UserPosts.ADMINISTRATOR.title))
+            users_list = [user
+                          for user in USERS_SERVICE.get_user_queryset()
+                          if user.post != ASSETS.UserPosts.ADMINISTRATOR.title]
+
         elif USERS_SERVICE.is_mechanic(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title, order_by=('last_name',))
+            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title)
         else:
             users_list = []
-        context['users_list'] = users_list.filter(isArchive=False)
+        context['users_list'] = [user for user in users_list if user.isArchive == False]
+        context['user_post'] = ASSETS.UserPosts.get_dict()
         return render(request, 'content/users/users.html', context)
 
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
@@ -902,7 +914,7 @@ def edit_user_view(request):
 
         user_id = request.GET.get('user_id')
         if U.is_valid_get_request(user_id):
-            user_ = USERS_SERVICE.get_user(pk=user_id)
+            user_ = USERS_SERVICE.get_user(id=user_id)
             if user_:
                 context['user_list'] = user_
                 context['title'] = 'Изменить пользователя'
@@ -910,7 +922,16 @@ def edit_user_view(request):
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
         if request.method == 'POST':
-            _user_rez = USERS_SERVICE.add_or_edit_user(request.POST, user_id)
+            user_data = USERS_SERVICE.EditUserSchema(
+                username=request.POST.get('username'),
+                password=request.POST.get('password'),
+                first_name=request.POST.get('first_name'),
+                last_name=request.POST.get('last_name'),
+                telephone=request.POST.get('telephone'),
+                post=request.POST.get('post'),
+                supervisor_user_id=request.POST.get('supervisor_id'),
+            )
+            _user_rez = USERS_SERVICE.add_or_edit_user(user_data, user_id)
             if _user_rez[0] is not None:
                 return HttpResponseRedirect(ENDPOINTS.USERS)
             else:
@@ -925,7 +946,8 @@ def delete_user_view(request):
         if USERS_SERVICE.is_administrator(request.user):
             user_id = request.GET.get('user_id')
             if U.is_valid_get_request(user_id):
-                U.delete_user(user_id=user_id)
+                user_id_int = int(user_id)
+                U.delete_user(user_id=user_id_int)
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 

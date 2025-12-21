@@ -1,43 +1,48 @@
+from django.core.cache import cache
 from django.db.utils import IntegrityError
 from django.db.models import Q
-from dashboard.models import User
-from django.core.handlers.wsgi import WSGIRequest
+from django.contrib.auth.models import AbstractUser, AnonymousUser
+from pydantic import ValidationError
 
-import dashboard.assets as ASSETS
+from config.settings import USE_CACHE
+from dashboard.models import User
+
+import dashboard.assets as A
 import dashboard.utilities as U
 from django.db.models import QuerySet  # type: ignore
 
+from dashboard.schemas.user_schema import UserSchema, EditUserSchema
 from logger import getLogger
 
 log = getLogger(__name__)
 
 
 def is_administrator(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.ADMINISTRATOR.title else False
+    return True if user.post == A.UserPosts.ADMINISTRATOR.title else False
 
 
 def is_foreman(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.FOREMAN.title else False
+    return True if user.post == A.UserPosts.FOREMAN.title else False
 
 
 def is_master(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.MASTER.title else False
+    return True if user.post == A.UserPosts.MASTER.title else False
 
 
 def is_driver(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.DRIVER.title else False
+    return True if user.post == A.UserPosts.DRIVER.title else False
 
 
 def is_mechanic(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.MECHANIC.title else False
+    return True if user.post == A.UserPosts.MECHANIC.title else False
 
 
 def is_supply(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.SUPPLY.title else False
+    return True if user.post == A.UserPosts.SUPPLY.title else False
 
 
 def is_employee(user: User) -> bool:
-    return True if user.post == ASSETS.UserPosts.EMPLOYEE.title else False
+    return True if user.post == A.UserPosts.EMPLOYEE.title else False
 
 
 def get_foreman(user: User) -> User | None:
@@ -55,126 +60,145 @@ def get_foreman(user: User) -> User | None:
         return None
 
 
-def get_user(**kwargs) -> User:
+def get_user(*args, **kwargs) -> UserSchema | None:
+    cache_key = U.validate_cache_name(f"get_user:{args},{kwargs}")
+    cache_timeout = 10
     try:
-        user = User.objects.get(**kwargs)
-        return user
+        cache_user: UserSchema | None = cache.get(cache_key)
+        if cache_user is None:
+            user = User.objects.get(*args, **kwargs)
+            user_scheme = UserSchema(**user.to_dict())
+            cache.set(cache_key, user_scheme, cache_timeout) if USE_CACHE else None
+            return user_scheme
+        return cache_user
     except User.DoesNotExist:
         log.warning(f"get_user({kwargs}): User.DoesNotExist ")
-        return User.objects.none()
+        return None
     except ValueError:
         log.error(f"get_user({kwargs}): ValueError")
-        return User.objects.none()
+        return None
 
 
-def get_user_queryset(select_related: tuple = (),
-                      order_by: tuple = (),
-                      **kwargs) -> QuerySet[User]:
+def get_user_queryset(*args, **kwargs) -> list[UserSchema | None]:
+    cache_key = kwargs.get("cache_key")
+    if cache_key is None:
+        cache_key = U.validate_cache_name(f"get_user_queryset:{args},{kwargs}")
+    cache_timeout = 10
 
-    user = User.objects.filter(**kwargs)
-    if select_related:
-        user = user.select_related(*select_related)
-    if order_by:
-        user = user.order_by(*order_by)
-    return user
+    cache_user: list[UserSchema | None] = cache.get(cache_key)
+    if cache_user is None:
+        user_queryset = User.objects.filter(*args, **kwargs)
+        user_queryset_schema = [UserSchema(**user.to_dict()) for user in user_queryset]
+        cache.set(cache_key, user_queryset_schema, cache_timeout) if USE_CACHE else None
+        return user_queryset_schema
+    return cache_user
 
 
-def edit_user(user_id, data: dict) -> tuple[User | None, ASSETS.UserEditResult]:
-    user = get_user(pk=user_id)
+def edit_user(user_id, data: EditUserSchema) -> tuple[User | None, A.UserEditResult]:
+    user = User.objects.get(id=user_id)
     if user:
-        user.username = data['username']
-        user.first_name = data['first_name']
-        user.last_name = data['last_name']
-        user.telephone = data['telephone']
-        if data['password'] != user.password:
-            user.set_password(data['password'])
-        user.post = data['post']
-        user.supervisor_user_id = data['supervisor_user_id']
-        user.save()
-        log.info(f"User {data['last_name']} {data['first_name']} has been changed")
-        return user, ASSETS.UserEditResult.OK
+        try:
+            user.username = data.username
+            user.first_name = data.first_name
+            user.last_name = data.last_name
+            user.telephone = data.telephone
+            if data.password != user.password:
+                user.set_password(data.password)
+            user.post = data.post
+            user.supervisor_user_id = data.supervisor_user_id
+            user.save()
+            cache.delete("get_user_queryset:(),{}")
+            cache.delete("get_user:(),{'id':'"+user_id+"'}")
+            log.info(f"User {data.last_name} {data.first_name} has been changed")
+            return user, A.UserEditResult.OK
+        except IntegrityError:
+            return None, A.UserEditResult.ERROR
     else:
-        return None, ASSETS.UserEditResult.ERROR
+        return None, A.UserEditResult.ERROR
 
 
-def create_new_user(data: dict) -> tuple[User | None, ASSETS.UserEditResult]:
+def create_new_user(data: EditUserSchema) -> tuple[User | None, A.UserEditResult]:
     try:
         user = User.objects.create_user(
-            username=data['username'],
-            first_name=data['first_name'],
-            last_name=data['last_name'],
-            telephone=data['telephone'],
-            password=data['password'],
-            post=data['post'],
-            supervisor_user_id=data['supervisor_user_id'],
+            username=data.username,
+            first_name=data.first_name,
+            last_name=data.last_name,
+            telephone=data.telephone,
+            password=data.password,
+            post=data.post,
+            supervisor_user_id=data.supervisor_user_id,
             is_staff=False,
             is_superuser=False
         )
-        log.info('User %s has been added' % data['last_name'])
-        return user, ASSETS.UserEditResult.OK
+        log.info('User %s has been added' % data.last_name)
+        cache.delete("get_user_queryset:(),{}")
+        return user, A.UserEditResult.OK
     except IntegrityError:
-        log.error('create_new_user(): IntegrityError; | username= [%s]' % data['username'])
-        return None, ASSETS.UserEditResult.EXISTS
+        log.error('create_new_user(): IntegrityError; | username= [%s]' % data.username)
+        return None, A.UserEditResult.EXISTS
     except Exception as e:
         log.error('create_new_user(): Unexpected error', e)
-        return None, ASSETS.UserEditResult.ERROR
+        return None, A.UserEditResult.ERROR
 
 
-def check_user_data(user_data: WSGIRequest.POST) -> dict | None:
+def check_user_data(user_data: EditUserSchema) -> EditUserSchema | None:
     log.info('Проверка user_data')
-    username = user_data.get('username')
-    first_name = str(user_data.get('first_name')).strip().capitalize()
-    last_name = str(user_data.get('last_name')).strip().capitalize()
-    telephone = user_data.get('telephone')
-    password = user_data.get('password')
-    post = user_data.get('post') if user_data.get('post') is not None else ASSETS.UserPosts.EMPLOYEE.title
-    supervisor_user_id = int(user_data.get('supervisor_id')) if user_data.get('supervisor_id') is not None else None
+    username = user_data.username
+    first_name = str(user_data.first_name).strip().capitalize()
+    last_name = str(user_data.last_name).strip().capitalize()
+    telephone = user_data.telephone
+    password = user_data.password
+    post = user_data.post if user_data.post is not None else A.UserPosts.EMPLOYEE.title
+    supervisor_user_id = int(user_data.supervisor_user_id) if user_data.supervisor_user_id is not None else None
 
     telephone = U.validate_telephone(telephone)
 
     if all((username, first_name, last_name, password)):
         log.info('Data: (username, first_name, last_name, password) is Ok')
-        return {
-            'username': username,
-            'first_name': first_name,
-            'last_name': last_name,
-            'telephone': telephone,
-            'password': password,
-            'post': post,
-            'supervisor_user_id': supervisor_user_id
-        }
+        return EditUserSchema(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            telephone=telephone,
+            password=password,
+            post=post,
+            supervisor_user_id=supervisor_user_id
+        )
     else:
         log.error('Error with data: (username, first_name, last_name, password) during verification')
         return None
 
 
-def add_or_edit_user(data: WSGIRequest.POST, user_id=None) -> tuple[User | None, ASSETS.UserEditResult]:
+def add_or_edit_user(data: EditUserSchema, user_id=None) -> tuple[User | None, A.UserEditResult]:
     prepare_data = check_user_data(data)
     if user_id:
         if prepare_data:
             return edit_user(user_id, prepare_data)
         else:
             log.error('Error with the "user_data" data when edit the user')
-            return None, ASSETS.UserEditResult.ERROR
+            return None, A.UserEditResult.ERROR
     else:
         if prepare_data:
             if not is_user_exists(prepare_data):
                 return create_new_user(prepare_data)
             else:
-                return None, ASSETS.UserEditResult.EXISTS
+                return None, A.UserEditResult.EXISTS
         else:
             log.error('Error with the "user_data" data when creating a user')
-            return None, ASSETS.UserEditResult.ERROR
+            return None, A.UserEditResult.ERROR
 
 
-def delete_user(user_id) -> User:
-    user = get_user(pk=user_id)
+def delete_user(*args, **kwargs) -> UserSchema | None:
+    cache_key = U.validate_cache_name(f"get_user:{args},{kwargs}")
+    user = User.objects.get(*args, **kwargs)
     if user:
         user.isArchive = True
         user.save(update_fields=['isArchive'])
         log.info(f'User: ({user.last_name} {user.first_name}) has been archived')
-        return user
-    return User.objects.none()
+        cache.delete(cache_key)
+        cache.delete("get_user_queryset:(),{}")
+        return UserSchema(**user.to_dict())
+    return None
 
 
 def is_supply_driver(current_technic_sheet_id_list: list, supply_technic_list_id_list: list) -> bool:
@@ -204,18 +228,18 @@ def check_user_by_phone(telephone) -> User|None:
         return None
 
 
-def prepare_str(raw_string: str) -> str:
-    if raw_string:
-        prep_string = raw_string.strip().capitalize()
-        return prep_string
-    else:
-        return raw_string
+# def prepare_str(raw_string: str) -> str:
+#     if raw_string:
+#         prep_string = raw_string.strip().capitalize()
+#         return prep_string
+#     else:
+#         return raw_string
 
 
-def is_user_exists(user_data: dict) -> bool:
+def is_user_exists(user_data: EditUserSchema) -> bool:
     fnd_user = User.objects.filter(
-        Q(username=user_data.get('username')) |
-        Q(telephone__isnull=False, telephone=user_data.get('telephone')) |
-        Q(first_name=user_data.get('first_name'), last_name=user_data.get('last_name'))
+        Q(username=user_data.username) |
+        Q(telephone__isnull=False, telephone=user_data.telephone) |
+        Q(first_name=user_data.first_name, last_name=user_data.last_name)
     )
     return fnd_user.exists()

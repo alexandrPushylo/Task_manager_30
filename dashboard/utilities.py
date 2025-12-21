@@ -27,20 +27,20 @@ import dashboard.services.parametr as PARAMETER_SERVICE
 #   ------------------------------------------------------------------------------------------------------------------
 log = getLogger(__name__)
 
-TODAY = date.today()
+TODAY: date = date.today()
 NOW = lambda: datetime.now().time()
 
 
-def convert_str_to_date(str_date: str) -> date:
-    """конвертация str в datetime.date"""
-    try:
-        if isinstance(str_date, str):
-            _day = datetime.strptime(str_date, '%Y-%m-%d').date()
-            return _day
-        elif isinstance(str_date, date):
-            return str_date
-    except Exception as e:
-        log.warning(f'convert_str_to_date(): {e}')
+# def convert_str_to_date(str_date: str) -> date | None:
+#     """конвертация str в datetime.date"""
+#     try:
+#         if isinstance(str_date, str):
+#             _day = datetime.strptime(str_date, '%Y-%m-%d').date()
+#             return _day
+#         elif isinstance(str_date, date):
+#             return str_date
+#     except Exception as e:
+#         log.warning(f'convert_str_to_date(): {e}')
 
 
 def get_weekday(_date: date) -> str | None:
@@ -86,7 +86,7 @@ def decrement_all_technic_sheet(current_date: WorkDaySheet):
         technic_sheet.save(update_fields=['count_application'])
 
 
-def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
+def get_prepared_data(context: dict, current_workday: WORK_DAY_SERVICE.WorkDaySchema) -> dict:
     """
     Подготовка и получения глобальных данных
     :param context:
@@ -98,8 +98,9 @@ def get_prepared_data(context: dict, current_workday: WorkDaySheet) -> dict:
     # for workday in workdays:
     #     workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
     # context['work_days'] = workdays
-    context['work_days'] = WORK_DAY_SERVICE.get_range_workdays_with_weekdays(TODAY, 1, 3)
-
+    context['work_days'] = WORK_DAY_SERVICE.get_range_workdays_with_weekdays(
+        TODAY, 1, 3, short_weekdays=True
+    )
     context['today'] = TODAY
     context['current_weekday'] = get_weekday(TODAY)
     context['prev_work_day'] = WORK_DAY_SERVICE.get_prev_workday(current_workday.date)
@@ -384,11 +385,7 @@ def prepare_data_for_filter(context: dict) -> dict:
     :param context:
     :return:
     """
-    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title).values(
-        'id',
-        'last_name',
-        'first_name'
-    )
+    foreman_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title)
     construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
         status=True,
         isArchive=False,
@@ -915,9 +912,9 @@ def delete_user(user_id: int):
     :param user_id:
     :return:
     """
-    user = USERS_SERVICE.delete_user(user_id)
+    user = USERS_SERVICE.delete_user(id=user_id)
     if user:
-        DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=user, date__date__gte=TODAY).delete()
+        DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(driver=user.id, date__date__gte=TODAY).delete()
 
 
 def delete_technic(technic_id: int):

@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class UserSchema(BaseModel):
+    id: int
     username: str = Field(max_length=150)
     first_name: str | None = Field(max_length=150)
     last_name: str | None = Field(max_length=150)
@@ -29,3 +30,14 @@ class UserSchema(BaseModel):
 
     color_title: str = Field(max_length=8, default="#000000", description='Цвет названия объекта')
     font_size: int = Field(default=10, description="Размер шрифта для описания заявки")
+
+
+class EditUserSchema(BaseModel):
+    username: str = Field(max_length=150)
+    first_name: str = Field(max_length=150)
+    last_name: str = Field(max_length=150)
+    password: str
+
+    supervisor_user_id: int | None = Field(default=None)
+    post: str | None = Field(default=None, max_length=20)
+    telephone: str | None = Field(max_length=20, default=None)
