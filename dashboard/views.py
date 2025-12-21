@@ -807,17 +807,27 @@ def technic_sheet_view(request):
 def technic_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Техника'}
-
         current_day = WORK_DAY_SERVICE.get_current_day(request)
         context = U.get_prepared_data(context, current_day)
         context['current_day'] = current_day
 
         technics = TECHNIC_SERVICE.get_technics_queryset(
-            select_related=('attached_driver',),
-            order_by=('title',),
+            # ('attached_driver',),
+            # ('title',),
             isArchive=False
         )
-        context['technics'] = technics
+        drivers = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title)
+
+        technic_list = []
+
+        for technic in technics:
+            driver_ = [driver.model_dump() for driver in drivers if driver.id == technic.attached_driver]
+            technic_list.append({
+                **technic.model_dump(),
+                "attached_driver": driver_[0] if driver_ else None
+            })
+
+        context['technics'] = technic_list
         return render(request, 'content/technic/technics.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -841,7 +851,8 @@ def edit_technic_view(request):
         context['technic_type_list'] = sorted(technic_type_list)
 
         if technic_id:
-            technic = TECHNIC_SERVICE.get_technic(pk=technic_id)
+            # technic = TECHNIC_SERVICE.get_technic(pk=technic_id)
+            technic = TECHNIC_SERVICE.TechnicService.get_technic(id=technic_id)
             if technic:
                 context['technic'] = technic
                 context['title'] = 'Редактировать технику'
@@ -850,7 +861,21 @@ def edit_technic_view(request):
 
         if request.method == 'POST':
             data = request.POST
-            TECHNIC_SERVICE.add_or_edit_technic(data, technic_id)
+            technic_data = TECHNIC_SERVICE.EditTechnicSchema(
+                title=data.get('title'),
+                type=data.get('type'),
+                id_information=data.get('id_information'),
+                description=data.get('description'),
+                attached_driver=data.get('attached_driver'),
+                supervisor_technic=data.get('supervisor'),
+            )
+            if technic_id:
+                TECHNIC_SERVICE.TechnicService.edit_technic(int(technic_id), technic_data)
+            else:
+                TECHNIC_SERVICE.TechnicService.add_new_technic(technic_data)
+
+
+            # TECHNIC_SERVICE.add_or_edit_technic(data, technic_id)
             return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
         return render(request, 'content/technic/edit_technic.html', context)

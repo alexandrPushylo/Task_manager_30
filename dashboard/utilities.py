@@ -923,7 +923,8 @@ def delete_technic(technic_id: int):
     :param technic_id:
     :return:
     """
-    technic = TECHNIC_SERVICE.delete_technic(technic_id)
+    # technic = TECHNIC_SERVICE.delete_technic(technic_id)
+    technic = TECHNIC_SERVICE.TechnicService.delete_technic(id=technic_id)
     if technic:
         _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
             technic=technic,
