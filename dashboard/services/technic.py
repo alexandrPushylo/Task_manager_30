@@ -55,7 +55,12 @@ class TechnicService:
         if validate_data is None:
             return None
         new_technic = cls.model.objects.create(
-            **validate_data.model_dump()
+            title=validate_data.title,
+            type=validate_data.type,
+            id_information=validate_data.id_information,
+            description=validate_data.description,
+            attached_driver_id=validate_data.attached_driver,
+            supervisor_technic=validate_data.supervisor_technic
         )
         return new_technic
 
@@ -68,7 +73,7 @@ class TechnicService:
         if technic:
             technic.title = validate_data.title
             technic.type = validate_data.type
-            technic.attached_driver = validate_data.attached_driver
+            technic.attached_driver_id = validate_data.attached_driver
             technic.supervisor_technic = validate_data.supervisor_technic
             technic.id_information = validate_data.id_information
             technic.description = validate_data.description
@@ -133,16 +138,16 @@ class TechnicService:
         technic_type = technic_data.type
         id_information = technic_data.id_information
         description = technic_data.description
-        supervisor = technic_data.supervisor_technic
+        supervisor_technic = technic_data.supervisor_technic
         attached_driver = technic_data.attached_driver
 
-        if supervisor not in (ASSETS.UserPosts.MECHANIC.title, ASSETS.UserPosts.SUPPLY.title):
+        if supervisor_technic not in (ASSETS.UserPosts.MECHANIC.title, ASSETS.UserPosts.SUPPLY.title):
             out["supervisor"] = ASSETS.UserPosts.MECHANIC.title
 
         if attached_driver:
             try:
-                driver = User.objects.get(id=attached_driver) #TODO REF
-                out['attached_driver'] = driver
+                # driver = User.objects.get(id=attached_driver) #TODO REF
+                out['attached_driver'] = attached_driver
             except User.DoesNotExist:
                 log.warning(f"Attached driver id={attached_driver} does not exist")
                 out["attached_driver"] = None
@@ -155,7 +160,7 @@ class TechnicService:
             out["type"] = technic_type
             out["id_information"] = id_information
             out["description"] = description
-            out["supervisor"] = supervisor
+            out["supervisor_technic"] = supervisor_technic
             return EditTechnicSchema(**out)
         else:
             return None

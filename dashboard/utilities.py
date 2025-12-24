@@ -393,7 +393,7 @@ def prepare_data_for_filter(context: dict) -> dict:
         order_by=('address',)
     )
 
-    technic_list = TECHNIC_SERVICE.get_technics_queryset(
+    technic_list = TECHNIC_SERVICE.TechnicService.get_technics_queryset(
         isArchive=False
     ).values_list('title', flat=True).distinct()
 
