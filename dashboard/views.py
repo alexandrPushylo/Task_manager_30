@@ -1030,13 +1030,16 @@ def construction_site_view(request):
 
         hide_constr_site_id = request.GET.get('hide')
         if U.is_valid_get_request(hide_constr_site_id):
-            CONSTR_SITE_SERVICE.hide_construction_site(constr_site_id=hide_constr_site_id)
+            # CONSTR_SITE_SERVICE.hide_construction_site(constr_site_id=hide_constr_site_id)
+            CONSTR_SITE_SERVICE.ConstructionSiteService.hide_or_show_construction_sites(id=hide_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         delete_constr_site_id = request.GET.get('delete')
         if U.is_valid_get_request(delete_constr_site_id):
-            deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(
-                constr_site_id=delete_constr_site_id)
+            # deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(
+            #     constr_site_id=delete_constr_site_id)
+            deleted_construction_site = CONSTR_SITE_SERVICE.ConstructionSiteService.delete_construction_site(
+                id=delete_constr_site_id)
             application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
                 construction_site=deleted_construction_site,
                 date__date__gte=U.TODAY
@@ -1092,7 +1095,8 @@ def archive_construction_site_view(request):
         delete_constr_site_id = request.GET.get('delete')
 
         if U.is_valid_get_request(delete_constr_site_id):
-            CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+            # CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
+            CONSTR_SITE_SERVICE.ConstructionSiteService.delete_construction_site(constr_site_id=delete_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         return render(request, 'content/construction_site/archive_construction_sites.html', context)
@@ -1115,7 +1119,25 @@ def edit_construction_sites(request):
         if request.method == 'POST':
             _id = request.POST.get('id')
             data = request.POST
-            CONSTR_SITE_SERVICE.create_or_edit_construction_site(data, _id)
+
+            cs_data = CONSTR_SITE_SERVICE.EditConstructionSiteSchema(
+                address=request.POST.get('address'),
+                foreman=request.POST.get('foreman'),
+            )
+
+            cs_is_exists = (CONSTR_SITE_SERVICE.ConstructionSiteService
+                            .is_exist_construction_site(data=cs_data))
+            if cs_is_exists:
+                CONSTR_SITE_SERVICE.ConstructionSiteService.restore_construction_site(data=cs_data)
+            else:
+                if _id:
+                    (CONSTR_SITE_SERVICE.ConstructionSiteService
+                     .edit_construction_site(constr_site_id=int(_id), data=cs_data))
+                else:
+                    (CONSTR_SITE_SERVICE.ConstructionSiteService
+                     .create_construction_site(data=cs_data))
+
+            # CONSTR_SITE_SERVICE.create_or_edit_construction_site(data, _id)     #TODO#######
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
