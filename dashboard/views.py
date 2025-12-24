@@ -588,7 +588,8 @@ def login_view(request):
         username = username.strip()
         password = request.POST.get('password')
 
-        phn_user = USERS_SERVICE.check_user_by_phone(username)
+        # phn_user = USERS_SERVICE.check_user_by_phone(username)
+        phn_user = USERS_SERVICE.UserService.get_user_by_phone(username)
         if phn_user:
             user = authenticate(request, username=phn_user.username, password=password)
         else:
@@ -664,7 +665,9 @@ def register_view(request):
             post=request.POST.get('post'),
             supervisor_user_id=request.POST.get('supervisor_id'),
         )
-        new_user, msg = USERS_SERVICE.add_or_edit_user(user_data,user_id=None)
+        # new_user, msg = USERS_SERVICE.add_or_edit_user(user_data,user_id=None)
+        new_user, msg = USERS_SERVICE.UserService.add_new_user(user_data)
+
         if new_user is not None and request.user.is_anonymous:
             login(request, new_user)
             log.info("Пользователь успешно зарегистрирован")
@@ -956,7 +959,13 @@ def edit_user_view(request):
                 post=request.POST.get('post'),
                 supervisor_user_id=request.POST.get('supervisor_id'),
             )
-            _user_rez = USERS_SERVICE.add_or_edit_user(user_data, user_id)
+            # _user_rez = USERS_SERVICE.add_or_edit_user(user_data, user_id)
+            if user_id:
+                _user_rez = USERS_SERVICE.UserService.edit_user(int(user_id), user_data)
+            else:
+                _user_rez = USERS_SERVICE.UserService.add_new_user(user_data)
+
+
             if _user_rez[0] is not None:
                 return HttpResponseRedirect(ENDPOINTS.USERS)
             else:

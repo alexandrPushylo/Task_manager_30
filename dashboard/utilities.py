@@ -946,3 +946,26 @@ def delete_technic(technic_id: int):
 
 def validate_cache_name(raw_name: str) -> str:
     return raw_name.strip().replace(" ",'')
+
+
+def is_admin(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.ADMINISTRATOR.title == current_user.post
+
+def is_foreman(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.FOREMAN.title == current_user.post
+
+def is_master(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.MASTER.title == current_user.post
+
+def is_driver(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.DRIVER.title == current_user.post
+
+def is_mechanic(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.MECHANIC.title == current_user.post
+
+def is_supply(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.SUPPLY.title == current_user.post
+
+def is_employee(current_user: USERS_SERVICE.UserSchema) -> bool:
+    return ASSETS.UserPosts.EMPLOYEE.title == current_user.post
+
