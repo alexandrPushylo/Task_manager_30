@@ -98,8 +98,8 @@ def get_prepared_data(context: dict, current_workday: WORK_DAY_SERVICE.WorkDaySc
     # for workday in workdays:
     #     workday['weekday'] = ASSETS.WEEKDAY[workday['date'].weekday()][:3]
     # context['work_days'] = workdays
-    context['work_days'] = WORK_DAY_SERVICE.get_range_workdays_with_weekdays(
-        TODAY, 1, 3, short_weekdays=True
+    context['work_days'] = WORK_DAY_SERVICE.WorkDayService.get_range_of_workdays_with_weekdays(
+        TODAY, 1, 3, short_weekdays=True, revers=True
     )
     context['today'] = TODAY
     context['current_weekday'] = get_weekday(TODAY)

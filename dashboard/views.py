@@ -157,7 +157,7 @@ def dashboard_view(request):
     #   get dashboard for employee ----------------------------------------------------------------------------
     elif USERS_SERVICE.is_employee(request.user):
         context = DASHBOARD_SERVICE.get_dashboard_for_employee(
-            request=request, current_day=current_day, context=context)
+            request=request, current_day=current_day.id, context=context)
         return render(request, 'content/dashboard/employee_dashboard.html', context)
     #   -------------------------------------------------------------------------------------------------------
 
