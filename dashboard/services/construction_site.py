@@ -94,7 +94,8 @@ class ConstructionSiteService:
         prepared_data = cls._check_data(data)
         if prepared_data:
             cls.model.objects.create(
-                **prepared_data.model_dump()
+                address=prepared_data.address,
+                foreman_id=prepared_data.foreman
             )
             log.info("The %s CS has been created" % prepared_data.address)
             return True
@@ -108,7 +109,7 @@ class ConstructionSiteService:
             cs = cls.model.objects.get(id=constr_site_id)
             if cs:
                 cs.address = prepared_data.address
-                cs.foreman = prepared_data.foreman
+                cs.foreman_id = prepared_data.foreman
                 cs.save(update_fields=["address", "foreman"])
                 log.info("The %s CS has been changed" % data.address)
                 return True
@@ -122,7 +123,7 @@ class ConstructionSiteService:
         :return:
         """
         cs = cls.get_construction_sites(
-            adress=data.address,
+            address=data.address,
             foreman_id=data.foreman,
         )
         if cs:

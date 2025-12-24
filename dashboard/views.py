@@ -1113,8 +1113,10 @@ def edit_construction_sites(request):
         elif USERS_SERVICE.is_master(request.user):
             context['foreman_list'] = USERS_SERVICE.get_user_queryset(pk=request.user.supervisor_user_id)
         elif USERS_SERVICE.is_administrator(request.user):
-            context['foreman_list'] = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title,
-                                                                      order_by=('last_name',))
+            # context['foreman_list'] = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title,
+            #                                                           order_by=('last_name',))
+            context['foreman_list'] = USERS_SERVICE.UserService.get_users_queryset(
+                post=ASSETS.UserPosts.FOREMAN.title).order_by('last_name')
 
         if request.method == 'POST':
             _id = request.POST.get('id')
