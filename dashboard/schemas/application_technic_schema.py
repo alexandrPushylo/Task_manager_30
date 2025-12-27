@@ -1,0 +1,26 @@
+from datetime import datetime
+
+from pydantic import BaseModel, Field
+
+
+class ApplicationTechnicSchema(BaseModel):
+    id: int
+    application_today: int = Field(description="Заявка на объект id")
+    technic_sheet: int | None = Field(description="Отметка техники id")
+    description: str | None = Field(max_length=4096, description="Описание")
+    isChecked: bool = Field(description='Проверенна?')
+    is_cancelled: bool = Field(description='Отменена?')
+    isArchive: bool = Field(description="Архивирован?")
+    priority: int = Field(ge=0, description="Приоритет заявки")
+    id_orig_app: int | None = Field(description="Ид ApplicationTechnic")
+
+
+class EditApplicationTechnicSchema(BaseModel):
+    application_today: int
+    technic_sheet: int | None
+    description: str | None
+    # isChecked: bool
+    # is_cancelled: bool
+    # isArchive: bool
+    # priority: int
+    # id_orig_app: int | None

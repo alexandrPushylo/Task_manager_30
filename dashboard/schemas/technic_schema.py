@@ -19,3 +19,9 @@ class EditTechnicSchema(BaseModel):
     description: str | None = Field(max_length=1024)
     attached_driver: int | None = Field()
     supervisor_technic: str = Field(max_length=100)
+
+
+class ShortTechnicDataSchema(BaseModel):
+    title: str
+    short_title: str
+    status_busies_list: list[int]

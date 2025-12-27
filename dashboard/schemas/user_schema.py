@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from pydantic import BaseModel, Field
 
 
@@ -30,6 +32,7 @@ class UserSchema(BaseModel):
 
     color_title: str = Field(max_length=8, default="#000000", description='Цвет названия объекта')
     font_size: int = Field(default=10, description="Размер шрифта для описания заявки")
+    last_login: datetime | None = Field(description="Последний вход")
 
 
 class EditUserSchema(BaseModel):
