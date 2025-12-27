@@ -46,18 +46,18 @@ from dashboard.views import task_desc_for_spec_constr_site_view
 from dashboard.views import calculate_all_applications
 
 
-schema_view = get_schema_view(
-   openapi.Info(
-      title="Snippets API",
-      default_version='v1',
-      description="Test description",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@snippets.local"),
-      license=openapi.License(name="BSD License"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
-)
+# schema_view = get_schema_view(
+#    openapi.Info(
+#       title="Snippets API",
+#       default_version='v1',
+#       description="Test description",
+#       terms_of_service="https://www.google.com/policies/terms/",
+#       contact=openapi.Contact(email="contact@snippets.local"),
+#       license=openapi.License(name="BSD License"),
+#    ),
+#    public=True,
+#    permission_classes=(permissions.AllowAny,),
+# )
 # router = routers.DefaultRouter()
 
 urlpatterns = [
@@ -81,12 +81,12 @@ urlpatterns = [
     path('validate_app_today', validate_application_today_view, name='validate_application_today'),
     path('test/', def_test, name='test'),
 
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/', include('dashboard.rest_api.urls')),
-
-    path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # path('api/', include('dashboard.rest_api.urls')),
+    #
+    # path('swagger.<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    # path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     re_path(r'^.*', routing)
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
