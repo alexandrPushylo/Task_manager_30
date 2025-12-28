@@ -1,32 +1,34 @@
 import enum
 
-from dashboard.models import ConstructionSite, User
+from django.core.cache import cache
+
+from dashboard.models import ConstructionSite
 from dashboard.schemas.construction_site_schema import ConstructionSiteSchema, EditConstructionSiteSchema
-from dashboard.services.user import get_user
 from django.db.models import QuerySet  # type: ignore
 
 import dashboard.utilities as U
-from config.settings import USE_CACHE
+import dashboard.assets as A
+from dashboard.services.base import BaseService
 
 from logger import getLogger
 
 log = getLogger(__name__)
 
 
-class ConstructionSiteService:
+class ConstructionSiteService(BaseService):
     model = ConstructionSite
     schema = ConstructionSiteSchema
     CACHE_TTL = 10
-    USE_CACHE = USE_CACHE
 
     class CacheKeys(enum.Enum):
-        DRIVER_LIST_FOR_SUPPLY = "driver_list_for_supply"
+        CS_ACTIVE_LIST = "cs_active_list"
+        CS_DELETED_LIST = "cs_deleted_list"
 
     @classmethod
-    def get_construction_sites(cls, *args, **kwargs) -> ConstructionSite | None:
+    def get_object(cls, *args, **kwargs) -> ConstructionSite | None:
         try:
-            construction_sites = cls.model.objects.get(**kwargs)
-            return construction_sites
+            obj = cls.model.objects.get(**kwargs)
+            return obj
         except ConstructionSite.DoesNotExist:
             log.warning(f"get_construction_sites({kwargs}): DoesNotExist")
             return None
@@ -35,21 +37,21 @@ class ConstructionSiteService:
             return None
 
     @classmethod
-    def get_construction_site_queryset(cls, *args, **kwargs) -> QuerySet[ConstructionSite]:
+    def get_queryset(cls, *args, **kwargs) -> QuerySet[ConstructionSite]:
         """
         :param kwargs:
         :return:
         """
         try:
-            constr_sites = cls.model.objects.filter(**kwargs)
-            return constr_sites
+            queryset = cls.model.objects.filter(**kwargs)
+            return queryset
         except ValueError:
             log.warning(f"get_construction_site_queryset({kwargs}): ValueError")
             return cls.model.objects.none()
 
     @classmethod
-    def hide_or_show_construction_sites(cls, *args, **kwargs) -> bool:
-        cs = cls.get_construction_sites(*args, **kwargs)
+    def hide_or_show(cls, *args, **kwargs) -> bool:
+        cs = cls.get_object(*args, **kwargs)
         if cs:
             if cs.status:
                 cs.status = False
@@ -58,12 +60,14 @@ class ConstructionSiteService:
                 cs.status = True
                 log.info(f"The construction site (pk={cs.pk}) was displayed")
             cs.save(update_fields=["status"])
+            if cls.USE_CACHE:
+                cache.delete(cls.CacheKeys.CS_ACTIVE_LIST.value)
             return True
         return False
 
     @classmethod
-    def delete_construction_site(cls, *args, **kwargs) -> ConstructionSite | None:
-        cs = cls.get_construction_sites(*args, **kwargs)
+    def delete(cls, *args, **kwargs) -> ConstructionSite | None:
+        cs = cls.get_object(*args, **kwargs)
         if cs:
             if cs.isArchive:
                 cs.isArchive = False
@@ -73,12 +77,14 @@ class ConstructionSiteService:
                 )
             else:
                 cs.isArchive = True
-                cs.deleted_date = U.TODAY
+                cs.deleted_date = cls.TODAY
                 log.info(
                     f"The {cs.address} construction site  (pk={cs.pk}) has been archived"
                 )
-
             cs.save(update_fields=["isArchive", "deleted_date"])
+            if cls.USE_CACHE:
+                cache.delete(cls.CacheKeys.CS_ACTIVE_LIST.value)
+                cache.delete(cls.CacheKeys.CS_DELETED_LIST.value)
             return cs
         return None
 
@@ -90,7 +96,7 @@ class ConstructionSiteService:
             return None
 
     @classmethod
-    def create_construction_site(cls, data: EditConstructionSiteSchema) -> bool:
+    def create(cls, data: EditConstructionSiteSchema) -> bool:
         prepared_data = cls._check_data(data)
         if prepared_data:
             cls.model.objects.create(
@@ -98,12 +104,14 @@ class ConstructionSiteService:
                 foreman_id=prepared_data.foreman
             )
             log.info("The %s CS has been created" % prepared_data.address)
+            if cls.USE_CACHE:
+                cache.delete(cls.CacheKeys.CS_ACTIVE_LIST.value)
             return True
         else:
             return False
 
     @classmethod
-    def edit_construction_site(cls, constr_site_id: int, data: EditConstructionSiteSchema) -> bool:
+    def edit(cls, constr_site_id: int, data: EditConstructionSiteSchema) -> bool:
         prepared_data = cls._check_data(data)
         if prepared_data:
             cs = cls.model.objects.get(id=constr_site_id)
@@ -112,17 +120,19 @@ class ConstructionSiteService:
                 cs.foreman_id = prepared_data.foreman
                 cs.save(update_fields=["address", "foreman"])
                 log.info("The %s CS has been changed" % data.address)
+                if cls.USE_CACHE:
+                    cache.delete(cls.CacheKeys.CS_ACTIVE_LIST.value)
                 return True
         return False
 
     @classmethod
-    def restore_construction_site(cls, data: EditConstructionSiteSchema) -> bool:
+    def restore_if_was_deleted(cls, data: EditConstructionSiteSchema) -> bool:
         """
         Восстановление объекта в рабочее состояние
         :param data:
         :return:
         """
-        cs = cls.get_construction_sites(
+        cs = cls.get_object(
             address=data.address,
             foreman_id=data.foreman,
         )
@@ -132,46 +142,88 @@ class ConstructionSiteService:
             cs.deleted_date = None
             cs.save()
             log.info("The %s CS has been restored" % data.address)
+            if cls.USE_CACHE:
+                cache.delete(cls.CacheKeys.CS_ACTIVE_LIST.value)
+                cache.delete(cls.CacheKeys.CS_DELETED_LIST.value)
             return True
         return False
 
     @classmethod
-    def is_exist_construction_site(cls, data: EditConstructionSiteSchema) -> bool:
+    def is_exist(cls, data: EditConstructionSiteSchema) -> bool:
         is_exist = cls.model.objects.filter(
             address=data.address,
             foreman=data.foreman,
         ).exists()
         return is_exist
 
+    @classmethod
+    def get_cs_active_list(cls) -> list[ConstructionSiteSchema]:
+        cache_key = f"{cls.CacheKeys.CS_ACTIVE_LIST.value}"
+        cache_ttl = 60 * 60
+        cs_list_from_cache = cache.get(cache_key)
+        if cs_list_from_cache is None:
+            cs_list = cls.get_queryset(isArchive=False).order_by("address")
+            cs_list_data = [ConstructionSiteSchema(**cs.to_dict()) for cs in cs_list]
+            if cls.USE_CACHE:
+                cache.set(cache_key, cs_list_data, cache_ttl)
+            return cs_list_data
+        else:
+            cache.touch(cache_key, cache_ttl)
+            return cs_list_from_cache
 
-def get_construction_sites(**kwargs) -> ConstructionSite:  ####
-    try:
-        construction_sites = ConstructionSite.objects.get(**kwargs)
-        return construction_sites
-    except ConstructionSite.DoesNotExist:
-        log.warning(f'get_construction_sites({kwargs}): DoesNotExist')
-        return ConstructionSite.objects.none()
-    except ValueError:
-        log.error(f'get_construction_sites({kwargs}): ValueError')
-        return ConstructionSite.objects.none()
+    @classmethod
+    def get_cs_deleted_list(cls) -> list[ConstructionSiteSchema]:
+        cache_key = f"{cls.CacheKeys.CS_DELETED_LIST.value}"
+        cache_ttl = 60 * 60
+        cs_list_from_cache = cache.get(cache_key)
+        if cs_list_from_cache is None:
+            cs_list = cls.get_queryset(isArchive=True).order_by("address")
+            cs_list_data = [ConstructionSiteSchema(**cs.to_dict()) for cs in cs_list]
+            if cls.USE_CACHE:
+                cache.set(cache_key, cs_list_data, cache_ttl)
+            return cs_list_data
+        else:
+            cache.touch(cache_key, cache_ttl)
+            return cs_list_from_cache
+
+    @classmethod
+    def get_spec_construction_site(cls) -> ConstructionSite | None:
+        cs = cls.get_object(address=A.MessagesAssets.CS_SPEC_TITLE.value)
+        if cs:
+            return cs
+        else:
+            log.error("The SPEC construction site does not exist")
+            return None
 
 
-def get_construction_site_queryset(select_related: tuple = (),
-                                   order_by: tuple = (),
-                                   **kwargs) -> QuerySet[ConstructionSite]:
-    """
-    :param select_related:
-    :param order_by:
-    :param kwargs:
-    :return:
-    """
-    constr_sites = ConstructionSite.objects.filter(**kwargs)
+# def get_construction_sites(**kwargs) -> ConstructionSite:  ####
+#     try:
+#         construction_sites = ConstructionSite.objects.get(**kwargs)
+#         return construction_sites
+#     except ConstructionSite.DoesNotExist:
+#         log.warning(f'get_construction_sites({kwargs}): DoesNotExist')
+#         return ConstructionSite.objects.none()
+#     except ValueError:
+#         log.error(f'get_construction_sites({kwargs}): ValueError')
+#         return ConstructionSite.objects.none()
 
-    if select_related:
-        constr_sites = constr_sites.select_related(*select_related)
-    if order_by:
-        constr_sites = constr_sites.order_by(*order_by)
-    return constr_sites
+
+# def get_construction_site_queryset(select_related: tuple = (),
+#                                    order_by: tuple = (),
+#                                    **kwargs) -> QuerySet[ConstructionSite]:
+#     """
+#     :param select_related:
+#     :param order_by:
+#     :param kwargs:
+#     :return:
+#     """
+#     constr_sites = ConstructionSite.objects.filter(**kwargs)
+#
+#     if select_related:
+#         constr_sites = constr_sites.select_related(*select_related)
+#     if order_by:
+#         constr_sites = constr_sites.order_by(*order_by)
+#     return constr_sites
 
 
 # def hide_construction_site(constr_site_id): ######
