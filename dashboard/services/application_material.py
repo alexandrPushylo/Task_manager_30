@@ -1,48 +1,102 @@
+import enum
+
 from dashboard.models import ApplicationMaterial
 from django.db.models import QuerySet  # type: ignore
 
+from dashboard.schemas.application_material_schema import (
+    ApplicationMaterialSchema,
+    EditApplicationMaterialSchema,
+)
+from dashboard.services.base import BaseService
 from logger import getLogger
 
 log = getLogger(__name__)
 
 
-def get_app_material(**kwargs) -> ApplicationMaterial | None:
-    try:
-        application_material = ApplicationMaterial.objects.get(**kwargs)
-        return application_material
-    except ApplicationMaterial.DoesNotExist:
-        # log.warning(f"get_app_material({kwargs}): ApplicationMaterial.DoesNotExist")
-        return None
+class ApplicationMaterialService(BaseService):
+    model = ApplicationMaterial
+    schema = ApplicationMaterialSchema
+    CACHE_TTL = 10
+
+    class CacheKeys(enum.Enum):
+        pass
+
+    @classmethod
+    def get_object(cls, *args, **kwargs) -> ApplicationMaterial | None:
+        try:
+            obj = cls.model.objects.get(*args, **kwargs)
+            return obj
+        except cls.model.DoesNotExist:
+            log.warning(f"get_object({kwargs}): ApplicationMaterial.DoesNotExist ")
+            return None
+        except ValueError:
+            log.warning(f"get_object({kwargs}): ValueError")
+            return None
+
+    @classmethod
+    def get_queryset(cls, *args, **kwargs) -> QuerySet[ApplicationMaterial]:
+        try:
+            queryset = cls.model.objects.filter(*args, **kwargs)
+            return queryset
+        except ValueError:
+            log.warning(f"get_queryset({kwargs}): ValueError")
+            return cls.model.objects.none()
+
+    @classmethod
+    def create(
+            cls,
+            app_material_data: EditApplicationMaterialSchema
+    ) -> ApplicationMaterial | None:
+        try:
+            am = cls.model.objects.create(**app_material_data.model_dump())
+            return am
+        except ValueError:
+            log.warning(f"create_application_material(): ValueError")
+            return None
+
+    @classmethod
+    def is_exist(cls, *args, **kwargs) -> bool:
+        am = cls.get_queryset(*args, **kwargs)
+        return am.exists()
 
 
-def create_app_material(**kwargs) -> ApplicationMaterial | None:
-    try:
-        application_material = ApplicationMaterial.objects.create(**kwargs)
-        return application_material
-    except ValueError:
-        log.error(f"create_app_material({kwargs}): ValueError")
-        return None
+# def get_app_material(**kwargs) -> ApplicationMaterial | None:
+#     try:
+#         application_material = ApplicationMaterial.objects.get(**kwargs)
+#         return application_material
+#     except ApplicationMaterial.DoesNotExist:
+#         # log.warning(f"get_app_material({kwargs}): ApplicationMaterial.DoesNotExist")
+#         return None
 
 
-def get_apps_material_queryset(select_related: tuple = (),
-                               order_by: tuple = (),
-                               exclude: tuple = (),
-                               **kwargs) -> QuerySet[ApplicationMaterial]:
-    """
-    :param exclude:
-    :param order_by:
-    :param select_related:
-    :param kwargs: ApplicationMaterial.objects.filter(**kwargs)
-    :return: QuerySet[ApplicationMaterial]
-    """
+# def create_app_material(**kwargs) -> ApplicationMaterial | None:
+#     try:
+#         application_material = ApplicationMaterial.objects.create(**kwargs)
+#         return application_material
+#     except ValueError:
+#         log.error(f"create_app_material({kwargs}): ValueError")
+#         return None
 
-    apps_material = ApplicationMaterial.objects.filter(**kwargs)
 
-    if select_related:
-        apps_material = apps_material.select_related(*select_related)
-    if order_by:
-        apps_material = apps_material.order_by(*order_by)
-    if exclude:
-        apps_material = apps_material.exclude(*exclude)
-
-    return apps_material
+# def get_apps_material_queryset(select_related: tuple = (),
+#                                order_by: tuple = (),
+#                                exclude: tuple = (),
+#                                **kwargs) -> QuerySet[ApplicationMaterial]:
+#     """
+#     :param exclude:
+#     :param order_by:
+#     :param select_related:
+#     :param kwargs: ApplicationMaterial.objects.filter(**kwargs)
+#     :return: QuerySet[ApplicationMaterial]
+#     """
+#
+#     apps_material = ApplicationMaterial.objects.filter(**kwargs)
+#
+#     if select_related:
+#         apps_material = apps_material.select_related(*select_related)
+#     if order_by:
+#         apps_material = apps_material.order_by(*order_by)
+#     if exclude:
+#         apps_material = apps_material.exclude(*exclude)
+#
+#     return apps_material
