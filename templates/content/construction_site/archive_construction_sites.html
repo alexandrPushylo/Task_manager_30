@@ -20,9 +20,13 @@
                                 {% endif %}
                                 <hr class="m-0"/>
                                 {% if construction_site.foreman %}
-                                    <span class="form-text small">Прораб:</span>
-                                    <span>{{ construction_site.foreman.last_name }}</span>
-                                    <span>{{ construction_site.foreman.first_name }}</span>
+                                    {% for foreman in foreman_list %}
+                                        {% if construction_site.foreman == foreman.id %}
+                                            <span class="form-text small">Прораб:</span>
+                                            <span>{{ foreman.last_name }}</span>
+                                            <span>{{ foreman.first_name }}</span>
+                                        {% endif %}
+                                    {% endfor %}
                                 {% endif %}
                             </div>
 
