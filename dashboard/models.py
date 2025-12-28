@@ -5,10 +5,10 @@ from .assets import UserPosts, AcceptMode
 
 
 def convert_to_dict(instance: models.Model, *args, **kwargs):
-        return model_to_dict(instance, *args, **kwargs)
+    return model_to_dict(instance, *args, **kwargs)
 
 def get_cache_name(instance: models.Model):
-        return f"{instance.__class__.__name__}:{instance.id}"
+    return f"{instance.__class__.__name__}:{instance.id}"
 
 
 class User(AbstractUser):

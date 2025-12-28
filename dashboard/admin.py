@@ -9,7 +9,7 @@ from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet
 from dashboard.models import ApplicationToday, ApplicationTechnic, ApplicationMaterial
 from dashboard.models import Parameter
 
-from dashboard.utilities import TODAY
+from dashboard.utilities import Utilities
 from datetime import timedelta
 
 
@@ -110,7 +110,7 @@ class DriverSheetAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
         form.base_fields["driver"].queryset = User.objects.filter(post='driver', isArchive=False)
-        form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date__gte=TODAY-timedelta(days=7))
+        form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date__gte=Utilities.TODAY-timedelta(days=7))
         return form
 
 #   TechnicSheet ----------------------------------------------------------------
@@ -127,7 +127,7 @@ class TechnicSheetAdmin(admin.ModelAdmin):
         if obj:
             date = obj.date.date
         else:
-            date = TODAY
+            date = Utilities.TODAY
         form = super().get_form(request, obj, change, **kwargs)
         form.base_fields["driver_sheet"].queryset = DriverSheet.objects.filter(date__date=date)
         form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date=date)
@@ -144,7 +144,7 @@ class ApplicationTodayAdmin(admin.ModelAdmin):
         if obj:
             date = obj.date.date
         else:
-            date = TODAY
+            date = Utilities.TODAY
         form = super().get_form(request, obj, change, **kwargs)
         form.base_fields["date"].queryset = WorkDaySheet.objects.filter(date__gte=date)
         form.base_fields["construction_site"].queryset = ConstructionSite.objects.filter(status=True, isArchive=False)
@@ -161,7 +161,7 @@ class ApplicationTechnicAdmin(admin.ModelAdmin):
         if obj:
             date = obj.application_today.date.date
         else:
-            date = TODAY
+            date = Utilities.TODAY
         form = super().get_form(request, obj, change, **kwargs)
         form.base_fields["application_today"].queryset = ApplicationToday.objects.filter(date__date=date)
         form.base_fields["technic_sheet"].queryset = TechnicSheet.objects.filter(date__date=date)
@@ -178,7 +178,7 @@ class ApplicationMaterialAdmin(admin.ModelAdmin):
         if obj:
             date = obj.application_today.date.date
         else:
-            date = TODAY
+            date = Utilities.TODAY
         form = super().get_form(request, obj, change, **kwargs)
         form.base_fields["application_today"].queryset = ApplicationToday.objects.filter(date__date=date)
         return form

@@ -16,7 +16,7 @@ import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
 import dashboard.services.add_edit_application as ADD_EDIT_APP_SERVICE
-import dashboard.services.parametr as PARAMETER_SERVICE
+import dashboard.services.parameter as PARAMETER_SERVICE
 
 #   SERVICE--------------------------------------------------
 
