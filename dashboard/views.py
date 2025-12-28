@@ -998,69 +998,38 @@ def construction_site_view(request):
         context = {
             'title': 'Строительные объекты',
             'active_construction_sites': [],
-            'hidden_construction_sites': [],
-            'archived_construction_sites': [],
         }
 
-        current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day)
-        context['current_day'] = current_day
+        current_user = UserService.get_current_user(request.user.pk)
+        current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
 
         construction_site_list = None
-        if USERS_SERVICE.is_administrator(request.user):
-            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',),
-                isArchive=False
-            )
+        foreman_list = UserService.get_foreman_list()
 
-        if USERS_SERVICE.is_foreman(request.user):
-            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',),
-                isArchive=False,
-                foreman=request.user)
+        if Utilities.is_admin(current_user):
 
-        if USERS_SERVICE.is_master(request.user):
-            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',),
-                isArchive=False,
-                foreman_id=request.user.supervisor_user_id)
+        if Utilities.is_foreman(current_user):
+            construction_site_list = [
+                cs for cs in ConstructionSiteService.get_cs_active_list()
+                if cs.foreman == current_user.id
+            ]
+
+        if Utilities.is_master(current_user):
+            construction_site_list = [
+                cs for cs in ConstructionSiteService.get_cs_active_list()
+                if cs.foreman == current_user.supervisor_user_id
 
         for construction_site in construction_site_list:
-            if construction_site.isArchive:
-                context['archived_construction_sites'].append(construction_site)
-            elif construction_site.status:
                 context['active_construction_sites'].append(construction_site)
             else:
                 context['hidden_construction_sites'].append(construction_site)
 
         hide_constr_site_id = request.GET.get('hide')
-        if U.is_valid_get_request(hide_constr_site_id):
-            # CONSTR_SITE_SERVICE.hide_construction_site(constr_site_id=hide_constr_site_id)
-            CONSTR_SITE_SERVICE.ConstructionSiteService.hide_or_show_construction_sites(id=hide_constr_site_id)
+        if Utilities.is_valid_get_request(hide_constr_site_id):
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         delete_constr_site_id = request.GET.get('delete')
-        if U.is_valid_get_request(delete_constr_site_id):
-            # deleted_construction_site = CONSTR_SITE_SERVICE.delete_construction_site(
-            #     constr_site_id=delete_constr_site_id)
-            deleted_construction_site = CONSTR_SITE_SERVICE.ConstructionSiteService.delete_construction_site(
-                id=delete_constr_site_id)
-            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
-                construction_site=deleted_construction_site,
-                date__date__gte=U.TODAY
-            )
-            application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-                application_today__in=application_today
-            )
-            application_material = APP_MATERIAL_SERVICE.get_apps_material_queryset(
-                application_today__in=application_today
-            )
-            technic_sheet_id_list = application_technic.values_list('technic_sheet', flat=True)
-            TECHNIC_SHEET_SERVICE.decrement_technic_sheet_list(technic_sheet_id_list)
-            application_material.delete()
-            application_technic.delete()
-            application_today.delete()
-
+        if Utilities.is_valid_get_request(delete_constr_site_id):
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         return render(request, 'content/construction_site/construction_sites.html', context)
@@ -1073,35 +1042,34 @@ def archive_construction_site_view(request):
             'title': 'Архив объектов'
         }
 
-        current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day)
-        context['current_day'] = current_day
+        current_user = UserService.get_current_user(request.user.pk)
+        current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
 
         construction_site_list = None
-        if USERS_SERVICE.is_administrator(request.user):
-            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
                 select_related=('foreman',),
                 isArchive=True,
             )
 
-        if USERS_SERVICE.is_foreman(request.user):
-            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',),
-                isArchive=True,
                 foreman=request.user),
 
-        if USERS_SERVICE.is_master(request.user):
-            construction_site_list = CONSTR_SITE_SERVICE.get_construction_site_queryset(
-                select_related=('foreman',),
-                isArchive=True,
-                foreman_id=request.user.supervisor_user_id)
+        if Utilities.is_admin(current_user):
+            construction_site_list = ConstructionSiteService.get_cs_deleted_list()
+
+        if Utilities.is_foreman(current_user):
+            construction_site_list = [
+                cs for cs in ConstructionSiteService.get_cs_deleted_list()
+                if cs.foreman == current_user.id
+            ]
+
+        if Utilities.is_master(current_user):
+            construction_site_list = [
+                cs for cs in ConstructionSiteService.get_cs_deleted_list()
+                if cs.foreman == current_user.supervisor_user_id
 
         context['construction_sites'] = construction_site_list
         delete_constr_site_id = request.GET.get('delete')
 
-        if U.is_valid_get_request(delete_constr_site_id):
-            # CONSTR_SITE_SERVICE.delete_construction_site(constr_site_id=delete_constr_site_id)
-            CONSTR_SITE_SERVICE.ConstructionSiteService.delete_construction_site(constr_site_id=delete_constr_site_id)
+        if Utilities.is_valid_get_request(delete_constr_site_id):
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         return render(request, 'content/construction_site/archive_construction_sites.html', context)
@@ -1112,44 +1080,40 @@ def edit_construction_sites(request):
     if request.user.is_authenticated:
         context = {
             'title': 'Изменить объект',
+            "foreman_list": []
         }
-        if USERS_SERVICE.is_foreman(request.user):
-            context['foreman_list'] = USERS_SERVICE.get_user_queryset(pk=request.user.id)
-        elif USERS_SERVICE.is_master(request.user):
-            context['foreman_list'] = USERS_SERVICE.get_user_queryset(pk=request.user.supervisor_user_id)
-        elif USERS_SERVICE.is_administrator(request.user):
-            # context['foreman_list'] = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title,
-            #                                                           order_by=('last_name',))
-            context['foreman_list'] = USERS_SERVICE.UserService.get_users_queryset(
-                post=ASSETS.UserPosts.FOREMAN.title).order_by('last_name')
+
+        current_user = UserService.get_current_user(request.user.pk)
+
+        if Utilities.is_foreman(current_user):
+            foreman_list = [current_user]
+            context['foreman_list'] = foreman_list
+        elif Utilities.is_master(current_user):
+            context['foreman_list'] = [foreman for foreman in UserService.get_foreman_list() if foreman.id == current_user.supervisor_user_id]
+        elif Utilities.is_admin(current_user):
+            context['foreman_list'] = UserService.get_foreman_list()
 
         if request.method == 'POST':
             _id = request.POST.get('id')
-            data = request.POST
 
-            cs_data = CONSTR_SITE_SERVICE.EditConstructionSiteSchema(
+            cs_data = EditConstructionSiteSchema(
                 address=request.POST.get('address'),
                 foreman=request.POST.get('foreman'),
             )
 
-            cs_is_exists = (CONSTR_SITE_SERVICE.ConstructionSiteService
-                            .is_exist_construction_site(data=cs_data))
+            cs_is_exists = (ConstructionSiteService.is_exist(data=cs_data))
             if cs_is_exists:
-                CONSTR_SITE_SERVICE.ConstructionSiteService.restore_construction_site(data=cs_data)
+                ConstructionSiteService.restore_if_was_deleted(data=cs_data)
             else:
                 if _id:
-                    (CONSTR_SITE_SERVICE.ConstructionSiteService
-                     .edit_construction_site(constr_site_id=int(_id), data=cs_data))
+                    ConstructionSiteService.edit(constr_site_id=int(_id), data=cs_data)
                 else:
-                    (CONSTR_SITE_SERVICE.ConstructionSiteService
-                     .create_construction_site(data=cs_data))
-
-            # CONSTR_SITE_SERVICE.create_or_edit_construction_site(data, _id)     #TODO#######
+                    ConstructionSiteService.create(data=cs_data)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
-        if U.is_valid_get_request(constr_site_id):
-            constr_site = CONSTR_SITE_SERVICE.get_construction_sites(pk=constr_site_id)
+        if Utilities.is_valid_get_request(constr_site_id):
+            constr_site = ConstructionSiteService.get_object(id=constr_site_id)
             if constr_site:
                 context['constr_site'] = constr_site
             else:
