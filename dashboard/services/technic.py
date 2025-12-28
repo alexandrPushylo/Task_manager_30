@@ -4,21 +4,26 @@ from django.core.handlers.wsgi import WSGIRequest  # type: ignore
 from django.core.cache import cache
 
 from config.settings import USE_CACHE
+from dashboard.schemas.template_description_schema import TemplateDescriptionSchema
+from dashboard.services.base import BaseService
 from dashboard.types import Any
 
 from dashboard.models import Technic, User, TechnicSheet
 from dashboard.models import TemplateDescForTechnic
 import dashboard.assets as ASSETS
-import dashboard.utilities as U
 from django.db.models import QuerySet  # type: ignore
-from dashboard.schemas.technic_schema import TechnicSchema, EditTechnicSchema
+from dashboard.schemas.technic_schema import (
+    TechnicSchema,
+    EditTechnicSchema,
+    ShortTechnicDataSchema,
+)
 
 from logger import getLogger
 
 log = getLogger(__name__)
 
 
-class TechnicService:
+class TechnicService(BaseService):
     model = Technic
     schema = TechnicSchema
     CACHE_TTL = 10
@@ -27,12 +32,14 @@ class TechnicService:
     class CacheKeys(enum.Enum):
         TECH_LIST_FOR_SUPPLY = "technic_list_for_supply"
         TECHNIC_TYPE_LIST = "technic_type_list"
+        ALL_TECHNIC_LIST = "all_technic_list"
+        DISTINCT_TECH_TITLE = "distinct_tech_title"
 
     @classmethod
-    def get_technic(cls, *args, **kwargs) -> Technic | None:
+    def get_object(cls, *args, **kwargs) -> Technic | None:
         try:
-            technic = cls.model.objects.get(*args, **kwargs)
-            return technic
+            obj = cls.model.objects.get(*args, **kwargs)
+            return obj
         except cls.model.DoesNotExist:
             log.warning(f"get_technic({kwargs}): Technic.DoesNotExist ")
             return None
@@ -41,16 +48,16 @@ class TechnicService:
             return None
 
     @classmethod
-    def get_technics_queryset(cls, *args, **kwargs) -> QuerySet[Technic]:
+    def get_queryset(cls, *args, **kwargs) -> QuerySet[Technic]:
         try:
-            technic = cls.model.objects.filter(*args, **kwargs)
-            return technic
+            queryset = cls.model.objects.filter(*args, **kwargs)
+            return queryset
         except ValueError:
             log.warning(f"get_technics_queryset({kwargs}): ValueError")
             return cls.model.objects.none()
 
     @classmethod
-    def add_new_technic(cls, technic_data: EditTechnicSchema) -> Technic | None:
+    def create(cls, technic_data: EditTechnicSchema) -> Technic | None:
         validate_data = cls._prepare_technic_data(technic_data)
         if validate_data is None:
             return None
@@ -65,11 +72,11 @@ class TechnicService:
         return new_technic
 
     @classmethod
-    def edit_technic(cls, technic_id:int, technic_data: EditTechnicSchema) -> bool:
+    def edit(cls, technic_id:int, technic_data: EditTechnicSchema) -> bool:
         validate_data = cls._prepare_technic_data(technic_data)
         if validate_data is None:
             return False
-        technic = cls.get_technic(pk=technic_id)
+        technic = cls.get_object(pk=technic_id)
         if technic:
             technic.title = validate_data.title
             technic.type = validate_data.type
@@ -83,8 +90,8 @@ class TechnicService:
         return False
 
     @classmethod
-    def delete_technic(cls, *args, **kwargs) -> bool:
-        technic = cls.get_technic(*args, **kwargs)
+    def delete(cls, *args, **kwargs) -> bool:
+        technic = cls.get_object(*args, **kwargs)
         if technic:
             technic.isArchive = True
             technic.save(update_fields=["isArchive"])
@@ -93,31 +100,33 @@ class TechnicService:
         return False
 
     @classmethod
-    def get_supply_technic_list(cls, *args, **kwargs) -> list[TechnicSchema] | None:
+    def get_supply_technic_list(cls) -> list[TechnicSchema] | None:
         """
         USE CACHE
         Получить список техники для supply
         :return: list[TechnicSchema] | None
         """
-        supply_technic_list_from_cache: list[TechnicSchema] | None = cache.get(cls.CacheKeys.TECH_LIST_FOR_SUPPLY)
+        cache_keys = f"{cls.CacheKeys.TECH_LIST_FOR_SUPPLY.value}"
+        supply_technic_list_from_cache: list[TechnicSchema] | None = cache.get(cache_keys)
         if supply_technic_list_from_cache is None:
-            supply_technic_list: QuerySet[Technic] = cls.get_technics_queryset(
+            supply_technic_list: QuerySet[Technic] = cls.get_queryset(
                 isArchive=False,
                 supervisor_technic=ASSETS.UserPosts.SUPPLY.title
             )
             supply_technic_list_data = [TechnicSchema(**technic.to_dict()) for technic in supply_technic_list]
             if cls.USE_CACHE:
-                cache.set(cls.CacheKeys.TECH_LIST_FOR_SUPPLY, supply_technic_list_data, cls.CACHE_TTL)
+                cache.set(cache_keys, supply_technic_list_data, cls.CACHE_TTL)
             return supply_technic_list_data
         return supply_technic_list_from_cache
 
     @classmethod
-    def get_technic_type_list(cls, *args, **kwargs) -> list[str]:
+    def get_technic_type_list(cls) -> list[str]:
         """
         USE CACHE
         Получить список всех типов техники
         """
-        technic_type_list_from_cache: list[str] = cache.get(cls.CacheKeys.TECHNIC_TYPE_LIST)
+        cache_keys = f"{cls.CacheKeys.TECHNIC_TYPE_LIST.value}"
+        technic_type_list_from_cache: list[str] = cache.get(cache_keys)
         if technic_type_list_from_cache is None:
             technic_type_list = sorted(
                 set(
@@ -125,9 +134,59 @@ class TechnicService:
                 )
             )
             if cls.USE_CACHE:
-                cache.set(cls.CacheKeys.TECHNIC_TYPE_LIST, technic_type_list, cls.CACHE_TTL)
+                cache.set(cache_keys, technic_type_list, cls.CACHE_TTL)
             return technic_type_list
         return technic_type_list_from_cache
+
+    @classmethod
+    def get_short_title(cls, title: str) -> str:
+        """
+        Получить short_title для technic title
+        :param title:
+        :return:
+        """
+        return title.replace(" ", "").replace(".", "")
+
+    @classmethod
+    def get_distinct_tech_title_from_ts(cls, technic_sheets_instance: QuerySet[TechnicSheet]) -> list:
+        """
+        :param technic_sheets_instance:
+        :return: technic_sheets.values_list('technic__title', flat=True).distinct()
+        """
+        distinct_technic_titles_list = []
+        technic_titles_list = technic_sheets_instance.values_list("technic__title", flat=True)
+
+        for item in technic_titles_list:
+            if item not in distinct_technic_titles_list:
+                distinct_technic_titles_list.append(item)
+        return distinct_technic_titles_list
+
+    @classmethod
+    def get_dict_short_technic_names(
+            cls,
+            technic_sheets_instance: QuerySet[TechnicSheet]
+    ) -> list[ShortTechnicDataSchema]:
+        """
+        Получить dict {короткое название техники: название техники}
+        :param technic_sheets_instance:
+        :return:
+        """
+        distinct_technic_titles_list = cls.get_distinct_tech_title_from_ts(technic_sheets_instance)
+        out: list[ShortTechnicDataSchema] = []
+
+        for title in distinct_technic_titles_list:
+            out.append(
+                ShortTechnicDataSchema(
+                    title=title,
+                    short_title=cls.get_short_title(title),
+                    status_busies_list=list(
+                        technic_sheets_instance.filter(
+                            technic__title=title).values_list("count_application", flat=True
+                        )
+                    )
+                )
+            )
+        return out
 
     @classmethod
     def _prepare_technic_data(cls, technic_data: EditTechnicSchema) -> EditTechnicSchema | None:
@@ -164,6 +223,122 @@ class TechnicService:
             return EditTechnicSchema(**out)
         else:
             return None
+
+    @classmethod
+    def get_all_technic_data(cls) -> list[TechnicSchema | None]:
+        cache_key = f"{cls.CacheKeys.ALL_TECHNIC_LIST.value}"
+        technic_list_from_cache: list[TechnicSchema | None] = cache.get(cache_key)
+        if technic_list_from_cache is None:
+            technic_list = cls.get_queryset(isArchive=False)
+            technic_list_data = [TechnicSchema(**t.to_dict()) for t in technic_list]
+            cache.set(cache_key, technic_list_data, cls.CACHE_TTL)
+            return technic_list_data
+        return technic_list_from_cache
+
+
+    @classmethod
+    def get_distinct_technic_title(cls) -> list[TechnicSchema | None]:
+        cache_key = f"{cls.CacheKeys.DISTINCT_TECH_TITLE.value}"
+        tech_list_from_cache: list[TechnicSchema | None] = cache.get(cache_key)
+        if tech_list_from_cache is None:
+            tech_list = cls.get_queryset(isArchive=False).distinct()
+            tech_list_data = [TechnicSchema(**t.to_dict()) for t in tech_list]
+            cache.set(cache_key, tech_list_data, cls.CACHE_TTL)
+            return tech_list_data
+        return tech_list_from_cache
+
+
+
+class TemplateDescService(BaseService):
+    model = TemplateDescForTechnic
+    schema = TemplateDescriptionSchema
+
+    class CacheKeys(enum.Enum):
+        pass
+
+    @classmethod
+    def get_object(cls, *args, **kwargs) -> TemplateDescForTechnic | None:
+        try:
+            obj = cls.model.objects.get(*args, **kwargs)
+            return obj
+        except cls.model.DoesNotExist:
+            log.warning(f"get_object({kwargs}): TemplateDescForTechnic.DoesNotExist ")
+            return None
+        except ValueError:
+            log.warning(f"get_object({kwargs}): ValueError")
+            return None
+
+    @classmethod
+    def get_queryset(cls, *args, **kwargs) -> QuerySet[TemplateDescForTechnic]:
+        try:
+            queryset = cls.model.objects.filter(*args, **kwargs)
+            return queryset
+        except ValueError:
+            log.warning(f"get_queryset({kwargs}): ValueError")
+            return cls.model.objects.none()
+
+    @classmethod
+    def set_task_description(
+            cls,
+            technic_id: int,
+            type_mode: ASSETS.TaskDescriptionMode,
+            description: str | None
+    ):
+        """
+        Установить шаблон задания для "спец объекта" с помощью technic_id.
+        :param technic_id:
+        :param type_mode:
+        :param description:
+        :return:
+        """
+        task_description = cls.get_object(technic=technic_id)
+        if not task_description:
+            task_description = TemplateDescForTechnic()
+            task_description.technic_id = technic_id
+        match type_mode:
+            case ASSETS.TaskDescriptionMode.AUTO.value:
+                task_description.is_auto_mode = True
+                task_description.is_default_mode = False
+                task_description.save()
+            case ASSETS.TaskDescriptionMode.DEFAULT.value:
+                task_description.is_auto_mode = False
+                task_description.is_default_mode = True
+                task_description.save()
+            case ASSETS.TaskDescriptionMode.MANUAL.value:
+                task_description.is_auto_mode = False
+                task_description.is_default_mode = False
+                task_description.description = (
+                    description if description is not None else ""
+                )
+                task_description.save()
+            case _:
+                log.warning(
+                    f"type_mode - ({type_mode}) is not valid set_task_description()"
+                )
+
+    @classmethod
+    def get_description_mode_for_spec_app(
+            cls,
+            technic_id: int,
+    ) -> str | ASSETS.TaskDescriptionMode:
+        """
+        Получить шаблон описания для "спец объекта" с помощью technic_id.
+        :param technic_id:
+        :return:
+        """
+
+        templ_desc = cls.get_object(technic__id=technic_id)
+        if templ_desc:
+            if templ_desc.is_default_mode:
+                return ASSETS.TaskDescriptionMode.DEFAULT
+            elif templ_desc.is_auto_mode:
+                return ASSETS.TaskDescriptionMode.AUTO
+            elif all((not templ_desc.is_auto_mode, not templ_desc.is_default_mode)):
+                return ASSETS.TaskDescriptionMode.MANUAL
+            else:
+                return ""
+        return ""
+
 
 
 ### -----------------------------------------------------------------------------------
@@ -257,38 +432,38 @@ class TechnicService:
 #         return None
 
 
-def get_technics_queryset(###
-        # select_related: tuple = (),
-        #                   order_by: tuple = (),
-                          *args,
-                          **kwargs) -> list[TechnicSchema | None]:
-    """
-    :param select_related:
-    :param order_by:
-    :param kwargs:
-    :return:
-    """
-    cache_key = U.validate_cache_name(f"get_technics_queryset:{args},{kwargs}")
-    cache_timeout = 10
-
-    cache_technics: list[TechnicSchema | None] = cache.get(cache_key)
-    if cache_technics is None:
-        technics_queryset = Technic.objects.filter(*args, **kwargs)
-        # if select_related:
-        #     technics_queryset = technics_queryset.select_related(*select_related)
-        # if order_by:
-        #     technics_queryset = technics_queryset.order_by(*order_by)
-
-        technics_data_list = [TechnicSchema(**technic.to_dict()) for technic in technics_queryset]
-        cache.set(cache_key, technics_data_list, cache_timeout) if USE_CACHE else None
-        return technics_data_list
-    return cache_technics
-    # technics = Technic.objects.filter(*args, **kwargs)
-    # if select_related:
-    #     technics = technics.select_related(*select_related)
-    # if order_by:
-    #     technics = technics.order_by(*order_by)
-    # return technics
+# def get_technics_queryset(###
+#         # select_related: tuple = (),
+#         #                   order_by: tuple = (),
+#                           *args,
+#                           **kwargs) -> list[TechnicSchema | None]:
+#     """
+#     :param select_related:
+#     :param order_by:
+#     :param kwargs:
+#     :return:
+#     """
+#     cache_key = U.validate_cache_name(f"get_technics_queryset:{args},{kwargs}")
+#     cache_timeout = 10
+#
+#     cache_technics: list[TechnicSchema | None] = cache.get(cache_key)
+#     if cache_technics is None:
+#         technics_queryset = Technic.objects.filter(*args, **kwargs)
+#         # if select_related:
+#         #     technics_queryset = technics_queryset.select_related(*select_related)
+#         # if order_by:
+#         #     technics_queryset = technics_queryset.order_by(*order_by)
+#
+#         technics_data_list = [TechnicSchema(**technic.to_dict()) for technic in technics_queryset]
+#         cache.set(cache_key, technics_data_list, cache_timeout) if USE_CACHE else None
+#         return technics_data_list
+#     return cache_technics
+#     # technics = Technic.objects.filter(*args, **kwargs)
+#     # if select_related:
+#     #     technics = technics.select_related(*select_related)
+#     # if order_by:
+#     #     technics = technics.order_by(*order_by)
+#     # return technics
 
 
 # def get_technic(*args, **kwargs) -> TechnicSchema | None:###
@@ -310,143 +485,143 @@ def get_technics_queryset(###
 #         return None
 
 
-def get_supply_technic_list() -> QuerySet[Technic]:###
-    """
-    Получить список техники для supply
-    :return: Technic.objects.filter()
-    """
-    technic_list = get_technics_queryset(isArchive=False, supervisor_technic=ASSETS.UserPosts.SUPPLY.title)
-    return technic_list
+# def get_supply_technic_list() -> QuerySet[Technic]:###
+#     """
+#     Получить список техники для supply
+#     :return: Technic.objects.filter()
+#     """
+#     technic_list = get_technics_queryset(isArchive=False, supervisor_technic=ASSETS.UserPosts.SUPPLY.title)
+#     return technic_list
 
 
-def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]):
-    """
-        Получить dict {короткое название техники: название техники}
-        :param technic_sheets:
-        :return:
-        """
-    distinct_technic_titles_list = get_distinct_technic_title(technic_sheets)
-    out = []
-
-    for title in distinct_technic_titles_list:
-        out.append({
-            'title': title,
-            'short_title': get_short_title(title),
-            'status_busies_list': list(technic_sheets.filter(
-                technic__title=title
-            ).values_list('count_application', flat=True))
-        })
-    return out
-
-
-def get_short_title(title: str) -> str:
-    """
-    Получить short_title для technic title
-    :param title:
-    :return:
-    """
-    return title.replace(' ', '').replace('.', '')
+# def get_dict_short_technic_names(technic_sheets: QuerySet[TechnicSheet]):
+#     """
+#         Получить dict {короткое название техники: название техники}
+#         :param technic_sheets:
+#         :return:
+#         """
+#     distinct_technic_titles_list = get_distinct_technic_title(technic_sheets)
+#     out = []
+#
+#     for title in distinct_technic_titles_list:
+#         out.append({
+#             'title': title,
+#             'short_title': get_short_title(title),
+#             'status_busies_list': list(technic_sheets.filter(
+#                 technic__title=title
+#             ).values_list('count_application', flat=True))
+#         })
+#     return out
 
 
-def get_distinct_technic_title(technic_sheets: QuerySet[TechnicSheet]) -> list:
-    """
-    :param technic_sheets:
-    :return: technic_sheets.values_list('technic__title', flat=True).distinct()
-    """
-    distinct_technic_titles_list = []
-    technic_titles_list = technic_sheets.values_list('technic__title', flat=True)
-
-    for item in technic_titles_list:
-        if item not in distinct_technic_titles_list:
-            distinct_technic_titles_list.append(item)
-    return distinct_technic_titles_list
+# def get_short_title(title: str) -> str:
+#     """
+#     Получить short_title для technic title
+#     :param title:
+#     :return:
+#     """
+#     return title.replace(' ', '').replace('.', '')
 
 
-def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptionMode:
-    """
-    Получить шаблон описания для "спец объекта" с помощью technic_id.
-    :param technic_id:
-    :return:
-    """
-    if technic_id:
-        try:
-            template_description = TemplateDescForTechnic.objects.get(technic__id=technic_id)
-            if template_description.is_default_mode:
-                return ASSETS.TaskDescriptionMode.DEFAULT
-            elif template_description.is_auto_mode:
-                return ASSETS.TaskDescriptionMode.AUTO
-            elif all((not template_description.is_auto_mode, not template_description.is_default_mode)):
-                return ASSETS.TaskDescriptionMode.MANUAL
-            else:
-                return ''
-        except TemplateDescForTechnic.DoesNotExist:
-            log.warning('TemplateDescForTechnic.DoesNotExist')
+# def get_distinct_technic_title(technic_sheets: QuerySet[TechnicSheet]) -> list:
+#     """
+#     :param technic_sheets:
+#     :return: technic_sheets.values_list('technic__title', flat=True).distinct()
+#     """
+#     distinct_technic_titles_list = []
+#     technic_titles_list = technic_sheets.values_list('technic__title', flat=True)
+#
+#     for item in technic_titles_list:
+#         if item not in distinct_technic_titles_list:
+#             distinct_technic_titles_list.append(item)
+#     return distinct_technic_titles_list
 
 
-def get_task_description_queryset(select_related: tuple = (),
-                                  order_by: tuple = (),
-                                  **kwargs) -> QuerySet[TemplateDescForTechnic]:
-    """
-    :param select_related:
-    :param order_by:
-    :param kwargs:
-    :return:
-    """
-    description = TemplateDescForTechnic.objects.filter(**kwargs)
-
-    if select_related:
-        description = description.select_related(*select_related)
-    if order_by:
-        description = description.order_by(*order_by)
-    return description
-
-
-def get_task_description(**kwargs) -> TemplateDescForTechnic:
-    try:
-        description = TemplateDescForTechnic.objects.get(**kwargs)
-        return description
-    except TemplateDescForTechnic.DoesNotExist:
-        log.warning(f"get_task_description({kwargs}): TemplateDescForTechnic.DoesNotExist ")
-        return TemplateDescForTechnic.objects.none()
-    except ValueError:
-        log.error(f"get_task_description({kwargs}): ValueError")
-        return TemplateDescForTechnic.objects.none()
+# def get_description_mode_for_spec_app(technic_id) -> str | ASSETS.TaskDescriptionMode:
+#     """
+#     Получить шаблон описания для "спец объекта" с помощью technic_id.
+#     :param technic_id:
+#     :return:
+#     """
+#     if technic_id:
+#         try:
+#             template_description = TemplateDescForTechnic.objects.get(technic__id=technic_id)
+#             if template_description.is_default_mode:
+#                 return ASSETS.TaskDescriptionMode.DEFAULT
+#             elif template_description.is_auto_mode:
+#                 return ASSETS.TaskDescriptionMode.AUTO
+#             elif all((not template_description.is_auto_mode, not template_description.is_default_mode)):
+#                 return ASSETS.TaskDescriptionMode.MANUAL
+#             else:
+#                 return ''
+#         except TemplateDescForTechnic.DoesNotExist:
+#             log.warning('TemplateDescForTechnic.DoesNotExist')
 
 
-def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, description: str | None):
-    """
-    Установить шаблон задания для "спец объекта" с помощью technic_id.
-    :param technic_id:
-    :param type_mode:
-    :param description:
-    :return:
-    """
-    task_description = get_task_description(technic=technic_id)
-    if not task_description:
-        task_description = TemplateDescForTechnic()
-        task_description.technic_id = technic_id
-    match type_mode:
-        case ASSETS.TaskDescriptionMode.AUTO.value:
-            task_description.is_auto_mode = True
-            task_description.is_default_mode = False
-            task_description.save()
-        case ASSETS.TaskDescriptionMode.DEFAULT.value:
-            task_description.is_auto_mode = False
-            task_description.is_default_mode = True
-            task_description.save()
-        case ASSETS.TaskDescriptionMode.MANUAL.value:
-            task_description.is_auto_mode = False
-            task_description.is_default_mode = False
-            task_description.description = description if description is not None else ''
-            task_description.save()
-        case _:
-            log.warning(f'type_mode - ({type_mode}) is not valid set_task_description()')
+# def get_task_description_queryset(select_related: tuple = (),
+#                                   order_by: tuple = (),
+#                                   **kwargs) -> QuerySet[TemplateDescForTechnic]:
+#     """
+#     :param select_related:
+#     :param order_by:
+#     :param kwargs:
+#     :return:
+#     """
+#     description = TemplateDescForTechnic.objects.filter(**kwargs)
+#
+#     if select_related:
+#         description = description.select_related(*select_related)
+#     if order_by:
+#         description = description.order_by(*order_by)
+#     return description
 
 
-def get_technic_type() -> list:###
-    """
-    Получить список всех типов техники
-    :return:
-    """
-    technic_types = sorted(set(Technic.objects.all().values_list('type', flat=True)))
-    return technic_types
+# def get_task_description(**kwargs) -> TemplateDescForTechnic:
+#     try:
+#         description = TemplateDescForTechnic.objects.get(**kwargs)
+#         return description
+#     except TemplateDescForTechnic.DoesNotExist:
+#         log.warning(f"get_task_description({kwargs}): TemplateDescForTechnic.DoesNotExist ")
+#         return TemplateDescForTechnic.objects.none()
+#     except ValueError:
+#         log.error(f"get_task_description({kwargs}): ValueError")
+#         return TemplateDescForTechnic.objects.none()
+
+
+# def set_task_description(technic_id, type_mode: ASSETS.TaskDescriptionMode, description: str | None):
+#     """
+#     Установить шаблон задания для "спец объекта" с помощью technic_id.
+#     :param technic_id:
+#     :param type_mode:
+#     :param description:
+#     :return:
+#     """
+#     task_description = get_task_description(technic=technic_id)
+#     if not task_description:
+#         task_description = TemplateDescForTechnic()
+#         task_description.technic_id = technic_id
+#     match type_mode:
+#         case ASSETS.TaskDescriptionMode.AUTO.value:
+#             task_description.is_auto_mode = True
+#             task_description.is_default_mode = False
+#             task_description.save()
+#         case ASSETS.TaskDescriptionMode.DEFAULT.value:
+#             task_description.is_auto_mode = False
+#             task_description.is_default_mode = True
+#             task_description.save()
+#         case ASSETS.TaskDescriptionMode.MANUAL.value:
+#             task_description.is_auto_mode = False
+#             task_description.is_default_mode = False
+#             task_description.description = description if description is not None else ''
+#             task_description.save()
+#         case _:
+#             log.warning(f'type_mode - ({type_mode}) is not valid set_task_description()')
+
+
+# def get_technic_type() -> list:###
+#     """
+#     Получить список всех типов техники
+#     :return:
+#     """
+#     technic_types = sorted(set(Technic.objects.all().values_list('type', flat=True)))
+#     return technic_types
