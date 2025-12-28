@@ -906,20 +906,23 @@ def users_view(request):
             'users_list': [],
             'user_post': ASSETS.UserPosts.get_dict()
         }
+        current_user = UserService.get_current_user(request.user.pk)
+        current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
 
-        current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day)
+        context = Utilities.get_prepared_data(context, current_day)
         context['current_day'] = current_day
 
-        if USERS_SERVICE.is_administrator(request.user):
-            users_list = USERS_SERVICE.get_user_queryset()
-        elif USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
-            users_list = [user
-                          for user in USERS_SERVICE.get_user_queryset()
-                          if user.post != ASSETS.UserPosts.ADMINISTRATOR.title]
+        if Utilities.is_admin(current_user):
+            users_list = UserService.get_all_users_list()
 
-        elif USERS_SERVICE.is_mechanic(request.user):
-            users_list = USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.DRIVER.title)
+        elif Utilities.is_master(current_user) or Utilities.is_foreman(current_user):
+            users_list = [
+                user for user in UserService.get_all_users_list()
+                if user.post != ASSETS.UserPosts.ADMINISTRATOR.title
+            ]
+
+        elif Utilities.is_mechanic(current_user):
+            users_list = UserService.get_driver_list()
         else:
             users_list = []
         context['users_list'] = [user for user in users_list if user.isArchive == False]
@@ -933,16 +936,18 @@ def edit_user_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Добавить пользователя',
                    'posts': ASSETS.UserPosts.get_dict(),
-                   'foreman_list': USERS_SERVICE.get_user_queryset(post=ASSETS.UserPosts.FOREMAN.title)
+                   'foreman_list': UserService.get_foreman_list()
                    }
-        if USERS_SERVICE.is_mechanic(request.user):
+        current_user = UserService.get_current_user(request.user.pk)
+
+        if Utilities.is_mechanic(current_user):
             context['posts'] = ASSETS.UserPosts.DRIVER.get_dict()
-        if USERS_SERVICE.is_master(request.user) or USERS_SERVICE.is_foreman(request.user):
+        if Utilities.is_master(current_user) or Utilities.is_foreman(current_user):
             context['posts'] = ASSETS.UserPosts.EMPLOYEE.get_dict()
 
         user_id = request.GET.get('user_id')
-        if U.is_valid_get_request(user_id):
-            user_ = USERS_SERVICE.get_user(id=user_id)
+        if Utilities.is_valid_get_request(user_id):
+            user_ = UserService.get_object(id=user_id)
             if user_:
                 context['user_list'] = user_
                 context['title'] = 'Изменить пользователя'
@@ -959,11 +964,10 @@ def edit_user_view(request):
                 post=request.POST.get('post'),
                 supervisor_user_id=request.POST.get('supervisor_id'),
             )
-            # _user_rez = USERS_SERVICE.add_or_edit_user(user_data, user_id)
             if user_id:
-                _user_rez = USERS_SERVICE.UserService.edit_user(int(user_id), user_data)
+                _user_rez = UserService.edit(int(user_id), user_data)
             else:
-                _user_rez = USERS_SERVICE.UserService.add_new_user(user_data)
+                _user_rez = UserService.create(user_data)
 
 
             if _user_rez[0] is not None:
@@ -977,11 +981,12 @@ def edit_user_view(request):
 
 def delete_user_view(request):
     if request.user.is_authenticated:
-        if USERS_SERVICE.is_administrator(request.user):
+        current_user = UserService.get_current_user(request.user.pk)
+        if Utilities.is_admin(current_user):
             user_id = request.GET.get('user_id')
-            if U.is_valid_get_request(user_id):
+            if Utilities.is_valid_get_request(user_id):
                 user_id_int = int(user_id)
-                U.delete_user(user_id=user_id_int)
+                Utilities.delete_user(user_id=user_id_int)
     return HttpResponseRedirect(ENDPOINTS.USERS)
 
 
