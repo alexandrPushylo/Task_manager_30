@@ -1,20 +1,174 @@
+import enum
 import random
 
-from dashboard.models import WorkDaySheet, TechnicSheet
+from django.core.cache import cache
+
+from dashboard.models import TechnicSheet
 from django.db.models import F, QuerySet  # type: ignore
-import dashboard.services.technic as TECHNIC_SERVICE
-import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
-import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
-import dashboard.services.application_technic as APP_TECHNIC_SERVICE
+from dashboard.schemas.technic_sheet_schema import (
+    TechnicSheetSchema,
+    WorkloadTechnicSheetSchema,
+)
+from dashboard.services.base import BaseService
 from logger import getLogger
 
 
 log = getLogger(__name__)
 
 
-def get_technic_sheet_queryset(select_related: tuple = (),
-                               order_by: tuple = (),
-                               **kwargs) -> QuerySet[TechnicSheet]:
+class TechnicSheetService(BaseService):
+    model = TechnicSheet
+    schema = TechnicSheetSchema
+    CACHE_TTL = 10
+    class CacheKeys(enum.Enum):
+        WORKLOAD_LIST = 'workload_list'
+
+    @classmethod
+    def get_object(cls, *args, **kwargs) -> model | None:
+        try:
+            obj = cls.model.objects.get(*args, **kwargs)
+            return obj
+        except cls.model.DoesNotExist:
+            log.warning(f"{cls} with: {args} & {kwargs} does not exist")
+            return None
+        except cls.model.MultipleObjectsReturned:
+            log.warning(f"{cls} with: {args} & {kwargs} already exists")
+            return None
+        except ValueError:
+            log.error(f"{cls} ({kwargs}): ValueError")
+            return None
+
+    @classmethod
+    def get_queryset(cls, *args, **kwargs) -> QuerySet[model]:
+        try:
+            queryset = cls.model.objects.filter(*args, **kwargs)
+            return queryset
+        except ValueError:
+            log.warning(f"{cls} ({kwargs}): ValueError")
+            return cls.model.objects.none()
+
+    @classmethod
+    def change_status(cls, technic_sheet_id: int) -> bool | None:
+        ts = cls.get_object(id=technic_sheet_id)
+        if ts:
+            if ts.status:
+                ts.status = False
+                log.info(f"technic_sheet id {technic_sheet_id} the status is set to False")
+                ts.save(update_fields=["status"])
+                return False
+            else:
+                ts.status = True
+                log.info("technic_sheet id {technic_sheet_id} the status is set to True")
+                ts.save(update_fields=["status"])
+                return True
+        return None
+
+    @classmethod
+    def get_workload_list_of_technic_sheet(cls, workday_sheet_id: int) -> list[WorkloadTechnicSheetSchema]:
+        """
+        Получить list загруженности technic_sheet за workday
+        :param workday_sheet_id:
+        :return: {'id',
+            'technic__title',
+            'driver_sheet_id',
+            'count_application'}
+        """
+        cache_key = f"{cls.CacheKeys.WORKLOAD_LIST.value}:{workday_sheet_id}"
+        workload_list_from_cache = cache.get(cache_key)
+        if workload_list_from_cache is None:
+            workload_list = (
+                cls.get_queryset(
+                    isArchive=False,
+                    status=True,
+                    date_id=workday_sheet_id,
+                    driver_sheet__isnull=False,
+                    driver_sheet__status=True,
+                )
+                .select_related("driver_sheet", "technic")
+                .values("id", "technic__title", "driver_sheet_id", "count_application")
+            )
+            workload_list_data = [WorkloadTechnicSheetSchema(**wl) for wl in workload_list]
+            cache.set(cache_key, workload_list_data, cls.CACHE_TTL)
+            return workload_list_data
+        return workload_list_from_cache
+
+    @classmethod
+    def get_freelist_of_technic_sheet(cls,
+                                      technic_title: str,
+                                      workload_list: list[WorkloadTechnicSheetSchema],
+                                      get_only_free: bool = True
+                                      ) -> list[WorkloadTechnicSheetSchema]:
+        """
+        Получить список незанятых (get_only_free=True)
+        или любых (get_only_free=False) данных technic_sheet для technic_title
+        :param workload_list:
+        :param technic_title: Название техники
+        :param get_only_free: True получить незанятых; False получить менее занятых
+        :return: [{'id',
+            'technic__title',
+            'driver_sheet_id',
+            'count_application'},...]
+        """
+        if workload_list:
+            if get_only_free:
+                free_list = [item for item in workload_list
+                             if item.technic__title == technic_title and item.count_application == 0]
+            else:
+                free_list = [item for item in workload_list if item.technic__title == technic_title]
+            return free_list
+        return []
+
+    @classmethod
+    def get_least_busy_technic_sheet(
+            cls,
+            freelist_of_technic_sheet: list[WorkloadTechnicSheetSchema]
+            ) -> WorkloadTechnicSheetSchema | None:
+        """
+        Получить наименее занятого dict(technic_sheet)
+        :param freelist_of_technic_sheet:
+        :return: {'id',
+            'technic__title',
+            'driver_sheet_id',
+            'count_application'}
+        """
+        if freelist_of_technic_sheet:
+            least_busy_technic_sheet = sorted(
+                freelist_of_technic_sheet, key=lambda item: item.count_application
+            )[0]
+            return least_busy_technic_sheet
+        log.warning("get_least_busy_technic_sheet(): free_technic_sheet_list is empty")
+        return None
+
+    @classmethod
+    def get_some_technic_sheet(
+            cls,
+            technic_title: str,
+            workday_sheet_id: int
+    ):
+        workload_list = cls.get_workload_list_of_technic_sheet(workday_sheet_id)
+        freelist_of_technic_sheet = cls.get_freelist_of_technic_sheet(
+            technic_title=technic_title,
+            workload_list=workload_list
+        )
+        if freelist_of_technic_sheet:
+            random_freelist_of_technic_sheet: WorkloadTechnicSheetSchema = random.choice(freelist_of_technic_sheet)
+            return cls.get_object(id=random_freelist_of_technic_sheet.id)
+        else:
+            any_technic_sheet_list = cls.get_freelist_of_technic_sheet(
+                technic_title=technic_title,
+                workload_list=workload_list,
+                get_only_free=False
+            )
+            least_busy_technic_sheet = cls.get_least_busy_technic_sheet(any_technic_sheet_list)
+            if least_busy_technic_sheet:
+                return cls.get_object(id=least_busy_technic_sheet.id)
+            else:
+                return None
+
+
+def get_technic_sheet_queryset(
+    select_related: tuple = (), order_by: tuple = (), **kwargs
+) -> QuerySet[TechnicSheet]:
     """
     :param select_related:
     :param order_by:
@@ -49,261 +203,264 @@ def get_technic_sheet(**kwargs) -> TechnicSheet:
         return TechnicSheet.objects.none()
 
 
-def change_status(technic_sheet_id) -> bool:
-    technic_sheet = get_technic_sheet(pk=technic_sheet_id)
-    if technic_sheet:
-        if technic_sheet.status:
-            technic_sheet.status = False
-            log.info("technic_sheet id %s the status is set to False" % technic_sheet_id)
-            technic_sheet.save(update_fields=['status'])
-            return False
-        else:
-            technic_sheet.status = True
-            log.info("technic_sheet id %s the status is set to True" % technic_sheet_id)
-            technic_sheet.save(update_fields=['status'])
-            return True
+# def change_status(technic_sheet_id) -> bool:
+#     technic_sheet = get_technic_sheet(pk=technic_sheet_id)
+#     if technic_sheet:
+#         if technic_sheet.status:
+#             technic_sheet.status = False
+#             log.info("technic_sheet id %s the status is set to False" % technic_sheet_id)
+#             technic_sheet.save(update_fields=['status'])
+#             return False
+#         else:
+#             technic_sheet.status = True
+#             log.info("technic_sheet id %s the status is set to True" % technic_sheet_id)
+#             technic_sheet.save(update_fields=['status'])
+#             return True
 
 
-def change_driver(technic_sheet_id, driver_sheet_id):
-    if not driver_sheet_id or driver_sheet_id == '':
-        driver_sheet = None
-    else:
-        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet(id=driver_sheet_id)
-    technic_sheet = get_technic_sheet(id=technic_sheet_id)
-    technic_sheet.driver_sheet = driver_sheet
-    technic_sheet.save(update_fields=['driver_sheet'])
-    log.info("The driver has been changed for technic_sheet")
-    if driver_sheet:
-        return driver_sheet.status
-    else:
-        return None
+# def change_driver(technic_sheet_id, driver_sheet_id):
+#     if not driver_sheet_id or driver_sheet_id == '':
+#         driver_sheet = None
+#     else:
+#         driver_sheet = DRIVER_SHEET_SERVICE.DriverSheetService.get_object(id=driver_sheet_id)
+#     technic_sheet = get_technic_sheet(id=technic_sheet_id)
+#     technic_sheet.driver_sheet = driver_sheet
+#     technic_sheet.save(update_fields=['driver_sheet'])
+#     log.info("The driver has been changed for technic_sheet")
+#     if driver_sheet:
+#         return driver_sheet.status
+#     else:
+#         return None
 
 
-def prepare_technic_sheets(workday: WorkDaySheet):
-    """
-    Подготовка technic_sheets (prepare_technic_sheets)
-    Копирование или создание записей, удаление дубликатов.
-    :param workday: WorkDaySheet
-    :return:
-    """
-    technic_sheet_list = get_technic_sheet_queryset(isArchive=False, date=workday)
-    count_technic_sheet = technic_sheet_list.count()
-
-    technics_list = TECHNIC_SERVICE.get_technics_queryset(isArchive=False).select_related('attached_driver')
-    count_technics = technics_list.count()
-
-    autocomplete_driver_to_technic_sheet(workday=workday)
-
-    if count_technics != count_technic_sheet:
-        log.info("TechnicSheet for %s is not ready" % workday.date)
-
-        driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(isArchive=False, date=workday)
-
-        last_workday = WORK_DAY_SERVICE.get_workday_queryset(date__lt=workday.date, status=True).first()
-        last_technic_sheet = get_technic_sheet_queryset(date=last_workday, isArchive=False)
-
-        if count_technics > count_technic_sheet:
-            log.info("count_technics > count_technic_sheet %s > %s" % (count_technics, count_technic_sheet))
-
-            if last_technic_sheet.count() == count_technics:  # COPY
-                log.info("last_technic_sheet.exists() is %s - COPY" % last_technic_sheet.exists())
-
-                current_technic_sheet = []
-                for ts in last_technic_sheet:
-                    if ts.driver_sheet:
-                        driver_sheet = driver_sheet_list.filter(driver=ts.driver_sheet.driver).first()
-                    else:
-                        driver_sheet = None
-                    current_technic_sheet.append(
-                        TechnicSheet(
-                            technic=ts.technic,
-                            driver_sheet=driver_sheet,
-                            date=workday,
-                            status=ts.status
-                        )
-                    )
-
-            else:  # CREATE
-                log.info("last_technic_sheet.exists() is %s - CREAT" % last_technic_sheet.exists())
-
-                excludes_technics = technic_sheet_list.values_list('technic_id', flat=True)
-
-                current_technic_sheet = [TechnicSheet(
-                    technic=technic,
-                    driver_sheet=driver_sheet_list.filter(driver=technic.attached_driver).first(),
-                    date=workday) for technic in technics_list if technic.id not in excludes_technics]
-
-            TechnicSheet.objects.bulk_create(current_technic_sheet)
-
-        if count_technic_sheet != 0 and count_technics != count_technic_sheet:  # Delete duplicate
-            log.info("count_technics < count_technic_sheet %s < %s" % (count_technics, count_technic_sheet))
-            log.info("Duplicate Search")
-            for technic in technics_list:
-                double_ts = technic_sheet_list.filter(date=workday, technic=technic)
-                if double_ts.count() > 1:
-                    log.info(f"Duplicate was deleted")
-                    double_ts.first().delete()
-
-        if count_technics == count_technic_sheet:
-            log.info("count_technics = count_technic_sheet %s = %s" % (count_technics, count_technic_sheet))
-
-    else:
-        log.info(f"TechnicSheet for %s exists" % workday.date)
-
-
-def is_technic_sheet_exists(workday: WorkDaySheet) -> bool:
-    technic_sheet = get_technic_sheet_queryset(date=workday, isArchive=False)
-    if technic_sheet.exists():
-        return True
-    else:
-        return False
+# def prepare_technic_sheets(workday: WorkDaySheet):
+#     """
+#     Подготовка technic_sheets (prepare_technic_sheets)
+#     Копирование или создание записей, удаление дубликатов.
+#     :param workday: WorkDaySheet
+#     :return:
+#     """
+#     technic_sheet_list = get_technic_sheet_queryset(isArchive=False, date=workday)
+#     count_technic_sheet = technic_sheet_list.count()
+#
+#     technics_list = TECHNIC_SERVICE.TechnicService.get_queryset(isArchive=False).select_related('attached_driver')
+#     count_technics = technics_list.count()
+#
+#     autocomplete_driver_to_technic_sheet(workday=workday)
+#
+#     if count_technics != count_technic_sheet:
+#         log.info("TechnicSheet for %s is not ready" % workday.date)
+#
+#         driver_sheet_list = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(isArchive=False, date=workday)
+#
+#         last_workday = WORK_DAY_SERVICE.WorkDayService.get_queryset(date__lt=workday.date, status=True).first()
+#         last_technic_sheet = get_technic_sheet_queryset(date=last_workday, isArchive=False)
+#
+#         if count_technics > count_technic_sheet:
+#             log.info("count_technics > count_technic_sheet %s > %s" % (count_technics, count_technic_sheet))
+#
+#             if last_technic_sheet.count() == count_technics:  # COPY
+#                 log.info("last_technic_sheet.exists() is %s - COPY" % last_technic_sheet.exists())
+#
+#                 current_technic_sheet = []
+#                 for ts in last_technic_sheet:
+#                     if ts.driver_sheet:
+#                         driver_sheet = driver_sheet_list.filter(driver=ts.driver_sheet.driver).first()
+#                     else:
+#                         driver_sheet = None
+#                     current_technic_sheet.append(
+#                         TechnicSheet(
+#                             technic=ts.technic,
+#                             driver_sheet=driver_sheet,
+#                             date=workday,
+#                             status=ts.status
+#                         )
+#                     )
+#
+#             else:  # CREATE
+#                 log.info("last_technic_sheet.exists() is %s - CREAT" % last_technic_sheet.exists())
+#
+#                 excludes_technics = technic_sheet_list.values_list('technic_id', flat=True)
+#
+#                 current_technic_sheet = [TechnicSheet(
+#                     technic=technic,
+#                     driver_sheet=driver_sheet_list.filter(driver=technic.attached_driver).first(),
+#                     date=workday) for technic in technics_list if technic.id not in excludes_technics]
+#
+#             TechnicSheet.objects.bulk_create(current_technic_sheet)
+#
+#         if count_technic_sheet != 0 and count_technics != count_technic_sheet:  # Delete duplicate
+#             log.info("count_technics < count_technic_sheet %s < %s" % (count_technics, count_technic_sheet))
+#             log.info("Duplicate Search")
+#             for technic in technics_list:
+#                 double_ts = technic_sheet_list.filter(date=workday, technic=technic)
+#                 if double_ts.count() > 1:
+#                     log.info(f"Duplicate was deleted")
+#                     double_ts.first().delete()
+#
+#         if count_technics == count_technic_sheet:
+#             log.info("count_technics = count_technic_sheet %s = %s" % (count_technics, count_technic_sheet))
+#
+#     else:
+#         log.info(f"TechnicSheet for %s exists" % workday.date)
 
 
-def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
-    """
-    Авто подстановка закрепленного водителя
-    :param workday:
-    :return:
-    """
-    empty_technic_sheet = get_technic_sheet_queryset(
-        select_related=('driver_sheet', 'technic__attached_driver'),
-        date=workday,
-        isArchive=False,
-        driver_sheet__isnull=True,
-        technic__attached_driver__isnull=False)
-
-    if empty_technic_sheet.exists():
-        driver_sheet_list = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
-            select_related=('driver',),
-            isArchive=False,
-            status=True,
-            date=workday)
-
-        for technic_sheet in empty_technic_sheet:
-            _technic_sheet = get_technic_sheet_queryset(
-                select_related=('driver_sheet__driver', 'technic__attached_driver'),
-                date=workday,
-                driver_sheet__driver=technic_sheet.technic.attached_driver
-            )
-            driver_sheet = driver_sheet_list.filter(driver=technic_sheet.technic.attached_driver)
-            if _technic_sheet.count() == 0:
-                technic_sheet.driver_sheet = driver_sheet.first()
-                technic_sheet.save()
+# def is_technic_sheet_exists(workday: WorkDaySheet) -> bool:
+#     technic_sheet = get_technic_sheet_queryset(date=workday, isArchive=False)
+#     if technic_sheet.exists():
+#         return True
+#     else:
+#         return False
 
 
-def decrement_technic_sheet_list(technic_sheet_id_list,  **kwargs):
-    """
-    Декремент количества заявок на технику для каждого из technic_sheet_list
-    :param technic_sheet_id_list:
-    :return:
-    """
-    if technic_sheet_id_list:
-        for technic_sheet_id in technic_sheet_id_list:
-            calculate_count_applications(technic_sheet_id, **kwargs)
+# def autocomplete_driver_to_technic_sheet(workday: WorkDaySheet):
+#     """
+#     Авто подстановка закрепленного водителя
+#     :param workday:
+#     :return:
+#     """
+#     empty_technic_sheet = get_technic_sheet_queryset(
+#         select_related=('driver_sheet', 'technic__attached_driver'),
+#         date=workday,
+#         isArchive=False,
+#         driver_sheet__isnull=True,
+#         technic__attached_driver__isnull=False)
+#
+#     if empty_technic_sheet.exists():
+#         log.info("empty_technic_sheet.exists() is True")
+#         driver_sheet_list = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(
+#             isArchive=False,
+#             status=True,
+#             date=workday).select_related('driver')
+#
+#         for technic_sheet in empty_technic_sheet:
+#             _technic_sheet = get_technic_sheet_queryset(
+#                 select_related=('driver_sheet__driver', 'technic__attached_driver'),
+#                 date=workday,
+#                 driver_sheet__driver=technic_sheet.technic.attached_driver
+#             )
+#             driver_sheet = driver_sheet_list.filter(driver=technic_sheet.technic.attached_driver)
+#             if _technic_sheet.count() == 0:
+#                 technic_sheet.driver_sheet = driver_sheet.first()
+#                 technic_sheet.save()
+#     else:
+#         log.info("empty_technic_sheet.exists() is False")
 
 
-def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
-    """
-    Получить dict загруженности technic_sheet за workday
-    :param workday: WorkDaySheet
-    :return: {'id',
-        'technic__title',
-        'driver_sheet_id',
-        'count_application'}
-    """
-    technic_sheet = (get_technic_sheet_queryset(
-        isArchive=False,
-        status=True,
-        date=workday,
-        driver_sheet__isnull=False,
-        driver_sheet__status=True
-    ).select_related(
-        'driver_sheet',
-        'technic'
-    ).values(
-        'id',
-        'technic__title',
-        'driver_sheet_id',
-        'count_application'
-    ))
-    return technic_sheet
+# def decrement_technic_sheet_list(technic_sheet_id_list,  **kwargs):
+#     """
+#     Декремент количества заявок на технику для каждого из technic_sheet_list
+#     :param technic_sheet_id_list:
+#     :return:
+#     """
+#     if technic_sheet_id_list:
+#         for technic_sheet_id in technic_sheet_id_list:
+#             calculate_count_applications(technic_sheet_id, **kwargs)
 
 
-def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list[dict]:
-    """
-    Получить список незанятых (get_only_free=True)
-    или любых (get_only_free=False) данных technic_sheet для technic_title
-    :param technic_title: Название техники
-    :param workload_dict: dict загруженности technic_sheet
-    :param get_only_free: True получить незанятых; False получить менее занятых
-    :return: [{'id',
-        'technic__title',
-        'driver_sheet_id',
-        'count_application'},...]
-    """
-    if workload_dict:
-        if get_only_free:
-            data_technic_sheet_list = [_item for _item in workload_dict if
-                                       _item['technic__title'] == technic_title and _item['count_application'] == 0]
-        else:
-            data_technic_sheet_list = [_item for _item in workload_dict if
-                                       _item['technic__title'] == technic_title]
-        return data_technic_sheet_list
-    return []
+# def get_workload_dict_of_technic_sheet(workday: WorkDaySheet) -> dict:
+#     """
+#     Получить dict загруженности technic_sheet за workday
+#     :param workday: WorkDaySheet
+#     :return: {'id',
+#         'technic__title',
+#         'driver_sheet_id',
+#         'count_application'}
+#     """
+#     technic_sheet = (get_technic_sheet_queryset(
+#         isArchive=False,
+#         status=True,
+#         date=workday,
+#         driver_sheet__isnull=False,
+#         driver_sheet__status=True
+#     ).select_related(
+#         'driver_sheet',
+#         'technic'
+#     ).values(
+#         'id',
+#         'technic__title',
+#         'driver_sheet_id',
+#         'count_application'
+#     ))
+#     return technic_sheet
 
 
-def get_least_busy_technic_sheet(free_technic_sheet_list: list[dict]) -> dict:
-    """
-    Получить наименее занятого dict(technic_sheet)
-    :param free_technic_sheet_list:
-    :return: {'id',
-        'technic__title',
-        'driver_sheet_id',
-        'count_application'}
-    """
-    if free_technic_sheet_list:
-        least_busy_technic_sheet = sorted(free_technic_sheet_list, key=lambda item: item['count_application'])[0]
-        return least_busy_technic_sheet
-    log.warning("get_least_busy_technic_sheet(): free_technic_sheet_list is empty")
-    return {}
+# def get_free_list_of_technic_sheet(technic_title: str, workload_dict: dict, get_only_free: bool = True) -> list[dict]:
+#     """
+#     Получить список незанятых (get_only_free=True)
+#     или любых (get_only_free=False) данных technic_sheet для technic_title
+#     :param technic_title: Название техники
+#     :param workload_dict: dict загруженности technic_sheet
+#     :param get_only_free: True получить незанятых; False получить менее занятых
+#     :return: [{'id',
+#         'technic__title',
+#         'driver_sheet_id',
+#         'count_application'},...]
+#     """
+#     if workload_dict:
+#         if get_only_free:
+#             data_technic_sheet_list = [_item for _item in workload_dict if
+#                                        _item['technic__title'] == technic_title and _item['count_application'] == 0]
+#         else:
+#             data_technic_sheet_list = [_item for _item in workload_dict if
+#                                        _item['technic__title'] == technic_title]
+#         return data_technic_sheet_list
+#     return []
 
 
-def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet | None:
-    workload_dict = get_workload_dict_of_technic_sheet(workday=workday)
-    free_technic_sheet_list = get_free_list_of_technic_sheet(technic_title=technic_title, workload_dict=workload_dict)
-    if free_technic_sheet_list:
-        random_free_technic_sheet_list: dict = random.choice(free_technic_sheet_list)
-        return get_technic_sheet(pk=random_free_technic_sheet_list['id'])
-    else:
-        any_technic_sheet_list = get_free_list_of_technic_sheet(
-            technic_title=technic_title, workload_dict=workload_dict, get_only_free=False)
-        least_busy_technic_sheet = get_least_busy_technic_sheet(any_technic_sheet_list)
-        if least_busy_technic_sheet:
-            return get_technic_sheet(pk=least_busy_technic_sheet['id'])
-        else:
-            return None
+# def get_least_busy_technic_sheet(free_technic_sheet_list: list[dict]) -> dict:
+#     """
+#     Получить наименее занятого dict(technic_sheet)
+#     :param free_technic_sheet_list:
+#     :return: {'id',
+#         'technic__title',
+#         'driver_sheet_id',
+#         'count_application'}
+#     """
+#     if free_technic_sheet_list:
+#         least_busy_technic_sheet = sorted(free_technic_sheet_list, key=lambda item: item['count_application'])[0]
+#         return least_busy_technic_sheet
+#     log.warning("get_least_busy_technic_sheet(): free_technic_sheet_list is empty")
+#     return {}
 
 
-def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):
-    technic_sheet = get_technic_sheet(pk=technic_sheet_id)
-    applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-        technic_sheet=technic_sheet,
-        isChecked=False,
-        isArchive=False,
-        is_cancelled=False
-    )
-    if exclude_app_tech:
-        count_applications_technic = applications_technic.exclude(application_today__id=exclude_app_tech).count()
-    else:
-        count_applications_technic = applications_technic.count()
-    technic_sheet.count_application = count_applications_technic
-    technic_sheet.save(update_fields=['count_application'])
+# def get_some_technic_sheet(technic_title: str, workday: WorkDaySheet) -> TechnicSheet | None:
+#     workload_dict = get_workload_dict_of_technic_sheet(workday=workday)
+#     free_technic_sheet_list = get_free_list_of_technic_sheet(technic_title=technic_title, workload_dict=workload_dict)
+#     if free_technic_sheet_list:
+#         random_free_technic_sheet_list: dict = random.choice(free_technic_sheet_list)
+#         return get_technic_sheet(pk=random_free_technic_sheet_list['id'])
+#     else:
+#         any_technic_sheet_list = get_free_list_of_technic_sheet(
+#             technic_title=technic_title, workload_dict=workload_dict, get_only_free=False)
+#         least_busy_technic_sheet = get_least_busy_technic_sheet(any_technic_sheet_list)
+#         if least_busy_technic_sheet:
+#             return get_technic_sheet(pk=least_busy_technic_sheet['id'])
+#         else:
+#             return None
 
 
-def calculate_all_applications_for_ts(workday: WorkDaySheet):
-    technic_sheet_list = get_technic_sheet_queryset(
-        date=workday,
-        isArchive=False,
-    )
-    for technic_sheet in technic_sheet_list:
-        calculate_count_applications(technic_sheet.id)
+# def calculate_count_applications(technic_sheet_id, exclude_app_tech=None):
+#     technic_sheet = get_technic_sheet(pk=technic_sheet_id)
+#     applications_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+#         technic_sheet=technic_sheet,
+#         isChecked=False,
+#         isArchive=False,
+#         is_cancelled=False
+#     )
+#     if exclude_app_tech:
+#         count_applications_technic = applications_technic.exclude(application_today__id=exclude_app_tech).count()
+#     else:
+#         count_applications_technic = applications_technic.count()
+#     technic_sheet.count_application = count_applications_technic
+#     technic_sheet.save(update_fields=['count_application'])
+#     return count_applications_technic
+
+
+# def calculate_all_applications_for_ts(workday: WorkDaySheet):
+#     technic_sheet_list = get_technic_sheet_queryset(
+#         date=workday,
+#         isArchive=False,
+#     )
+#     for technic_sheet in technic_sheet_list:
+#         calculate_count_applications(technic_sheet.id)
