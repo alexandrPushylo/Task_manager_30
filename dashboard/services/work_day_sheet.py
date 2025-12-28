@@ -12,7 +12,6 @@ from dashboard.schemas.work_day_sheet_schema import (
     WorkDaysWithWeekdaySchema,
 )
 from dashboard.services.base import BaseService
-# from config.settings import USE_CACHE
 
 from logger import getLogger
 
@@ -27,7 +26,6 @@ class WorkDayService(BaseService):
     # USE_CACHE = USE_CACHE
 
     class CacheKeys(enum.Enum):
-        RANGE_WORKDAYS_WITH_WEEKDAYS = "get_range_of_workdays_with_weekdays"
         RANGE_WORKDAYS = "get_range_of_workdays"
         CURRENT_DATE_DATA = "current_date_data"
 
@@ -69,12 +67,32 @@ class WorkDayService(BaseService):
             return False
 
     @classmethod
-    def get_range_of_workdays(cls,  #TODO: cache
-                              start_date: date,
-                              before_days: int,
-                              after_days: int,
-                              revers: bool = False
-                              ) -> list[WorkDaySchema]:
+    def _get_workdays_range(cls) -> list[WorkDaySchema]:
+        cache_key = f"{cls.CacheKeys.RANGE_WORKDAYS.value}"
+        cache_ttl = 60 * 60
+
+        range_of_workdays_from_cache = cache.get(cache_key)
+        if range_of_workdays_from_cache is None:
+            workdays_queryset = cls.model.objects.filter(
+                date__gte=cls.TODAY - timedelta(days=7),
+                date__lte=cls.TODAY + timedelta(days=21)
+            )
+            workdays_data = [WorkDaySchema(**wd.to_dict()) for wd in workdays_queryset]
+            if cls.USE_CACHE:
+                cache.set(cache_key, workdays_data, cache_ttl)
+            return workdays_data
+        else:
+            cache.touch(cache_key, cache_ttl)
+            return range_of_workdays_from_cache
+
+    @classmethod
+    def get_range_of_workdays(
+            cls,
+            start_date: date,
+            before_days: int,
+            after_days: int,
+            revers: bool = False
+    ) -> list[WorkDaySchema]:
         """
         Получить диапазон объектов WorkDaySheet от before_days до after_days
         :param revers:
@@ -83,49 +101,40 @@ class WorkDayService(BaseService):
         :param after_days: количество дней после даты отсчета
         :return: диапазон объектов WorkDaySheet.objects
         """
-        cache_key = f"{cls.CacheKeys.RANGE_WORKDAYS.value}:{before_days}:{after_days}:{revers}"
-        range_of_workdays_from_cache = cache.get(cache_key)
-        if range_of_workdays_from_cache is None:
-
-            workdays_queryset = cls.model.objects.filter(
-                date__lte=start_date + timedelta(days=after_days),
-                date__gte=start_date - timedelta(days=before_days),
-            )
-            if revers:
-                workdays_queryset = workdays_queryset.reverse()
-            if before_days + after_days + 1 != len(workdays_queryset):
-                cls.prepare_workday_sheet(start_date)
-            workdays_data = [WorkDaySchema(**wd.to_dict()) for wd in workdays_queryset]
-            cache.set(cache_key, workdays_data, cls.CACHE_TTL)
-            return workdays_data
-        return range_of_workdays_from_cache
+        workday_range = cls._get_workdays_range()
+        before = start_date - timedelta(days=before_days)
+        after = start_date + timedelta(days=after_days)
+        days_range = [
+            day
+            for day in workday_range
+            if before <= day.date <= after
+        ]
+        if revers:
+            days_range = days_range[::-1]
+        return days_range
 
     @classmethod
-    def get_range_of_workdays_with_weekdays(cls,    #TODO: cache
-                                            start_date: date,
-                                            before_days: int,
-                                            after_days: int,
-                                            short_weekdays: bool = False,
-                                            revers: bool = False
-                                            ) -> list[WorkDaysWithWeekdaySchema]:
-        cache_key = f"{cls.CacheKeys.RANGE_WORKDAYS_WITH_WEEKDAYS.value}:{before_days}:{after_days}:{short_weekdays}:{revers}"
+    def get_range_of_workdays_with_weekdays(
+            cls,
+            start_date: date,
+            before_days: int,
+            after_days: int,
+            short_weekdays: bool = False,
+            revers: bool = False
+    ) -> list[WorkDaysWithWeekdaySchema]:
         range_of_workdays = cls.get_range_of_workdays(start_date, before_days, after_days, revers)
-        workdays_with_weekdays_from_cache = cache.get(cache_key)
-        if workdays_with_weekdays_from_cache is None:
-            workdays_with_weekdays = [
-                WorkDaysWithWeekdaySchema(
-                    **workday.model_dump(),
-                    weekday=(
-                        A.WEEKDAY[workday.date.weekday()][:3]
-                        if short_weekdays
-                        else A.WEEKDAY[workday.date.weekday()]
-                    ),
-                )
-                for workday in range_of_workdays
-            ]
-            cache.set(cache_key, workdays_with_weekdays, cls.CACHE_TTL)
-            return workdays_with_weekdays
-        return workdays_with_weekdays_from_cache
+        workdays_with_weekdays = [
+            WorkDaysWithWeekdaySchema(
+                **workday.model_dump(),
+                weekday=(
+                    A.WEEKDAY[workday.date.weekday()][:3]
+                    if short_weekdays
+                    else A.WEEKDAY[workday.date.weekday()]
+                ),
+            )
+            for workday in range_of_workdays
+        ]
+        return workdays_with_weekdays
 
     @classmethod
     def get_next_workday(cls, current_date: date = TODAY) -> WorkDaySchema:
@@ -135,6 +144,8 @@ class WorkDayService(BaseService):
         :return: объект WorkDaySchema
         """
         next_day = cls.get_queryset(status=True, date__gt=current_date).last()
+        if not next_day:
+            cls.prepare_workday_sheet(current_date)
         next_day_data = WorkDaySchema(**next_day.to_dict())
         return next_day_data
 
@@ -161,6 +172,8 @@ class WorkDayService(BaseService):
                 wday.status = True
                 log.info(f"work_day {wday.date} is set as a working day")
             wday.save(update_fields=["status"])
+            cache.delete(cls.CacheKeys.RANGE_WORKDAYS.value)
+            cache.delete(f"{cls.CacheKeys.CURRENT_DATE_DATA.value}:{wday.date}")
             return True
         else:
             return False
@@ -168,13 +181,17 @@ class WorkDayService(BaseService):
     @classmethod
     def get_current_date_data(cls, current_date) -> WorkDaySchema | None:
         cache_kay = f"{cls.CacheKeys.CURRENT_DATE_DATA.value}:{current_date}"
+        cache_ttl = 60 * 60
         current_date_data_from_cache = cache.get(cache_kay)
         if current_date_data_from_cache is None:
             current_date_data = cls.get_object(date = current_date)
             current_date_data__data = WorkDaySchema(**current_date_data.to_dict())
-            cache.set(cache_kay, current_date_data__data, 60)
+            if cls.USE_CACHE:
+                cache.set(cache_kay, current_date_data__data, cache_ttl)
             return current_date_data__data
-        return current_date_data_from_cache
+        else:
+            cache.touch(cache_kay, cache_ttl)
+            return current_date_data_from_cache
 
 
 # def get_workday_sheet(*args, **kwargs) -> WorkDaySchema | None:
