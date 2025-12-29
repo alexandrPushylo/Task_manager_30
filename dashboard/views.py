@@ -719,8 +719,8 @@ def driver_sheet_view(request):
         if request.method == "POST":
             driver_sheet_id = request.POST.get('item_id')
             operation = request.POST.get('operation')
-            if U.is_valid_get_request(driver_sheet_id) and operation == 'toggleDriverSheetStatus':
-                status = DRIVER_SHEET_SERVICE.change_status(driver_sheet_id=driver_sheet_id)
+            if Utilities.is_valid_get_request(driver_sheet_id) and operation == 'toggleDriverSheetStatus':
+                status = DriverSheetService.change_status(driver_sheet_id=int(driver_sheet_id))
                 if status:
                     return HttpResponse(b"true")
                 elif not status:
@@ -728,17 +728,16 @@ def driver_sheet_view(request):
                 else:
                     return HttpResponse(b"none")
 
-        current_day = WORK_DAY_SERVICE.get_current_day(request)
-        context = U.get_prepared_data(context, current_day)
+        current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
+        context = Utilities.get_prepared_data(context, current_day)
 
-        if current_day.date >= U.TODAY and current_day.status:
-            DRIVER_SHEET_SERVICE.prepare_driver_sheet(current_day)
+        if current_day.date >= Utilities.TODAY and current_day.status:
 
-        driver_sheet = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(
-            select_related=('driver',),
-            order_by=('driver__last_name',),
-            date=current_day,
-        )
+            Utilities.prepare_driver_sheet(current_day)
+
+        driver_sheet = DriverSheetService.get_queryset(
+            date_id=current_day.id,
+        ).select_related('driver').order_by('driver__last_name')
 
         context['driver_sheets'] = driver_sheet
         context['current_day'] = current_day
