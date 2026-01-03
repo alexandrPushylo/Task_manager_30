@@ -25,7 +25,6 @@ class UserService(BaseService):
     CACHE_TTL = 10
 
     class CacheKeys(enum.Enum):
-        DRIVER_LIST_FOR_SUPPLY = "driver_list_for_supply"
         CURRENT_USER = "current_user"
         ALL_USER_LIST = "all_user_list"
 
@@ -99,6 +98,7 @@ class UserService(BaseService):
             user.supervisor_user_id = validate_data.supervisor_user_id
             user.save()
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
+            cache.delete(f"{cls.CacheKeys.CURRENT_USER.value}:{user_id}")
             log.info(f"User {user.last_name} {user.first_name} has been edit")
             return user, A.UserEditResult.OK
         return None, A.UserEditResult.ERROR
@@ -110,6 +110,7 @@ class UserService(BaseService):
             user.isArchive = True
             user.save(update_fields=["isArchive"])
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
+            cache.delete(f"{cls.CacheKeys.CURRENT_USER.value}:{user.pk}")
             log.info(f'User: ({user.last_name} {user.first_name}) has been archived')
             return True
         return False
@@ -225,6 +226,12 @@ class UserService(BaseService):
             cache.touch(cache_key, cache_ttl)
             return all_users_list_from_cache
 
+    @classmethod
+    def filter_user_by_id_from_data(cls, user_id: int, data: list[UserSchema]) -> UserSchema | None:
+        for user in data:
+            if user.id == user_id:
+                return user
+        return None
 
 def is_administrator(user: User) -> bool:
     return True if user.post == A.UserPosts.ADMINISTRATOR.title else False

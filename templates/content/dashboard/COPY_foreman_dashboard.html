@@ -129,26 +129,26 @@
                                                 
                                                 <div class="mt-2" style="background-color: #e7eefa; text-align: center;">
                                                     {% if app_technic.isChecked %}
-                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
                                                     {% elif app_technic.is_cancelled %}
-                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
                                                     
-                                                    {% elif not app_technic.technic_sheet.status %}
-                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                    {% elif not app_technic.technic_sheet__status %}
+                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet__technic__title }}</span>
                                                     {% else %}
-                                                        <span> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                        <span> {{ app_technic.technic_sheet__technic__title }}</span>
                                                     {% endif %}
     
                                                     
-                                                    {% if app_technic.technic_sheet.driver_sheet.status %}
-                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet.driver_sheet.driver.id }}"
+                                                    {% if app_technic.technic_sheet__driver_sheet__status %}
+                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
                                                            style="text-decoration: none; color: black;">                                                        
                                                             <span class=" {% if app_technic.isChecked %}AP-isChecked-title
                                                                           {% elif app_technic.is_cancelled %}AP-cancelled-title
                                                                           {% endif %}"                                                              
-                                                            >({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
+                                                            >({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
                                                         </a>
-                                                        <span>[{{ app_technic.priority }}/{{ app_technic.technic_sheet.count_application }}]</span>
+                                                        <span>[{{ app_technic.priority }}/{{ app_technic.technic_sheet__count_application }}]</span>
                                                     {% else %}
                                                         <span class="AP-empty-title">(Не назначен)</span>
                                                     {% endif %}

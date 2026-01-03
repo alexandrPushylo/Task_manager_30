@@ -1,4 +1,5 @@
 import datetime
+from typing import Literal
 
 from .types import Enum, TitleDescriptionType, UserPostType, ApplicationTodayType
 
@@ -54,16 +55,19 @@ class MessagesAssets(Enum):
     CS_SPEC_DEFAULT_DESC = 'Дробить бетон и асфальт'
 
 
+
 class ViewMode(Enum):
     FUTURE = 'view_mode_future'
     CURRENT = 'view_mode_current'
     ARCHIVE = 'view_mode_archive'
+ViewModeType = Literal['view_mode_future', 'view_mode_current', 'view_mode_archive']
 
 
 class AcceptMode(Enum):
     AUTO = 'auto'
     MANUAL = 'manual'
     OFF = 'off'
+AcceptModeType = Literal['auto', 'manual', 'off']
 
 
 class TaskDescriptionMode(Enum):

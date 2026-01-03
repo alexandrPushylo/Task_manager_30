@@ -119,14 +119,14 @@
                                         {% for app_technic in applications_technic %}
                                             <div class="mt-2 {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}" style="background-color: #e7eefa; text-align: center;"   
                                             >
-                                                <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
-                                            {% if app_technic.technic_sheet__driver_sheet__driver__last_name %}
-                                                <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                <span class="ms-1">{{ app_technic.technic_sheet.technic.title }}</span>
+                                            {% if app_technic.technic_sheet.driver_sheet.driver.last_name %}
+                                                <span>({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
                                             {% else %}
                                                 <span class="text-warning">(Водитель не назначен)</span>                                                
                                             {% endif %}
                                                 <span>[<span>{{ app_technic.priority }}</span>/
-                                                        <span>{{ app_technic.technic_sheet__count_application }}</span>]
+                                                        <span>{{ app_technic.technic_sheet.count_application }}</span>]
                                                     </span>
                                                 {% if app_technic.description %}
                                                     <label class="m-0 p-0 row">

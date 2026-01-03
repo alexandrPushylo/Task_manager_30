@@ -17,7 +17,7 @@ class EditTechnicSchema(BaseModel):
     type: str = Field(max_length=255)
     id_information: str = Field(max_length=256)
     description: str | None = Field(max_length=1024)
-    attached_driver: int | None = Field()
+    attached_driver: int | None
     supervisor_technic: str = Field(max_length=100)
 
 

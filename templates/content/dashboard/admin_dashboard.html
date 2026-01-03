@@ -146,32 +146,32 @@
                                     {% if construction_site.application_today.application_technic %}
                                         <div class="mt-1 {% if construction_site.application_today.isArchive %}text-decoration-line-through{% endif %}">
                                             {% for app_technic in construction_site.application_today.application_technic %}
-                                                
+
                                                 <div class="mt-2" style="background-color: #e7eefa; text-align: center;">
                                                     {% if app_technic.isChecked %}
-                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet.technic.title }}</span>
                                                     {% elif app_technic.is_cancelled %}
-                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet__technic__title }}</span>
-                                                    {% elif app_technic.technic_sheet_id in conflict_technic_sheet %}
-                                                        <span class="AP-conflict-title"> {{ app_technic.technic_sheet__technic__title }}</span>
-                                                    {% elif not app_technic.technic_sheet__status %}
-                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                    {% elif app_technic.technic_sheet.id in conflict_technic_sheet %}
+                                                        <span class="AP-conflict-title"> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                    {% elif not app_technic.technic_sheet.status %}
+                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet.technic.title }}</span>
                                                     {% else %}
-                                                        <span> {{ app_technic.technic_sheet__technic__title }}</span>
+                                                        <span> {{ app_technic.technic_sheet.technic.title }}</span>
                                                     {% endif %}
     
                                                     
-                                                    {% if app_technic.technic_sheet__driver_sheet__status %}
-                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet__driver_sheet__driver__id }}"
+                                                    {% if app_technic.technic_sheet.driver_sheet.status %}
+                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet.driver_sheet.driver.id }}"
                                                            style="text-decoration: none; color: black;">
                                                         
                                                             <span class=" {% if app_technic.isChecked %}AP-isChecked-title
                                                                           {% elif app_technic.is_cancelled %}AP-cancelled-title
-                                                                          {% elif app_technic.technic_sheet_id in priority_id_list %}AP-priority-title
+                                                                          {% elif app_technic.technic_sheet.id in priority_id_list %}AP-priority-title
                                                                           {% endif %}"                                                              
-                                                            >({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                            >({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
                                                         </a>
-                                                        <span>[{{ app_technic.priority }}/{{ app_technic.technic_sheet__count_application }}]</span>
+                                                        <span>[{{ app_technic.priority }}/{{ app_technic.technic_sheet.count_application }}]</span>
                                                     {% else %}
                                                         <span class="AP-empty-title">(Не назначен)</span>
                                                     {% endif %}

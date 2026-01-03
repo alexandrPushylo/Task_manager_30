@@ -19,8 +19,11 @@ class EditApplicationTechnicSchema(BaseModel):
     application_today: int
     technic_sheet: int | None
     description: str | None
-    # isChecked: bool
-    # is_cancelled: bool
-    # isArchive: bool
-    # priority: int
-    # id_orig_app: int | None
+
+
+class ApplicationTechnicForMechanicSchema(BaseModel):
+    technic_sheet__id: int
+    application_today__construction_site__address: str
+    application_today__construction_site__foreman__last_name: str | None
+    description: str | None
+

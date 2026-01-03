@@ -1,14 +1,17 @@
 import enum
 from typing import Literal
 
+from django.core.cache import cache
 from django.db import models
-
+from pydantic import BaseModel
 
 from dashboard.assets import AcceptMode
 from dashboard.models import WorkDaySheet, DriverSheet, TechnicSheet, ConstructionSite, ApplicationMaterial
 from django.db.models.query import QuerySet
 from dashboard.models import ApplicationToday, ApplicationTechnic
 from dashboard.models import User
+from dashboard.schemas.application_today_schema import ApplicationTodaySchema
+from dashboard.schemas.technic_sheet_schema import TechnicSheetSchema, TechnicSheetWithTechnicSchema
 from dashboard.schemas.user_schema import UserSchema
 from dashboard.schemas.utils_schema import BusiestTechnicDataSchema, FilterDataSchema
 from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
@@ -20,12 +23,13 @@ from logger import getLogger
 from datetime import date, datetime
 import random
 import dashboard.assets as ASSETS
+from config.settings import USE_CACHE
 
 import dashboard.variables as VAR
 import dashboard.services.user as USERS_SERVICE
 import dashboard.services.technic as TECHNIC_SERVICE
 import dashboard.services.construction_site as CONSTR_SITE_SERVICE
-import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
+# import dashboard.services.work_day_sheet as WORK_DAY_SERVICE
 import dashboard.services.driver_sheet as DRIVER_SHEET_SERVICE
 import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
 import dashboard.services.application_today as APP_TODAY_SERVICE
@@ -57,6 +61,7 @@ log = getLogger(__name__)
 class Utilities:
     TODAY: date = date.today()
     NOW = lambda: datetime.now().time()
+    USE_CACHE = USE_CACHE
 
 
     class CacheKeys(enum.Enum):
@@ -95,13 +100,13 @@ class Utilities:
         :param current_workday:
         :return:
         """
-        context['work_days'] = WORK_DAY_SERVICE.WorkDayService.get_range_of_workdays_with_weekdays(
+        context['work_days'] = WorkDayService.get_range_of_workdays_with_weekdays(
             cls.TODAY, 1, 3, short_weekdays=True, revers=True
         )
         context['today'] = cls.TODAY
         context['current_weekday'] = cls.get_ru_weekday(cls.TODAY)
-        context['prev_work_day'] = WORK_DAY_SERVICE.WorkDayService.get_prev_workday(current_workday.date)
-        context['next_work_day'] = WORK_DAY_SERVICE.WorkDayService.get_next_workday(current_workday.date)
+        context['prev_work_day'] = WorkDayService.get_prev_workday(current_workday.date)
+        context['next_work_day'] = WorkDayService.get_next_workday(current_workday.date)
         context['weekday'] = cls.get_ru_weekday(current_workday.date)
         context['VIEW_MODE'] = cls.get_view_mode(current_workday.date)
         context['ACCEPT_MODE'] = cls.get_accept_mode_by_date(workday=current_workday)
@@ -110,27 +115,27 @@ class Utilities:
 
 
     @classmethod
-    def prepare_sheets(cls, workday_instance: WorkDaySheet):
-        cls.prepare_driver_sheet(workday_instance=workday_instance)
-        cls.prepare_technic_sheet(workday_instance=workday_instance)
+    def prepare_sheets(cls, workday_data: WorkDaySchema):
+        cls.prepare_driver_sheet(workday_data=workday_data)
+        cls.prepare_technic_sheet(workday_data=workday_data)
         log.info("Prepare sheets done")
 
 
     @classmethod
-    def prepare_driver_sheet(cls, workday_instance: WorkDaySheet):
+    def prepare_driver_sheet(cls, workday_data: WorkDaySchema):
         """
         Подготовка driver_sheets (prepare_driver_sheet)
         Копирование или создание записей, удаление дубликатов.
-        :param workday_instance:
+        :param workday_data:
         :return:
         """
-        driver_sheets = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(
-            date=workday_instance,
+        driver_sheets = DriverSheetService.get_queryset(
+            date__date=workday_data.date,
             isArchive=False
         )
         count_driver_sheets = driver_sheets.count()
 
-        driver_list = USERS_SERVICE.UserService.get_driver_list()
+        driver_list = UserService.get_driver_list()
         count_drivers = len(driver_list)
 
         if count_drivers != count_driver_sheets:
@@ -138,12 +143,10 @@ class Utilities:
 
             if count_drivers > count_driver_sheets:
                 log.info(f"count_driver > count_driver_sheets {count_drivers} > {count_driver_sheets}")
-                last_workday_sheet = WORK_DAY_SERVICE.WorkDayService.get_queryset(
-                    date__lt=workday_instance.date,
-                    status=True
-                ).first()
-                last_driver_sheet = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(
-                    date=last_workday_sheet,
+
+                last_workday_sheet = WorkDayService.get_prev_workday(workday_data.date)
+                last_driver_sheet = DriverSheetService.get_queryset(
+                    date_id=last_workday_sheet.id,
                     isArchive=False
                 )
                 count_last_driver_sheet = last_driver_sheet.count()
@@ -151,8 +154,8 @@ class Utilities:
                     log.info("last_driver_sheet.exists() is True - COPY")
 
                     new_driver_sheet = [
-                        DRIVER_SHEET_SERVICE.DriverSheet(
-                            date=workday_instance,
+                        DriverSheetService.model(
+                            date_id=workday_data.id,
                             driver=ds.driver,
                             status=ds.status
                         ) for ds in last_driver_sheet
@@ -161,24 +164,24 @@ class Utilities:
                     log.info("last_driver_sheet.exists() is False - CREATE")
                     exclude_drivers = driver_sheets.values_list('driver_id', flat=True)
                     new_driver_sheet = [
-                        DRIVER_SHEET_SERVICE.DriverSheet(
-                            date=workday_instance,
+                        DriverSheetService.model(
+                            date_id=workday_data.id,
                             driver_id=drv.id
                         ) for drv in driver_list if drv.id not in exclude_drivers
                     ]
-                DRIVER_SHEET_SERVICE.DriverSheet.objects.bulk_create(new_driver_sheet)
+                DriverSheetService.model.objects.bulk_create(new_driver_sheet)
             if count_driver_sheets != 0 and count_drivers != count_driver_sheets:   #Delete duplicate
                 log.info(f"count_driver < count_driver_sheets {count_drivers} < {count_driver_sheets}")
                 log.info("Duplicate Search")
                 list_ids_for_delete = []
                 for drv in driver_list:
-                    double_ds = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(
-                        date=workday_instance,
+                    double_ds = DriverSheetService.get_queryset(
+                        date_id=workday_data.id,
                         driver_id=drv.id
                     )
                     if double_ds.count() > 1:
                         list_ids_for_delete.append(double_ds.first().id)
-                DRIVER_SHEET_SERVICE.DriverSheet.objects.filter(id__in=list_ids_for_delete).delete()
+                DriverSheetService.get_queryset(id__in=list_ids_for_delete).delete()
                 log.info("Duplicate double_ds deleted")
             if count_drivers == count_driver_sheets:
                 log.info(f"count_driver = count_driver_sheets {count_drivers} = {count_driver_sheets}")
@@ -186,38 +189,35 @@ class Utilities:
             log.info("DriverSheet is exists")
 
     @classmethod
-    def prepare_technic_sheet(cls, workday_instance: WorkDaySheet):
+    def prepare_technic_sheet(cls, workday_data: WorkDaySchema):
         """
         Подготовка technic_sheets (prepare_technic_sheets)
         Копирование или создание записей, удаление дубликатов.
-        :param workday_instance:
+        :param workday_data:
         :return:
         """
-        technic_sheet = TECHNIC_SHEET_SERVICE.TechnicSheetService.get_queryset(
+        technic_sheet = TechnicSheetService.get_queryset(
             isArchive=False,
-            date=workday_instance
+            date_id=workday_data.id
         )
         count_technic_sheet = technic_sheet.count()
 
-        technics_list = TECHNIC_SERVICE.TechnicService.get_all_technic_data()
+        technics_list = TechnicService.get_all_technic_data()
         count_technics = len(technics_list)
 
-        cls.autocomplete_driver_from_technic_sheet(workday_instance=workday_instance)
+        cls.autocomplete_driver_from_technic_sheet(workday_data=workday_data)
 
         if count_technics != count_technic_sheet:
             log.info("TechnicSheet is not ready")
 
-            driver_sheet_list = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(
+            driver_sheet_list = DriverSheetService.get_queryset(
                 isArchive=False,
-                date=workday_instance
+                date_id=workday_data.id
             )
 
-            last_workday = WORK_DAY_SERVICE.WorkDayService.get_queryset(
-                date__lt=workday_instance.date,
-                status=True
-            ).first()
-            last_technic_sheet = TECHNIC_SHEET_SERVICE.TechnicSheetService.get_queryset(
-                date=last_workday,
+            last_workday_sheet = WorkDayService.get_prev_workday(workday_data.date)
+            last_technic_sheet = TechnicSheetService.get_queryset(
+                date_id=last_workday_sheet.id,
                 isArchive=False
             )
 
@@ -234,10 +234,10 @@ class Utilities:
                         else:
                             driver_sheet = None
                         new_technic_sheet.append(
-                            TechnicSheet(
+                            TechnicSheetService.model(
                                 technic=l_ts.technic,
                                 driver_sheet=driver_sheet,
-                                date=workday_instance,
+                                date_id=workday_data.id,
                                 status=l_ts.status
                             )
                         )
@@ -247,24 +247,24 @@ class Utilities:
 
                     excludes_technic_sheet_ids = technic_sheet.values_list('technic_id', flat=True)
 
-                    new_technic_sheet = [TechnicSheet(
+                    new_technic_sheet = [TechnicSheetService.model(
                         technic_id=technic.id,
                         driver_sheet=driver_sheet_list.filter(driver_id=technic.attached_driver).first(),
-                        date=workday_instance)
+                        date_id=workday_data.id)
                         for technic in technics_list
                         if technic.id not in excludes_technic_sheet_ids]
 
-                TechnicSheet.objects.bulk_create(new_technic_sheet)
+                TechnicSheetService.model.objects.bulk_create(new_technic_sheet)
 
             if count_technic_sheet != 0 and count_technics != count_technic_sheet:  # Delete duplicate
                 log.info(f"count_technics < count_technic_sheet {count_technics} < {count_technic_sheet}")
                 log.info("Duplicate Search")
                 list_ids_for_delete = []
                 for technic in technics_list:
-                    double_ts = technic_sheet.filter(date=workday_instance, technic=technic)
+                    double_ts = technic_sheet.filter(date_id=workday_data.id, technic=technic)
                     if double_ts.count() > 1:
                         list_ids_for_delete.append(double_ts.first().id)
-                TECHNIC_SHEET_SERVICE.TechnicSheetService.get_queryset(id__in=list_ids_for_delete).delete()
+                TechnicSheetService.get_queryset(id__in=list_ids_for_delete).delete()
                 log.info(f"Duplicate was deleted")
             if count_technics == count_technic_sheet:
                 log.info("count_technics = count_technic_sheet %s = %s" % (count_technics, count_technic_sheet))
@@ -289,17 +289,16 @@ class Utilities:
 
 
     @classmethod
-    def autocomplete_driver_from_technic_sheet(cls, workday_instance: WorkDaySheet):
+    def autocomplete_driver_from_technic_sheet(cls, workday_data: WorkDaySchema):
         """
         Авто подстановка закрепленного водителя
-        :param workday_instance:
+        :param workday_data:
         :return:
         """
         empty_technic_sheet = (
-            TECHNIC_SHEET_SERVICE
-            .TechnicSheetService
+            TechnicSheetService
             .get_queryset(
-                date=workday_instance,
+                date_id=workday_data.id,
                 isArchive=False,
                 driver_sheet__isnull=True,
                 technic__attached_driver__isnull=False
@@ -308,15 +307,15 @@ class Utilities:
 
         if empty_technic_sheet.exists():
             log.info("empty_technic_sheet.exists() is True")
-            driver_sheet_list = DRIVER_SHEET_SERVICE.DriverSheetService.get_queryset(
+            driver_sheet_list = DriverSheetService.get_queryset(
                 isArchive=False,
                 status=True,
-                date=workday_instance
+                date_id=workday_data.id
             ).select_related('driver')
 
             for e_ts in empty_technic_sheet:
-                _ts = TECHNIC_SHEET_SERVICE.TechnicSheetService.get_queryset(
-                    date=workday_instance,
+                _ts = TechnicSheetService.get_queryset(
+                    date_id=workday_data.id,
                     driver_sheet__driver=e_ts.technic.attached_driver
                 ).select_related('driver_sheet__driver', 'technic__attached_driver')
                 _ds = driver_sheet_list.filter(driver=e_ts.technic.attached_driver)
@@ -366,35 +365,58 @@ class Utilities:
 
 
     @classmethod
-    def get_busiest_technic_title(cls, technic_sheet: QuerySet[TechnicSheet]) -> list[BusiestTechnicDataSchema]:
+    def get_busiest_technic_title(cls, workday_data: WorkDaySchema) -> list[BusiestTechnicDataSchema]:
         """
         Получения списка с информацией о загруженности technic_title
-        :param technic_sheet:
+        :param workday_data:
         :return: [{}, {}]
         """
-        out: list[BusiestTechnicDataSchema] = []
-        technic_sheet = technic_sheet.exclude(
-            applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+        exclude_app_today_status = [
+            ASSETS.ApplicationTodayStatus.SAVED.title,
+            ASSETS.ApplicationTodayStatus.ABSENT.title,
+            ASSETS.ApplicationTodayStatus.DELETED.title
+        ]
+
+        technic_sheet = TechnicSheetService.get_queryset(
+            date_id=workday_data.id,
+            driver_sheet__isnull=False,
+            # driver_sheet__status=True,
+            status=True,
+            isArchive=False
+        ).exclude(
+            applicationtechnic__application_today__status__in=exclude_app_today_status
+        ).values(
+            'id',
+            'technic',
+            'technic__title',
+            'driver_sheet',
+            'driver_sheet__status',
+            'status',
+            'date',
+            'count_application',
+            'isArchive'
         )
-        technic_title_list = TECHNIC_SERVICE.TechnicService.get_distinct_tech_title_from_ts(technic_sheet)
 
-        for technic_title in technic_title_list:
-            technic__title = technic_sheet.filter(technic__title=technic_title, driver_sheet__status=True)
-            technic__title_list = technic__title.values('id', 'count_application')
-            total_technic_sheet_count = technic__title_list.count()
-            all_applications_count = sum(technic__title.values_list('count_application', flat=True))
+        technic_sheet_data = [TechnicSheetWithTechnicSchema(**ts) for ts in technic_sheet]
+        distinct_tech_title = set([ts.technic__title for ts in technic_sheet_data])
+        out: list[BusiestTechnicDataSchema] = []
+        for t_title in distinct_tech_title:
+            ts_title = [ts for ts in technic_sheet_data if ts.technic__title == t_title and ts.driver_sheet__status]
+            free_ts_title = [ts for ts in ts_title if ts.count_application==0]
+
+            total_technic_sheet_count = len(ts_title)
+            free_technic_sheet_count = len(free_ts_title)
+            id_list = [ts.id for ts in ts_title]
+            all_applications_count = sum([ts.count_application for ts in ts_title])
             need_technics_count = all_applications_count - total_technic_sheet_count
-
-            out.append(
-                BusiestTechnicDataSchema(
-                    technic_title=technic_title,
-                    free_technic_sheet_count=technic__title_list.filter(count_application=0).count(),
-                    total_technic_sheet_count=total_technic_sheet_count,
-                    id_list=list(technic__title_list.values_list('id', flat=True)),
-                    all_applications_count=all_applications_count,
-                    need_technics_count=need_technics_count
-                )
-            )
+            out.append(BusiestTechnicDataSchema(
+                technic_title=t_title,
+                free_technic_sheet_count=free_technic_sheet_count,
+                total_technic_sheet_count=total_technic_sheet_count,
+                id_list=id_list,
+                all_applications_count=all_applications_count,
+                need_technics_count=need_technics_count,
+            ))
         return out
 
 
@@ -422,34 +444,37 @@ class Utilities:
 
 
     @classmethod
-    def get_priority_id_list(cls, technic_sheet_instance: QuerySet[TechnicSheet]) -> set:
+    def get_priority_ids_list(cls, workday_data: WorkDaySchema) -> set:
         """
         Получения сета technic_sheet_id с нераспределенным приоритетом
-        :param technic_sheet_instance:
+        :param workday_data:
         :return: set(.., ...)
         """
-        technic_sheet_instance = technic_sheet_instance.exclude(
-            applicationtechnic__application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
-        )
-        technic_sheet_ids_list = technic_sheet_instance.filter(
-            count_application__gt=0,
-            driver_sheet__status=True).values('id')
+        exclude_app_today_status = [
+            ASSETS.ApplicationTodayStatus.SAVED.title,
+            ASSETS.ApplicationTodayStatus.ABSENT.title,
+            ASSETS.ApplicationTodayStatus.DELETED.title
+        ]
 
-        application_technic_list = tuple(APP_TECHNIC_SERVICE.ApplicationTechnicService.get_queryset(
-            technic_sheet__in=technic_sheet_ids_list,
+        technic_sheet_ids = TechnicSheetService.get_queryset(
+            date_id=workday_data.id,
+            driver_sheet__isnull=False,
+            status=True,
+            isArchive=False,
+            count_application__gt=0,
+            driver_sheet__status=True
+        ).exclude(
+            applicationtechnic__application_today__status__in=exclude_app_today_status
+        ).values('id')
+
+        app_technic_list = list(ApplicationTechnicService.get_queryset(
+            technic_sheet__in=technic_sheet_ids,
             isArchive=False,
             is_cancelled=False,
             isChecked=False
-        ).values(
-            'technic_sheet__id',
-            'priority'
-        ))
-        out = {     #TODO   ref
-            item['technic_sheet__id']
-            for item in application_technic_list
-            if application_technic_list.count(item) > 1
-        }
-        return out
+        ).values('technic_sheet__id', 'priority'))
+
+        return set(item['technic_sheet__id'] for item in app_technic_list if app_technic_list.count(item)>1)
 
 
     @classmethod
@@ -502,8 +527,8 @@ class Utilities:
         :param application_today_id:
         :return:
         """
-        application_technic = APP_TECHNIC_SERVICE.ApplicationTechnicService.get_object(id=application_technic_id)
-        application_today = APP_TODAY_SERVICE.ApplicationTodayService.get_object(id=application_today_id)
+        application_technic = ApplicationTechnicService.get_object(id=application_technic_id)
+        application_today = ApplicationTodayService.get_object(id=application_today_id)
         if all((application_technic, application_today)):
 
             if application_technic.is_cancelled:
@@ -523,7 +548,7 @@ class Utilities:
 
             if not application_technic.isChecked:
                 # _new_app_tech, created = ApplicationTechnic.objects.get_or_create(
-                _new_app_tech, created = APP_TECHNIC_SERVICE.ApplicationTechnicService.get_or_create(
+                _new_app_tech, created = ApplicationTechnicService.get_or_create(
                     technic_sheet=application_technic.technic_sheet,
                     application_today=application_today
                 )
@@ -537,7 +562,7 @@ class Utilities:
                 cls.calculate_count_app_for_technic_sheet(application_technic.technic_sheet_id)
 
             elif application_technic.isChecked:
-                _supply_at = APP_TECHNIC_SERVICE.ApplicationTechnicService.get_object(
+                _supply_at = ApplicationTechnicService.get_object(
                     id=application_technic.id_orig_app
                 )
                 _supply_at.description = _supply_at.description.replace(str_desc, '')
@@ -549,6 +574,7 @@ class Utilities:
                 application_technic.id_orig_app = None
                 application_technic.save()
                 cls.calculate_count_app_for_technic_sheet(application_technic.technic_sheet_id)
+            cache.delete(f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{application_today.date.date}")
 
 
     @classmethod
@@ -567,55 +593,59 @@ class Utilities:
 
 
     @classmethod
-    def change_view_props(cls, io_name: str, io_status: str, io_value: str, user: User) -> bool:
-        if io_status == 'true':
-            status = True
-        elif io_status == 'false':
-            status = False
-        else:
-            status = None
+    def change_view_props(cls, io_name: str, io_status: str, io_value: str, user_id: int) -> bool:
+        user = UserService.get_object(id=user_id)
+        if user:
+            if io_status == 'true':
+                status = True
+            elif io_status == 'false':
+                status = False
+            else:
+                status = None
 
-        if status is not None:
-            match io_name:
-                case 'is_show_deleted_app':
-                    user.is_show_deleted_app = status
-                    user.save(update_fields=['is_show_deleted_app'])
-                    return True
-                case 'is_show_saved_app':
-                    user.is_show_saved_app = status
-                    user.save(update_fields=['is_show_saved_app'])
-                    return True
-                case 'is_show_absent_app':
-                    user.is_show_absent_app = status
-                    user.save(update_fields=['is_show_absent_app'])
-                    return True
-                case 'is_show_technic_app':
-                    user.is_show_technic_app = status
-                    user.save(update_fields=['is_show_technic_app'])
-                    return True
-                case 'is_show_material_app':
-                    user.is_show_material_app = status
-                    user.save(update_fields=['is_show_material_app'])
-                    return True
-                case 'io_color_title':
-                    color = io_value if io_value is not None else '#000000'
-                    user.color_title = color
-                    user.save(update_fields=['color_title'])
-                    return True
-                case 'io_font_size':
-                    if io_value == '' or io_value is None:
-                        font_size = 10
-                    else:
-                        try:
-                            font_size = int(io_value)
-                        except Exception as e:
-                            log.error(f"set_data_for_filter(): 'font_size' | {e}")
+            if status is not None:
+                cache.delete(f"{UserService.CacheKeys.CURRENT_USER.value}:{user.pk}")
+                match io_name:
+                    case 'is_show_deleted_app':
+                        user.is_show_deleted_app = status
+                        user.save(update_fields=['is_show_deleted_app'])
+                        return True
+                    case 'is_show_saved_app':
+                        user.is_show_saved_app = status
+                        user.save(update_fields=['is_show_saved_app'])
+                        return True
+                    case 'is_show_absent_app':
+                        user.is_show_absent_app = status
+                        user.save(update_fields=['is_show_absent_app'])
+                        return True
+                    case 'is_show_technic_app':
+                        user.is_show_technic_app = status
+                        user.save(update_fields=['is_show_technic_app'])
+                        return True
+                    case 'is_show_material_app':
+                        user.is_show_material_app = status
+                        user.save(update_fields=['is_show_material_app'])
+                        return True
+                    case 'io_color_title':
+                        color = io_value if io_value is not None else '#000000'
+                        user.color_title = color
+                        user.save(update_fields=['color_title'])
+                        return True
+                    case 'io_font_size':
+                        if io_value == '' or io_value is None:
                             font_size = 10
-                    user.font_size = font_size
-                    user.save(update_fields=['font_size'])
-                    return True
-                case _:
-                    return False
+                        else:
+                            try:
+                                font_size = int(io_value)
+                            except Exception as e:
+                                log.error(f"set_data_for_filter(): 'font_size' | {e}")
+                                font_size = 10
+                        user.font_size = font_size
+                        user.save(update_fields=['font_size'])
+                        return True
+                    case _:
+                        return False
+            return False
         return False
 
 
@@ -639,7 +669,7 @@ class Utilities:
         sort_by = request.POST.get('sort_by')
         sort_by = sort_by if sort_by != '' else None
 
-        _user = USERS_SERVICE.get_user(pk=request.user.id)
+        _user = UserService.get_object(id=request.user.id)
         if _user:
 
             if filter_construction_site is not None:
@@ -650,6 +680,7 @@ class Utilities:
             _user.filter_technic = filter_technic
             _user.sort_by = sort_by
             _user.save()
+            cache.delete(f"{UserService.CacheKeys.CURRENT_USER.value}:{_user.pk}")
 
 
     @classmethod
@@ -659,22 +690,16 @@ class Utilities:
         :param context:
         :return:
         """
-        out: FilterDataSchema
-
-        # out = FilterDataSchema(
-        #     filter_construction_site_list=[],
-        #     filter_technic_list=[],
-        #     filter_foreman_list=[],
-        #     sort_by_list={
-        #         "ds":"sd"
-        #     }
-        # )
-
-        foreman_list = USERS_SERVICE.UserService.get_foreman_list()
-        construction_site_list = CONSTR_SITE_SERVICE.ConstructionSiteService.get_cs_active_list()
-        distinct_tech_title = TECHNIC_SERVICE.TechnicService.get_distinct_technic_title()
+        foreman_list = UserService.get_foreman_list()
+        construction_site_list = [
+            cs.model_dump() for cs in ConstructionSiteService.get_cs_active_list()
+            if cs.status
+        ]
+        for cs in construction_site_list:
+            foreman = list(filter(lambda f: f.id == cs["foreman"], foreman_list))
+            cs["foreman"] = foreman.pop() if foreman else None
+        distinct_tech_title = TechnicService.get_distinct_technic_title()
         sort_by_list = ASSETS.SORT_BY
-
 
         context['filter_foreman_list'] = foreman_list
         context['filter_construction_site_list'] = construction_site_list
@@ -772,7 +797,7 @@ class Utilities:
                 description = TECHNIC_SERVICE.TemplateDescService.get_object(
                     technic__id=technic_sheet.technic.id).description
             case ASSETS.TaskDescriptionMode.AUTO:
-                prev_workday = WORK_DAY_SERVICE.WorkDayService.get_prev_workday(current_day.date)
+                prev_workday = WorkDayService.get_prev_workday(current_day.date)
                 task_description = APP_TECHNIC_SERVICE.ApplicationTechnicService.get_queryset(
                     application_today__construction_site__address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value,
                     application_today__date=prev_workday,
@@ -841,18 +866,20 @@ class Utilities:
             return ASSETS.AcceptMode.OFF
 
     @classmethod
-    def set_accept_mode(cls, workday_instance: WorkDaySheet, mode: ASSETS.AcceptMode):
+    def set_accept_mode(cls, workday_data: WorkDaySchema, mode: ASSETS.AcceptMode):
         """
         Установить режим accept mode
-        :param workday_instance:
+        :param workday_data:
         :param mode:
         :return:
         """
-        workday_instance.accept_mode = mode.value
-        workday_instance.save(update_fields=['accept_mode'])
+        workday_instance = WorkDayService.get_object(id=workday_data.id)
+        if workday_instance:
+            workday_instance.accept_mode = mode.value
+            workday_instance.save(update_fields=['accept_mode'])
 
     @classmethod
-    def is_valid_get_request(cls, value: str) -> bool:
+    def is_valid_get_request(cls, value: str | None) -> bool:
         """
         Проверка : value is not None and value != ''
         :param value:
@@ -894,7 +921,7 @@ class Utilities:
                 return current_status
 
     @classmethod
-    def get_status_lists_of_apps_today(cls, applications_today: QuerySet[ApplicationToday]) -> dict:
+    def get_status_lists_of_apps_today(cls, applications_today: list[ApplicationTodaySchema]) -> dict:
         """
         Получить сгруппированный по статусам dict с id объектами ApplicationToday
         :param applications_today:
@@ -908,18 +935,17 @@ class Utilities:
             ASSETS.ApplicationTodayStatus.SEND.title: []
         }
 
-        apps_today = applications_today.values('id', 'status')
-        for app in apps_today:
-            if app['status'] == ASSETS.ApplicationTodayStatus.ABSENT.title:
-                status_lists[ASSETS.ApplicationTodayStatus.ABSENT.title].append(app['id'])
-            elif app['status'] == ASSETS.ApplicationTodayStatus.SAVED.title:
-                status_lists[ASSETS.ApplicationTodayStatus.SAVED.title].append(app['id'])
-            elif app['status'] == ASSETS.ApplicationTodayStatus.SUBMITTED.title:
-                status_lists[ASSETS.ApplicationTodayStatus.SUBMITTED.title].append(app['id'])
-            elif app['status'] == ASSETS.ApplicationTodayStatus.APPROVED.title:
-                status_lists[ASSETS.ApplicationTodayStatus.APPROVED.title].append(app['id'])
-            elif app['status'] == ASSETS.ApplicationTodayStatus.SEND.title:
-                status_lists[ASSETS.ApplicationTodayStatus.SEND.title].append(app['id'])
+        for app in applications_today:
+            if app.status == ASSETS.ApplicationTodayStatus.ABSENT.title:
+                status_lists[ASSETS.ApplicationTodayStatus.ABSENT.title].append(app.id)
+            elif app.status == ASSETS.ApplicationTodayStatus.SAVED.title:
+                status_lists[ASSETS.ApplicationTodayStatus.SAVED.title].append(app.id)
+            elif app.status == ASSETS.ApplicationTodayStatus.SUBMITTED.title:
+                status_lists[ASSETS.ApplicationTodayStatus.SUBMITTED.title].append(app.id)
+            elif app.status == ASSETS.ApplicationTodayStatus.APPROVED.title:
+                status_lists[ASSETS.ApplicationTodayStatus.APPROVED.title].append(app.id)
+            elif app.status == ASSETS.ApplicationTodayStatus.SEND.title:
+                status_lists[ASSETS.ApplicationTodayStatus.SEND.title].append(app.id)
         return status_lists
 
     @classmethod
@@ -940,7 +966,7 @@ class Utilities:
             return False
 
         time_limit = var_time_limit.time
-        next_workday = WORK_DAY_SERVICE.WorkDayService.get_next_workday()
+        next_workday = WorkDayService.get_next_workday()
 
         if (current_workday == next_workday
                 and cls.NOW() < time_limit):
@@ -975,17 +1001,16 @@ class Utilities:
         :param technic_id:
         :return:
         """
-        # technic = TECHNIC_SERVICE.delete_technic(technic_id)
-        technic = TECHNIC_SERVICE.TechnicService.delete(id=technic_id)
+        technic = TechnicService.delete(id=technic_id)
         if technic:
-            _technic_sheet = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+            _technic_sheet = TechnicSheetService.get_queryset(
                 technic=technic,
                 date__date__gte=cls.TODAY
             )
-            _application_technic = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            _application_technic = ApplicationTechnicService.get_queryset(
                 technic_sheet__in=_technic_sheet
             )
-            _application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            _application_today = ApplicationTodayService.get_queryset(
                 date__date__gte=cls.TODAY
             )
 
@@ -993,7 +1018,6 @@ class Utilities:
             _technic_sheet.delete()
 
             for _app_today in _application_today:
-                # APP_TODAY_SERVICE.validate_application_today(application_today=_app_today)
                 cls.validate_application_today(application_today=_app_today)
 
 
@@ -1157,9 +1181,18 @@ class Utilities:
             return WorkDayService.get_current_date_data(data_str)
 
 
+    @classmethod
+    def t2(cls, t_sh__id, workday_data: WorkDaySchema):
+        out = {}
+        driver_sh = DriverSheetService.get_driver_sheet_for_date(workday_data)
+        tech_sh = TechnicSheetService.get_tech_sheet_for_date(workday_data)
+        drivers = UserService.get_all_users_list()
 
+        cur_tech_sh = TechnicSheetService.filter_tech_sheet_by_id(t_sh__id, tech_sh)
+        cur_driver_sh = DriverSheetService.filter_driver_sheet_by_id(cur_tech_sh.driver_sheet, driver_sh)
+        cur_driver = UserService.filter_user_by_id_from_data(cur_driver_sh.driver, drivers)
 
-
+        return cur_driver
 
 
 
