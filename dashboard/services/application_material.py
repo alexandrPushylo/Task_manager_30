@@ -67,7 +67,7 @@ class ApplicationMaterialService(BaseService):
         cls, workday_data: WorkDaySchema
     ) -> list[ApplicationMaterialSchema]:
         cache_key = f"{cls.CacheKeys.APP_MAT_FOR_DATE.value}:{workday_data.date}"
-        cache_ttl = 10
+        cache_ttl = 60 * 60
 
         app_mat_for_cache = cache.get(cache_key)
         if app_mat_for_cache is None:

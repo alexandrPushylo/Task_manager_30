@@ -1,19 +1,20 @@
 import random
 
 import dashboard.assets as ASSETS
-import dashboard.services.application_technic as APP_TECHNIC_SERVICE
-import dashboard.services.application_today as APP_TODAY_SERVICE
-import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
-import dashboard.services.user as USERS_SERVICE
-import dashboard.telegram_bot as T
+import dashboard.telegram_bot as telegram
 from config.creds import USE_TELEGRAM
 from dashboard.models import WorkDaySheet
+from dashboard.services.application_technic import ApplicationTechnicService
+from dashboard.services.application_today import ApplicationTodayService
+from dashboard.services.technic_sheet import TechnicSheetService
+from dashboard.services.user import UserService
 from logger import getLogger
 
 log = getLogger(__name__)
 
 class TelegramService:
     USE_TELEGRAM = USE_TELEGRAM
+    BOT = telegram.BOT
 
     @classmethod
     def send_messages(cls, chat_id, messages):
@@ -25,8 +26,8 @@ class TelegramService:
         """
         if USE_TELEGRAM:
             try:
-                T.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
-            except T.ApiTelegramException as e:
+                cls.BOT.send_message(chat_id=chat_id, text=messages, parse_mode='html')
+            except telegram.ApiTelegramException as e:
                 log.error('send_messages_by_telegram(): ApiTelegramException [%s]' % chat_id)
 
     @classmethod
@@ -36,36 +37,36 @@ class TelegramService:
         :param user_id:
         :return:
         """
-        _user = USERS_SERVICE.get_user(pk=user_id)
+        _user = UserService.get_object(pk=user_id)
         if _user:
             _key = random.randint(100, 999)
             return f'{_key}{_user.id}'
+        return None
 
     @classmethod
     def send_application_by_telegram_for_driver(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
         all_already_send = current_day.is_all_application_send
         template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
-        driver_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
+        driver_list = TechnicSheetService.get_queryset(
             date=current_day,
             status=True,
             driver_sheet__status=True,
             isArchive=False
         )
         if application_today_id:
-            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(pk=application_today_id)
+            application_today = ApplicationTodayService.get_queryset(id=application_today_id)
         else:
-            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            application_today = ApplicationTodayService.get_queryset(
                 isArchive=False,
                 date=current_day,
                 status=ASSETS.ApplicationTodayStatus.SEND.title)
 
-        application_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-            select_related=('technic_sheet', 'application_today__construction_site__foreman'),
+        application_technic_list = ApplicationTechnicService.get_queryset(
             isArchive=False,
             is_cancelled=False,
             isChecked=False,
             application_today__in=application_today
-        )
+        ).select_related('technic_sheet', 'application_today__construction_site__foreman')
 
         driver_sheet_list = driver_list.filter(
             id__in=application_technic_list.values_list('technic_sheet_id', flat=True)).values(
@@ -109,7 +110,7 @@ class TelegramService:
     def send_application_by_telegram_for_foreman(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
         all_already_send = current_day.is_all_application_send
         template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
-        foreman_list = USERS_SERVICE.get_user_queryset(
+        foreman_list = UserService.get_queryset(
             isArchive=False,
             post__in=(ASSETS.UserPosts.FOREMAN.title, ASSETS.UserPosts.MASTER.title, ASSETS.UserPosts.SUPPLY.title)
         ).values(
@@ -122,11 +123,11 @@ class TelegramService:
         )
 
         if application_today_id:
-            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            application_today = ApplicationTodayService.get_queryset(
                 select_related=('construction_site__foreman',),
                 pk=application_today_id)
         else:
-            application_today = APP_TODAY_SERVICE.get_apps_today_queryset(
+            application_today = ApplicationTodayService.get_queryset(
                 select_related=('construction_site__foreman',),
                 isArchive=False, date=current_day, status=ASSETS.ApplicationTodayStatus.SEND.title)
 
@@ -162,7 +163,7 @@ class TelegramService:
     @classmethod
     def send_application_by_telegram_for_admin(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
         template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
-        administrators_list = USERS_SERVICE.get_user_queryset(isArchive=False, post=ASSETS.UserPosts.ADMINISTRATOR.title)
+        administrators_list = UserService.get_queryset(isArchive=False, post=ASSETS.UserPosts.ADMINISTRATOR.title)
 
         if current_day.is_all_application_send:
             msg = f"Заявки на:\n{template_date} отправлены повторно"
@@ -170,7 +171,7 @@ class TelegramService:
             msg = f"Заявки на:\n{template_date} отправлены"
 
         if application_today_id:
-            app_today = APP_TODAY_SERVICE.get_apps_today(pk=application_today_id)
+            app_today = ApplicationTodayService.get_object(id=application_today_id)
             if app_today:
                 if app_today.construction_site.foreman:
                     msg_constr_site = f'{app_today.construction_site.address} ({app_today.construction_site.foreman})'
@@ -200,6 +201,6 @@ class TelegramService:
         cls.send_application_by_telegram_for_foreman(current_day, messages, application_today_id)
         cls.send_application_by_telegram_for_admin(current_day, messages, application_today_id)
         if application_today_id:
-            APP_TODAY_SERVICE.get_apps_today(pk=application_today_id).send_application()
+            ApplicationTodayService.get_object(id=application_today_id).send_application()
         else:
             current_day.send_all_application()

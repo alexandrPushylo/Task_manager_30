@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
 
@@ -16,8 +14,8 @@ class ApplicationTechnicSchema(BaseModel):
 
 
 class EditApplicationTechnicSchema(BaseModel):
-    application_today: int
-    technic_sheet: int | None
+    application_today_id: int
+    technic_sheet_id: int | None
     description: str | None
 
 

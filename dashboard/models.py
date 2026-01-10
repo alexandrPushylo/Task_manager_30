@@ -247,9 +247,13 @@ class ApplicationToday(models.Model):
             self.status = self.ABSENT
         self.save(update_fields=['status'])
 
-    def make_edited(self):
+    def make_edited(self, status: str = None):
         self.is_edited = True
-        self.save(update_fields=['is_edited'])
+        if status:
+            self.status = status
+            self.save(update_fields=['is_edited', 'status'])
+        else:
+            self.save(update_fields=['is_edited'])
 
     def to_dict(self, *args, **kwargs):
         return convert_to_dict(self, *args, **kwargs)

@@ -8,6 +8,7 @@ from dashboard.models import DriverSheet
 from dashboard.schemas.driver_sheet_schema import DriverSheetSchema
 from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
 from dashboard.services.base import BaseService
+from dashboard.services.technic_sheet import TechnicSheetService
 
 from logger import getLogger
 
@@ -59,20 +60,23 @@ class DriverSheetService(BaseService):
                 driver_sheet.status = False
                 log.info(f"driver_sheet with id {driver_sheet_id} status set to False")
                 driver_sheet.save(update_fields=["status"])
-                return False
+                status = False
             else:
                 driver_sheet.status = True
                 log.info(
                     f"the driver_sheet with id {driver_sheet_id} has the status set to True"
                 )
                 driver_sheet.save(update_fields=["status"])
-                return True
+                status = True
+            cache.delete(f"{cls.CacheKeys.DRIVER_SHEET_FOR_DAY.value}:{driver_sheet.date.date}")
+            cache.delete(f"{TechnicSheetService.CacheKeys.WORKLOAD_LIST.value}:{driver_sheet.date.id}")
+            return status
         return None
 
     @classmethod
     def get_driver_sheet_for_date(cls, workday_data: WorkDaySchema) -> list[DriverSheetSchema]:
         cache_key = f"{cls.CacheKeys.DRIVER_SHEET_FOR_DAY.value}:{workday_data.date}"
-        cache_ttl = 10
+        cache_ttl = 60 * 60
 
         driver_sheet_from_cache = cache.get(cache_key)
         if driver_sheet_from_cache is None:

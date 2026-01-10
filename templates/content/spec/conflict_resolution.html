@@ -31,10 +31,10 @@
                     <div class="card m-1">
                         <div class="card-header">
                             <input type="hidden" name="application_technic_id" value="{{ conflict_at.id  }}">
-                            <div {% if conflict_at.technic_sheet.id in priority_id_list %}
+                            <div {% if conflict_at.technic_sheet_id in priority_id_list %}
                                 class="input-group  rounded p-1 m-0"
                                 {% for ts_id, color in color_list.items %}
-                                    {% if conflict_at.technic_sheet.id == ts_id %}
+                                    {% if conflict_at.technic_sheet_id == ts_id %}
                                 style="border: solid 2px {{ color }}"
                                     {% endif %}
                                 {% endfor %}
@@ -62,10 +62,10 @@
                                             <option value="">--Любой свободный--</option>
                                             {% for technic_sheet in technic_driver.technic_sheets %}
                                                 
-                                                <option {% if conflict_at.technic_sheet.id == technic_sheet.id %}selected{% endif %} 
+                                                <option {% if conflict_at.technic_sheet_id == technic_sheet.id %}selected{% endif %}
                                                         {% if technic_sheet.count_application == 0 %}style="color: green" {% elif technic_sheet.count_application > 0 %}style="color: #d70b1c"{% endif %}
                                                         value="{{ technic_sheet.id }}"
-                                                    >{{ technic_sheet.driver_sheet.driver.last_name }} ( <span
+                                                    >{{ technic_sheet.driver_sheet__driver__last_name }} ( <span
                                                 >{% if technic_sheet.count_application == 0 %}Свободен {% elif technic_sheet.count_application > 0 %}Занят{% endif %}</span> )</option>
                                               
                                             {% endfor %}
@@ -77,9 +77,9 @@
                         <div class="card-title">
                             <div class="card-body input-group p-1">
                                 <div class="col-auto input-group-text p-1"
-                                        {% if conflict_at.technic_sheet.id in priority_id_list %}
+                                        {% if conflict_at.technic_sheet_id in priority_id_list %}
                                             {% for ts_id, color in color_list.items %}
-                                                {% if conflict_at.technic_sheet.id == ts_id %}
+                                                {% if conflict_at.technic_sheet_id == ts_id %}
                                      style="border: solid 2px {{ color }}"
                                                 {% endif %}
                                             {% endfor %}
@@ -94,9 +94,9 @@
 
                                 <div class="col ms-1">
                                     <span class="fw-bolder small ms-2"
-                                    >{{ conflict_at.application_today.construction_site.address }}</span>
-                                    {% if conflict_at.application_today.construction_site.foreman %}<span class="small"
-                                    >({{ conflict_at.application_today.construction_site.foreman }})</span>
+                                    >{{ conflict_at.application_today__construction_site__address }}</span>
+                                    {% if conflict_at.application_today__construction_site__foreman__last_name %}<span class="small"
+                                    >({{ conflict_at.application_today__construction_site__foreman__last_name }})</span>
                                     {% endif %}
 
                                     <textarea class="form-control p-1 text_area_description"

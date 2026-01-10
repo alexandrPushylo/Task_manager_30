@@ -57,12 +57,15 @@ class TechnicSheetService(BaseService):
                 ts.status = False
                 log.info(f"technic_sheet id {technic_sheet_id} the status is set to False")
                 ts.save(update_fields=["status"])
-                return False
+                status = False
             else:
                 ts.status = True
                 log.info("technic_sheet id {technic_sheet_id} the status is set to True")
                 ts.save(update_fields=["status"])
-                return True
+                status = True
+            cache.delete(f"{cls.CacheKeys.WORKLOAD_LIST.value}:{ts.date.id}")
+            cache.delete(f"{cls.CacheKeys.TECH_SHEET_FOR_DAY.value}:{ts.date.date}")
+            return status
         return None
 
     @classmethod
@@ -76,7 +79,7 @@ class TechnicSheetService(BaseService):
             'count_application'}
         """
         cache_key = f"{cls.CacheKeys.WORKLOAD_LIST.value}:{workday_sheet_id}"
-        cache_ttl = 10
+        cache_ttl = 60
         workload_list_from_cache = cache.get(cache_key)
         if workload_list_from_cache is None:
             workload_list = (
@@ -173,7 +176,7 @@ class TechnicSheetService(BaseService):
     @classmethod
     def get_tech_sheet_for_date(cls, workday_data: WorkDaySchema) -> list[TechnicSheetSchema]:
         cache_key = f"{cls.CacheKeys.TECH_SHEET_FOR_DAY.value}:{workday_data.date}"
-        cache_ttl = 10
+        cache_ttl = 60 * 60
         tech_sheet_from_cache = cache.get(cache_key)
         if tech_sheet_from_cache is None:
             tech_sheet = cls.get_queryset(date_id=workday_data.id)
@@ -186,6 +189,19 @@ class TechnicSheetService(BaseService):
             return tech_sheet_from_cache
 
     @classmethod
+    def increment_count_application(cls, technic_sheet_inst: TechnicSheet):
+        technic_sheet_inst.increment_count_application()
+        cache.delete(f"{cls.CacheKeys.WORKLOAD_LIST.value}:{technic_sheet_inst.date.id}")
+        cache.delete(f"{cls.CacheKeys.TECH_SHEET_FOR_DAY.value}:{technic_sheet_inst.date.date}")
+
+
+    @classmethod
+    def decrement_count_application(cls, technic_sheet_inst: TechnicSheet):
+        technic_sheet_inst.decrement_count_application()
+        cache.delete(f"{cls.CacheKeys.WORKLOAD_LIST.value}:{technic_sheet_inst.date.id}")
+        cache.delete(f"{cls.CacheKeys.TECH_SHEET_FOR_DAY.value}:{technic_sheet_inst.date.date}")
+
+    @classmethod
     def filter_tech_sheet_by_id(
             cls,
             tech_sheet_id: int,
@@ -195,42 +211,3 @@ class TechnicSheetService(BaseService):
             if tech_sheet.id == tech_sheet_id:
                 return tech_sheet
         return None
-
-
-def get_technic_sheet_queryset(
-    select_related: tuple = (), order_by: tuple = (), **kwargs
-) -> QuerySet[TechnicSheet]:
-    """
-    :param select_related:
-    :param order_by:
-    :param kwargs:
-    :return:
-    """
-
-    technic_sheet = TechnicSheet.objects.filter(**kwargs)
-    if select_related:
-        technic_sheet = technic_sheet.select_related(*select_related)
-    if order_by:
-        technic_sheet = technic_sheet.order_by(*order_by)
-    return technic_sheet
-
-
-def get_technic_sheet(**kwargs) -> TechnicSheet:
-    """
-    :param kwargs:
-    :return:
-    """
-    try:
-        technic_sheet = TechnicSheet.objects.get(**kwargs)
-        return technic_sheet
-    except TechnicSheet.DoesNotExist:
-        log.warning(f'get_technic_sheet({kwargs}): TechnicSheet.DoesNotExist')
-        return TechnicSheet.objects.none()
-    except TechnicSheet.MultipleObjectsReturned:
-        log.error(f'get_technic_sheet({kwargs}): TechnicSheet.MultipleObjectsReturned')
-        return TechnicSheet.objects.none()
-    except ValueError:
-        log.error(f"get_technic_sheet{kwargs}() - ValueError ")
-        return TechnicSheet.objects.none()
-
-

@@ -43,8 +43,8 @@ class ParameterService(BaseService):
             return cls.model.objects.none()
 
     @classmethod
-    def is_exist(cls, *args, **kwargs) -> bool:
-        pr = cls.get_queryset(*args, **kwargs)
+    def is_exist(cls, **kwargs) -> bool:
+        pr = cls.get_queryset(**kwargs)
         return pr.exists()
 
     @classmethod
@@ -57,25 +57,27 @@ class ParameterService(BaseService):
             return parameter
 
     @classmethod
-    def auto_create_global_parameters(cls, global_parameters: list[CreateParameterSchema]):
+    def auto_create_global_parameters(cls, global_parameters: list[dict]):
         """
         Авто создание переменных
         :param global_parameters:
         :return:
         """
-        if global_parameters:
-            for item in global_parameters:
-                pr__is_exist = cls.is_exist(name=item.name)
+
+        parameters = global_parameters
+        if parameters:
+            for item in parameters:
+                pr__is_exist = cls.is_exist(name=item["name"])
                 if not pr__is_exist:
                     cls.model.objects.create(
-                        name=item.name,
-                        title=item.title,
-                        value=item.value,
-                        flag=item.flag,
-                        description=item.description,
-                        time=item.time,
-                        date=item.date,
-                        permissions=item.permissions,
+                        name=item["name"],
+                        title=item["title"],
+                        value=item["value"],
+                        flag=item["flag"],
+                        description=item["description"],
+                        time=item["time"],
+                        date=item["date"],
+                        permissions=item["permissions"],
                     )
 
     @classmethod

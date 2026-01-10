@@ -13,5 +13,5 @@ class ApplicationMaterialSchema(BaseModel):
 
 
 class EditApplicationMaterialSchema(BaseModel):
-    application_today: int
+    application_today_id: int
     description: str

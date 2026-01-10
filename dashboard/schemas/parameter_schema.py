@@ -16,14 +16,16 @@ class ParameterSchema(BaseModel):
 
 
 class CreateParameterSchema(BaseModel):
-    title: str | None
+    title: str | None = Field(max_length=256, default=None)
     name: str
-    value: str | None
-    flag: bool
+    value: str | None = Field(max_length=512, default=None)
+    flag: bool = False
     description: str | None
     time: time | None
     date: date | None
     permissions: str | None
+
+
 
 class SetParameterSchema(BaseModel):
     name: str

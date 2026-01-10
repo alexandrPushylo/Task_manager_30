@@ -5,12 +5,7 @@ from django.core.cache import cache
 from django.db.models import QuerySet  # type: ignore
 
 import dashboard.assets as ASSETS
-import dashboard.utilities as utils
-import dashboard.services.application_material as APP_MATERIAL_SERVICE
-import dashboard.services.application_technic as APP_TECHNIC_SERVICE
-import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE
-import dashboard.services.user as USERS_SERVICE
-from dashboard.models import User, ApplicationToday
+from dashboard.models import ApplicationToday
 from dashboard.schemas.application_today_schema import (
     ApplicationTodaySchema,
     CreateApplicationTodaySchema,
@@ -70,6 +65,7 @@ class ApplicationTodayService(BaseService):
                         construction_site_id=data.construction_site_id,
                         date_id=data.date_id
                     )
+            cache.delete(f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{at.date.date}")
             return at
         except ValueError:
             log.error(f"get_or_create_app_today(): ValueError")
@@ -78,6 +74,10 @@ class ApplicationTodayService(BaseService):
     @classmethod
     def get_or_create(cls, *args, **kwargs) -> tuple[ApplicationToday, bool]:
         (obj, created) = cls.model.objects.get_or_create(*args, **kwargs)
+        if created:
+            cache.delete(
+                f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{obj.date.date}"
+            )
         return obj, created
 
     @classmethod
@@ -87,6 +87,7 @@ class ApplicationTodayService(BaseService):
             at.isArchive = True
             at.status = ASSETS.ApplicationTodayStatus.DELETED.title
             at.save(update_fields=['status', 'isArchive'])
+            cache.delete(f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{at.date.date}")
             return at
         return None
 
@@ -101,13 +102,16 @@ class ApplicationTodayService(BaseService):
             at.isArchive = False
             at.status = status
             at.save(update_fields=['status', 'isArchive'])
+            cache.delete(
+                f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{at.date.date}"
+            )
             return at
         return None
 
     @classmethod
     def get_app_today_for_date(cls, workday_data: WorkDaySchema) -> list[ApplicationTodaySchema]:
         cache_key = f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{workday_data.date}"
-        cache_ttl = 10
+        cache_ttl = 60 * 60
 
         app_today_from_cache = cache.get(cache_key)
         if app_today_from_cache is None:
@@ -121,6 +125,21 @@ class ApplicationTodayService(BaseService):
             return app_today_from_cache
 
     @classmethod
+    def make_edited(cls, app_today_instance: ApplicationToday, status: str = None):
+        app_today_instance.make_edited(status)
+        cache.delete(
+            f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{app_today_instance.date.date}"
+        )
+
+    @classmethod
+    def set_next_status(cls, app_today_instance: ApplicationToday, clear_cache: bool = True):
+        app_today_instance.set_next_status()
+        if clear_cache:
+            cache.delete(
+                f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{app_today_instance.date.date}"
+            )
+
+    @classmethod
     def get_app_today_by_cs_id_from_data(
             cls,
             constr_site_id: int,
@@ -130,5 +149,3 @@ class ApplicationTodayService(BaseService):
             if at.construction_site == constr_site_id:
                 return at
         return None
-
-

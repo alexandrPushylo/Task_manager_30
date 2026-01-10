@@ -416,14 +416,14 @@ class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
         if request.user.post in A.UserPosts.get_set():
             instance = self.get_object()
 
-            if USERS_SERVICE.is_supply(request.user):
-                supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
-                app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-                    application_today__date=instance.date,
-                    isArchive=False,
-                    technic_sheet__technic__in=supply_technic_list
-                ).exclude(application_today=instance)
-                app_technic_list.update(isChecked=False)
+            # if USERS_SERVICE.is_supply(request.user):
+            #     supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
+            #     app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            #         application_today__date=instance.date,
+            #         isArchive=False,
+            #         technic_sheet__technic__in=supply_technic_list
+            #     ).exclude(application_today=instance)
+            #     app_technic_list.update(isChecked=False)
             # APP_TODAY_SERVICE.delete_application_today(instance)
 
             return Response(status=status.HTTP_204_NO_CONTENT)

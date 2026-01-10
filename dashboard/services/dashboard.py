@@ -41,6 +41,7 @@ class DashboardService:
         SUPPLY = 'content/dashboard/supply_dashboard.html'
         EMPLOYEE = 'content/dashboard/employee_dashboard.html'
         DRIVER = 'content/dashboard/driver_dashboard.html'
+        INFO_ABOUT_DRIVER = 'content/spec/info_about_drivers_dashboard.html'
 
     @classmethod
     def get_dashboard(
@@ -161,7 +162,17 @@ class DashboardService:
         context["table_working_technic_sheet"] = (  #TODO: !!!!!!!!!!!!!!!!!!!!!!!
             Utilities.get_table_working_technic_sheet(current_day.id)
         )
-        context["applications_today_list"] = applications_today
+
+        applications_today_list = [at.model_dump() for at in applications_today]
+        for at in applications_today_list:
+            cs = [cs.model_dump() for cs in construction_sites if cs.id == at["construction_site"]]
+            if cs:
+                cs = cs.pop()
+                foreman = UserService.filter_user_by_id_from_data(cs['foreman'], user_list)
+                cs['foreman'] = foreman.model_dump() if foreman else None
+                at["construction_site"] = cs
+        context["applications_today_list"] = applications_today_list
+
         construction_sites = [cs.model_dump() for cs in construction_sites]
 
         for cs in construction_sites:
@@ -293,7 +304,22 @@ class DashboardService:
         else:
             application_material = []
 
-        context["applications_today_list"] = applications_today
+        applications_today_list = [at.model_dump() for at in applications_today]
+        for at in applications_today_list:
+            cs = [
+                cs.model_dump()
+                for cs in construction_sites
+                if cs.id == at["construction_site"]
+            ]
+            if cs:
+                cs = cs.pop()
+                foreman = UserService.filter_user_by_id_from_data(
+                    current_foreman_id, user_list
+                )
+                cs["foreman"] = foreman.model_dump() if foreman else None
+                at["construction_site"] = cs
+        context["applications_today_list"] = applications_today_list
+
         construction_sites = [cs.model_dump() for cs in construction_sites]
 
         for cs in construction_sites:
@@ -386,6 +412,7 @@ class DashboardService:
         construction_site = ConstructionSiteService.get_construction_site_for_supply()
         app_today_for_date = ApplicationTodayService.get_app_today_for_date(current_day)
         app_mat_for_date = ApplicationMaterialService.get_app_mat_for_date(current_day)
+        driver_list = UserService.get_driver_list()
         # app_tech_for_date = ApplicationTechnicService.get_app_tech_for_date(current_day)
 
         # application_today = ApplicationTodayService.get_queryset(
@@ -424,8 +451,9 @@ class DashboardService:
                 "technic_sheet__driver_sheet__driver__last_name",
                 "technic_sheet__count_application"
             )) if application_today else None
-
-        applications_material = ApplicationMaterialService.get_app_mat_by_at_id_from_data(application_today.id, app_mat_for_date)
+        if application_today:
+            applications_material = ApplicationMaterialService.get_app_mat_by_at_id_from_data(application_today.id, app_mat_for_date)
+            context["applications_material"] = applications_material
 
         if request.method == "POST":
             application_technic_id = request.POST.get("applicationTechnicId")
@@ -475,30 +503,15 @@ class DashboardService:
         if count_not_checked_app_mater > 0:
             context["count_not_checked_app_mater"] = count_not_checked_app_mater
 
-        # applications_technic = [
-        #     at.model_dump() for at in app_tech_for_date
-        #     if not at.isArchive and at.application_today == application_today.id
-        # ]
-
-        # applications_technic = ApplicationTechnicService.get_queryset(
-        #     isArchive=False, application_today__in=application_today
-        # )
-
-        # applications_material = [
-        #     am for am in app_mat_for_date
-        #     if not am and am.application_today == application_today.id
-        # ]
-        # applications_material = ApplicationMaterialService.get_queryset(
-        #     isArchive=False, application_today__in=application_today
-        # )
         technic_list = TechnicService.get_all_technic_data()
         supply_technic_list = [
-            t for t in technic_list
+            t.model_dump() for t in technic_list
             if t.supervisor_technic == ASSETS.UserPosts.SUPPLY.title and not t.isArchive
         ]
-        # supply_technic_list = TechnicService.get_queryset(
-        #     isArchive=False, supervisor_technic=ASSETS.UserPosts.SUPPLY.title
-        # )
+        for technic in supply_technic_list:
+            driver = UserService.filter_user_by_id_from_data(
+                technic["attached_driver"], driver_list)
+            technic["attached_driver"] = driver.model_dump()
 
         applications_technic_for_supply = []
 
@@ -514,7 +527,7 @@ class DashboardService:
         )
 
         for _technic in supply_technic_list:
-            _application_technic = _app_tech.filter(technic_sheet__technic=_technic.id)
+            _application_technic = _app_tech.filter(technic_sheet__technic=_technic['id'])
             applications_technic_for_supply.append(
                 {"technic": _technic, "application_technic": _application_technic}
             )
@@ -524,7 +537,7 @@ class DashboardService:
         context["application_today"] = application_today#.first()
         context["construction_site"] = construction_site
         context["applications_technic"] = applications_technic
-        context["applications_material"] = applications_material
+        # context["applications_material"] = applications_material
         context["applications_technic_for_supply"] = applications_technic_for_supply
 
         return context

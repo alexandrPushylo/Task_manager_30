@@ -4,6 +4,7 @@ from django.core.handlers.wsgi import WSGIRequest  # type: ignore
 from django.core.cache import cache
 
 from config.settings import USE_CACHE
+from dashboard.schemas.technic_sheet_schema import TechnicSheetSchema
 from dashboard.schemas.template_description_schema import TemplateDescriptionSchema
 from dashboard.services.base import BaseService
 from dashboard.types import Any
@@ -158,45 +159,49 @@ class TechnicService(BaseService):
         return title.replace(" ", "").replace(".", "")
 
     @classmethod
-    def get_distinct_tech_title_from_ts(cls, technic_sheets_instance: QuerySet[TechnicSheet]) -> set:
+    def get_distinct_tech_title_from_ts(
+            cls,
+            technic_sheets_data: list[TechnicSheetSchema]
+    ) -> set:
         """
-        :param technic_sheets_instance:
+        :param technic_sheets_data:
         :return: technic_sheets.values_list('technic__title', flat=True).distinct()
         """
-        # distinct_technic_titles_list = []
-        technic_titles_list = technic_sheets_instance.values_list("technic__title", flat=True)
-        return set(technic_titles_list)
 
-        # for item in technic_titles_list:
-        #     if item not in distinct_technic_titles_list:
-        #         distinct_technic_titles_list.append(item)
-        # return distinct_technic_titles_list
+        technic_ids = [ts.technic for ts in technic_sheets_data]
+        technic_list = [
+            t.title for t in cls.get_all_technic_data()
+            if t.id in technic_ids
+        ]
+        return set(technic_list)
 
     @classmethod
     def get_dict_short_technic_names(
             cls,
-            technic_sheets_instance: QuerySet[TechnicSheet]
+            technic_sheets_data: list[TechnicSheetSchema]
     ) -> list[ShortTechnicDataSchema]:
         """
         Получить dict {короткое название техники: название техники}
-        :param technic_sheets_instance:
+        :param technic_sheets_data:
         :return:
         """
-        distinct_technic_titles_list = cls.get_distinct_tech_title_from_ts(technic_sheets_instance)
+
+        technic_list = cls.get_all_technic_data()
+
+        distinct_technic_titles_list = cls.get_distinct_tech_title_from_ts(technic_sheets_data)
         out: list[ShortTechnicDataSchema] = []
 
         for title in distinct_technic_titles_list:
+            t_ids = [t.id for t in technic_list if t.title == title]
+            count_application = [ts.count_application for ts in technic_sheets_data if ts.technic in t_ids]
             out.append(
                 ShortTechnicDataSchema(
                     title=title,
                     short_title=cls.get_short_title(title),
-                    status_busies_list=list(
-                        technic_sheets_instance.filter(
-                            technic__title=title).values_list("count_application", flat=True
-                        )
-                    )
+                    status_busies_list=count_application
                 )
             )
+        out = sorted(out, key=lambda x: x.title)
         return out
 
     @classmethod
@@ -307,7 +312,7 @@ class TemplateDescService(BaseService):
     def set_task_description(
             cls,
             technic_id: int,
-            type_mode: ASSETS.TaskDescriptionMode,
+            type_mode: str | None,#ASSETS.TaskDescriptionMode,
             description: str | None
     ):
         """

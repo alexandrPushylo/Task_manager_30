@@ -13,6 +13,7 @@ from dashboard.schemas.application_technic_schema import (
 )
 from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
 from dashboard.services.base import BaseService
+from dashboard.services.technic_sheet import TechnicSheetService
 from logger import getLogger
 
 log = getLogger(__name__)
@@ -57,8 +58,8 @@ class ApplicationTechnicService(BaseService):
             app_technic_data: EditApplicationTechnicSchema
     ) -> ApplicationTechnic | None:
         try:
-            am = cls.model.objects.create(**app_technic_data.model_dump())
-            return am
+            at = cls.model.objects.create(**app_technic_data.model_dump())
+            return at
         except ValueError:
             log.warning(f"create_application_technic(): ValueError")
             return None
@@ -72,7 +73,8 @@ class ApplicationTechnicService(BaseService):
         at = cls.get_object(*args, **kwargs)
         if at:
             if at.technic_sheet:
-                at.technic_sheet.decrement_count_application()
+                # at.technic_sheet.decrement_count_application()
+                TechnicSheetService.decrement_count_application(at.technic_sheet)
             at.isArchive = True
             at.save(update_fields=["isArchive"])
             return 'success'
@@ -106,13 +108,13 @@ class ApplicationTechnicService(BaseService):
             if at.is_cancelled:
                 at.isChecked = False
                 at.is_cancelled = False
-                at.technic_sheet.increment_count_application()
+                TechnicSheetService.increment_count_application(at.technic_sheet)
                 at.save()
                 status = "accept"
             else:
                 at.isChecked = False
                 at.is_cancelled = True
-                at.technic_sheet.decrement_count_application()
+                TechnicSheetService.decrement_count_application(at.technic_sheet)
                 at.save()
                 status = "reject"
             cache.delete(f"{cls.CacheKeys.APP_TECH_FOR_DATE.value}:{workday_data.date}")
@@ -121,7 +123,7 @@ class ApplicationTechnicService(BaseService):
     @classmethod
     def get_app_tech_for_date(cls, workday_data: WorkDaySchema) -> list[ApplicationTechnicSchema]:
         cache_key = f"{cls.CacheKeys.APP_TECH_FOR_DATE.value}:{workday_data.date}"
-        cache_ttl = 10
+        cache_ttl = 60 * 60
 
         app_tech_for_cache = cache.get(cache_key)
         if app_tech_for_cache is None:
@@ -138,8 +140,5 @@ class ApplicationTechnicService(BaseService):
     def filter_app_tech_by_at_id_from_data(
         cls, app_today_id: int, data: list[ApplicationTechnicSchema]
     ) -> list[ApplicationTechnicSchema]:
-        # for at in data:
-        #     if at.application_today == app_today_id:
-        #         return at
         app_tech = [at for at in data if at.application_today == app_today_id]
         return app_tech
