@@ -369,7 +369,6 @@ class Utilities:
         technic_sheet = TechnicSheetService.get_queryset(
             date_id=workday_data.id,
             driver_sheet__isnull=False,
-            # driver_sheet__status=True,
             status=True,
             isArchive=False
         ).exclude(
@@ -506,6 +505,7 @@ class Utilities:
             return 7
         if status == ASSETS.ApplicationTodayStatus.ABSENT.title:
             return 9
+        return 9
 
 
     @classmethod
@@ -524,7 +524,6 @@ class Utilities:
                 application_technic.is_cancelled = False
                 application_technic.description = application_technic.description.replace(
                     ASSETS.MessagesAssets.reject.value, "")
-                # application_technic.technic_sheet.increment_count_application()
                 TechnicSheetService.increment_count_application(application_technic.technic_sheet)
                 application_technic.technic_sheet.save()
                 application_technic.save()
@@ -537,7 +536,6 @@ class Utilities:
             str_desc = str_constr_site + application_technic.description + '\n'
 
             if not application_technic.isChecked:
-                # _new_app_tech, created = ApplicationTechnic.objects.get_or_create(
                 _new_app_tech, created = ApplicationTechnicService.get_or_create(
                     technic_sheet=application_technic.technic_sheet,
                     application_today=application_today
@@ -567,18 +565,18 @@ class Utilities:
 
 
     @classmethod
-    def get_table_working_technic_sheet(cls, current_day_id: int):  #TODO ??????????
+    def get_table_working_technic_sheet(cls, workday_data: WorkDaySchema):  #TODO ??????????
         """
         Получить таблицу загруженность для dashboard
-        :param current_day_id:
+        :param workday_data:
         :return:
         """
         _technic_sheet = (TechnicSheetService.get_queryset(
             isArchive=False,
-            date_id=current_day_id
+            date_id=workday_data.id
         ).order_by(
             'driver_sheet__driver__last_name'
-        )).select_related=(
+        )).select_related(
             'driver_sheet__driver', 'technic__attached_driver'
         )
         return _technic_sheet
@@ -769,29 +767,22 @@ class Utilities:
         :param technic_sheet_id:
         :return:
         """
-        # construction_site, _ = ConstructionSite.objects.get_or_create(address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value)
         construction_site = ConstructionSiteService.get_spec_construction_site()
 
         technic_sheet = TechnicSheetService.get_object(id=technic_sheet_id)
         current_day = technic_sheet.date
-        # application_today, _ = ApplicationToday.objects.get_or_create(
-        #     construction_site=construction_site,
-        #     date=current_day)
         application_today, _ = ApplicationTodayService.get_or_create(
             construction_site=construction_site,
             date=current_day)
 
-        # application_technic, at_created = ApplicationTechnic.objects.get_or_create(
-        #     application_today=application_today,
-        #     technic_sheet=technic_sheet)
         application_technic, at_created = ApplicationTechnicService.get_or_create(
             application_today=application_today,
             technic_sheet=technic_sheet)
-        if at_created:
+        if at_created or application_technic.isArchive or application_technic.is_cancelled:
             TechnicSheetService.increment_count_application(technic_sheet)
-            # technic_sheet.increment_count_application()
 
         template_description = TemplateDescService.get_description_mode_for_spec_app(technic_sheet.technic.id)
+        description = ''
         match template_description:
             case ASSETS.TaskDescriptionMode.DEFAULT:
                 description = ParameterService.get_object(
@@ -804,7 +795,7 @@ class Utilities:
                 prev_workday = WorkDayService.get_prev_workday(current_day.date)
                 task_description = ApplicationTechnicService.get_queryset(
                     application_today__construction_site__address=ASSETS.MessagesAssets.CS_SPEC_TITLE.value,
-                    application_today__date=prev_workday,
+                    application_today__date_id=prev_workday.id,
                     technic_sheet__technic=technic_sheet.technic,
                 )
                 if task_description.exists():
@@ -813,11 +804,14 @@ class Utilities:
                     description = ''
             case _:
                 description = ''
-
+        application_technic.isArchive = False
+        application_technic.is_cancelled = False
         application_technic.description = description
         application_technic.save()
         application_today.status = ASSETS.ApplicationTodayStatus.SUBMITTED.title
         application_today.save(update_fields=['status'])
+        cache.delete(f"{ApplicationTodayService.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{current_day.date}")
+        cache.delete(f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{current_day.date}")
 
     @classmethod
     def get_view_mode(cls, date_: date) -> str:

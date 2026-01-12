@@ -159,8 +159,8 @@ class DashboardService:
         else:
             application_material = []
 
-        context["table_working_technic_sheet"] = (  #TODO: !!!!!!!!!!!!!!!!!!!!!!!
-            Utilities.get_table_working_technic_sheet(current_day.id)
+        context["table_working_technic_sheet"] = (
+            Utilities.get_table_working_technic_sheet(current_day)
         )
 
         applications_today_list = [at.model_dump() for at in applications_today]
