@@ -4,6 +4,7 @@ import dashboard.assets as ASSETS
 import dashboard.telegram_bot as telegram
 from config.creds import USE_TELEGRAM
 from dashboard.models import WorkDaySheet
+from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
 from dashboard.services.application_technic import ApplicationTechnicService
 from dashboard.services.application_today import ApplicationTodayService
 from dashboard.services.technic_sheet import TechnicSheetService
@@ -44,11 +45,11 @@ class TelegramService:
         return None
 
     @classmethod
-    def send_application_by_telegram_for_driver(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
-        all_already_send = current_day.is_all_application_send
-        template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
+    def send_application_by_telegram_for_driver(cls, workday_data: WorkDaySchema, messages=None, application_today_id=None):
+        all_already_send = workday_data.is_all_application_send
+        template_date = f'{ASSETS.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {ASSETS.MONTHS_T[workday_data.date.month - 1]}'
         driver_list = TechnicSheetService.get_queryset(
-            date=current_day,
+            date_id=workday_data.id,
             status=True,
             driver_sheet__status=True,
             isArchive=False
@@ -58,7 +59,7 @@ class TelegramService:
         else:
             application_today = ApplicationTodayService.get_queryset(
                 isArchive=False,
-                date=current_day,
+                date_id=workday_data.id,
                 status=ASSETS.ApplicationTodayStatus.SEND.title)
 
         application_technic_list = ApplicationTechnicService.get_queryset(
@@ -107,9 +108,9 @@ class TelegramService:
                 cls.send_messages(chat_id=item['driver_sheet__driver__telegram_id_chat'], messages=msg)
 
     @classmethod
-    def send_application_by_telegram_for_foreman(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
-        all_already_send = current_day.is_all_application_send
-        template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
+    def send_application_by_telegram_for_foreman(cls, workday_data: WorkDaySchema, messages=None, application_today_id=None):
+        all_already_send = workday_data.is_all_application_send
+        template_date = f'{ASSETS.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {ASSETS.MONTHS_T[workday_data.date.month - 1]}'
         foreman_list = UserService.get_queryset(
             isArchive=False,
             post__in=(ASSETS.UserPosts.FOREMAN.title, ASSETS.UserPosts.MASTER.title, ASSETS.UserPosts.SUPPLY.title)
@@ -124,12 +125,14 @@ class TelegramService:
 
         if application_today_id:
             application_today = ApplicationTodayService.get_queryset(
-                select_related=('construction_site__foreman',),
-                pk=application_today_id)
+                pk=application_today_id
+            ).select_related('construction_site__foreman')
         else:
             application_today = ApplicationTodayService.get_queryset(
-                select_related=('construction_site__foreman',),
-                isArchive=False, date=current_day, status=ASSETS.ApplicationTodayStatus.SEND.title)
+                isArchive=False,
+                date_id=workday_data.id,
+                status=ASSETS.ApplicationTodayStatus.SEND.title
+            ).select_related('construction_site__foreman')
 
         for item in foreman_list:
             if item['post'] == ASSETS.UserPosts.FOREMAN.title:
@@ -137,9 +140,13 @@ class TelegramService:
             else:
                 foreman_id = item['supervisor_user_id']
             if foreman_id:
-                app_today = application_today.filter(construction_site__foreman_id=foreman_id)
+                app_today = application_today.filter(
+                    construction_site__foreman_id=foreman_id
+                )
             else:
-                app_today = application_today.filter(construction_site__address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value)
+                app_today = application_today.filter(
+                    construction_site__address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value
+                )
             item['applications'] = app_today.values(
                 'construction_site__address',
                 'is_application_send'
@@ -161,11 +168,14 @@ class TelegramService:
                     cls.send_messages(chat_id=item['telegram_id_chat'], messages=msg)
 
     @classmethod
-    def send_application_by_telegram_for_admin(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
-        template_date = f'{ASSETS.WEEKDAY[current_day.date.weekday()]}, {current_day.date.day} {ASSETS.MONTHS_T[current_day.date.month - 1]}'
-        administrators_list = UserService.get_queryset(isArchive=False, post=ASSETS.UserPosts.ADMINISTRATOR.title)
+    def send_application_by_telegram_for_admin(cls, workday_data: WorkDaySchema, messages=None, application_today_id=None):
+        template_date = f'{ASSETS.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {ASSETS.MONTHS_T[workday_data.date.month - 1]}'
+        administrators_list = UserService.get_queryset(
+            isArchive=False,
+            post=ASSETS.UserPosts.ADMINISTRATOR.title
+        )
 
-        if current_day.is_all_application_send:
+        if workday_data.is_all_application_send:
             msg = f"Заявки на:\n{template_date} отправлены повторно"
         else:
             msg = f"Заявки на:\n{template_date} отправлены"
@@ -189,18 +199,14 @@ class TelegramService:
          for admin in administrators_list if admin.telegram_id_chat]
 
     @classmethod
-    def send_application_by_telegram_for_all(cls, current_day: WorkDaySheet, messages=None, application_today_id=None):
+    def send_application_by_telegram_for_all(cls, workday_data: WorkDaySchema, messages, application_today_id):
         """
         Отправка заявок всем пользователям через Telegram
-        :param current_day:
+        :param workday_data:
         :param messages:
         :param application_today_id:
         :return:
         """
-        cls.send_application_by_telegram_for_driver(current_day, messages, application_today_id)
-        cls.send_application_by_telegram_for_foreman(current_day, messages, application_today_id)
-        cls.send_application_by_telegram_for_admin(current_day, messages, application_today_id)
-        if application_today_id:
-            ApplicationTodayService.get_object(id=application_today_id).send_application()
-        else:
-            current_day.send_all_application()
+        cls.send_application_by_telegram_for_driver(workday_data, messages, application_today_id)
+        cls.send_application_by_telegram_for_foreman(workday_data, messages, application_today_id)
+        cls.send_application_by_telegram_for_admin(workday_data, messages, application_today_id)
