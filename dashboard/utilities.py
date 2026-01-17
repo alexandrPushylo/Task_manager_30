@@ -20,7 +20,7 @@ from logger import getLogger
 #   ------------------------------------------------------------------------------------------------------------------
 
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import random
 import dashboard.assets as ASSETS
 from config.settings import USE_CACHE
@@ -1201,3 +1201,32 @@ class Utilities:
         else:
             current_day = WorkDayService.get_object(id=workday_data.id)
             current_day.send_all_application()
+
+
+    @classmethod
+    def clear_sheets_for_day(
+            cls,
+            workday_data: WorkDaySchema,
+            lt:int = 0,
+            gt:int = 0
+
+    ) -> tuple[int, int]:
+        summ_ds = 0
+        summ_ts = 0
+        range_day = WorkDayService.get_queryset(
+            date__gte=workday_data.date-timedelta(days=lt),
+            date__lte=workday_data.date+timedelta(days=gt),
+            status=False
+
+        )
+        for wd in range_day:
+            ds = DriverSheetService.get_queryset(date=wd)
+            ts = TechnicSheetService.get_queryset(date=wd)
+            if ds.exists():
+                summ_ds += ds.count()
+                ds.delete()
+            if ts.exists():
+                summ_ts += ts.count()
+                ts.delete()
+
+        return summ_ds, summ_ts
