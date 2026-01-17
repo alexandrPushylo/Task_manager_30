@@ -52,7 +52,7 @@ class UserService(BaseService):
         cache_key = f"{cls.CacheKeys.CURRENT_USER.value}:{user_id}"
         cache_ttl = 60 * 60
 
-        current_user_from_cache: UserSchema | None = cache.get(cache_key)
+        current_user_from_cache: UserSchema | None = cache.get(cache_key) if cls.USE_CACHE else None
         cache.touch(cache_key, cache_ttl)
         if current_user_from_cache is None:
             current_user = cls.get_object(id=user_id)
@@ -213,7 +213,7 @@ class UserService(BaseService):
         cache_key = f"{cls.CacheKeys.ALL_USER_LIST.value}"
         cache_ttl = 60 * 60
 
-        all_users_list_from_cache = cache.get(cache_key)
+        all_users_list_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if all_users_list_from_cache is None:
             all_users_list = cls.get_queryset(isArchive=False)
             all_users_list_data = [UserSchema(**user.to_dict()) for user in all_users_list]

@@ -68,7 +68,7 @@ class WorkDayService(BaseService):
         cache_key = f"{cls.CacheKeys.RANGE_WORKDAYS.value}"
         cache_ttl = 60 * 60
 
-        range_of_workdays_from_cache = cache.get(cache_key)
+        range_of_workdays_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if range_of_workdays_from_cache is None:
             workdays_queryset = cls.model.objects.filter(
                 date__gte=cls.TODAY - timedelta(days=7),
@@ -143,6 +143,7 @@ class WorkDayService(BaseService):
         next_day = cls.get_queryset(status=True, date__gt=current_date).last()
         if not next_day:
             cls.prepare_workday_sheet(current_date)
+            next_day = cls.get_queryset(status=True, date__gt=current_date).last()
         next_day_data = WorkDaySchema(**next_day.to_dict())
         return next_day_data
 
@@ -179,7 +180,7 @@ class WorkDayService(BaseService):
     def get_current_date_data(cls, current_date) -> WorkDaySchema | None:
         cache_kay = f"{cls.CacheKeys.CURRENT_DATE_DATA.value}:{current_date}"
         cache_ttl = 60 * 60
-        current_date_data_from_cache = cache.get(cache_kay)
+        current_date_data_from_cache = cache.get(cache_kay) if cls.USE_CACHE else None
         if current_date_data_from_cache is None:
             current_date_data = cls.get_object(date = current_date)
             current_date_data__data = WorkDaySchema(**current_date_data.to_dict())

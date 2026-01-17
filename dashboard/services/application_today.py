@@ -113,7 +113,7 @@ class ApplicationTodayService(BaseService):
         cache_key = f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{workday_data.date}"
         cache_ttl = 60 * 60
 
-        app_today_from_cache = cache.get(cache_key)
+        app_today_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if app_today_from_cache is None:
             app_today = cls.get_queryset(date_id = workday_data.id)
             app_today_data = [cls.schema(**at.to_dict()) for at in app_today]

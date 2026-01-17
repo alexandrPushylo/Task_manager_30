@@ -69,7 +69,7 @@ class ApplicationMaterialService(BaseService):
         cache_key = f"{cls.CacheKeys.APP_MAT_FOR_DATE.value}:{workday_data.date}"
         cache_ttl = 60 * 60
 
-        app_mat_for_cache = cache.get(cache_key)
+        app_mat_for_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if app_mat_for_cache is None:
             app_mat = cls.get_queryset(
                 application_today__date_id=workday_data.id, isArchive=False

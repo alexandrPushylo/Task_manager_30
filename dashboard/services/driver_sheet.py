@@ -78,7 +78,7 @@ class DriverSheetService(BaseService):
         cache_key = f"{cls.CacheKeys.DRIVER_SHEET_FOR_DAY.value}:{workday_data.date}"
         cache_ttl = 60 * 60
 
-        driver_sheet_from_cache = cache.get(cache_key)
+        driver_sheet_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if driver_sheet_from_cache is None:
             driver_sheet = cls.get_queryset(date_id=workday_data.id)
             driver_sheet_data = [cls.schema(**ds.to_dict()) for ds in driver_sheet]

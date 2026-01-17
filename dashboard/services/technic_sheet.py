@@ -80,7 +80,7 @@ class TechnicSheetService(BaseService):
         """
         cache_key = f"{cls.CacheKeys.WORKLOAD_LIST.value}:{workday_sheet_id}"
         cache_ttl = 60
-        workload_list_from_cache = cache.get(cache_key)
+        workload_list_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if workload_list_from_cache is None:
             workload_list = (
                 cls.get_queryset(
@@ -177,7 +177,7 @@ class TechnicSheetService(BaseService):
     def get_tech_sheet_for_date(cls, workday_data: WorkDaySchema) -> list[TechnicSheetSchema]:
         cache_key = f"{cls.CacheKeys.TECH_SHEET_FOR_DAY.value}:{workday_data.date}"
         cache_ttl = 60 * 60
-        tech_sheet_from_cache = cache.get(cache_key)
+        tech_sheet_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if tech_sheet_from_cache is None:
             tech_sheet = cls.get_queryset(date_id=workday_data.id)
             tech_sheet_data = [cls.schema(**ts.to_dict()) for ts in tech_sheet]

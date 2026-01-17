@@ -125,7 +125,7 @@ class ApplicationTechnicService(BaseService):
         cache_key = f"{cls.CacheKeys.APP_TECH_FOR_DATE.value}:{workday_data.date}"
         cache_ttl = 60 * 60
 
-        app_tech_for_cache = cache.get(cache_key)
+        app_tech_for_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if app_tech_for_cache is None:
             app_tech = cls.get_queryset(application_today__date_id=workday_data.id, isArchive=False)
             app_tech_data = [cls.schema(**at.to_dict()) for at in app_tech]

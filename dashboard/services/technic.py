@@ -9,7 +9,7 @@ from dashboard.schemas.template_description_schema import TemplateDescriptionSch
 from dashboard.services.base import BaseService
 from dashboard.types import Any
 
-from dashboard.models import Technic, User, TechnicSheet
+from dashboard.models import Technic, User
 from dashboard.models import TemplateDescForTechnic
 import dashboard.assets as ASSETS
 from django.db.models import QuerySet  # type: ignore
@@ -135,7 +135,7 @@ class TechnicService(BaseService):
         """
         cache_keys = f"{cls.CacheKeys.TECHNIC_TYPE_LIST.value}"
         cache_ttl = 60 * 60
-        technic_type_list_from_cache: list[str] = cache.get(cache_keys)
+        technic_type_list_from_cache: list[str] = cache.get(cache_keys) if cls.USE_CACHE else None
         if technic_type_list_from_cache is None:
             technic_type_list = sorted(
                 set(
@@ -244,7 +244,7 @@ class TechnicService(BaseService):
     def get_all_technic_data(cls) -> list[TechnicSchema | None]:
         cache_key = f"{cls.CacheKeys.ALL_TECHNIC_LIST.value}"
         cache_ttl = 60 * 60
-        technic_list_from_cache: list[TechnicSchema | None] = cache.get(cache_key)
+        technic_list_from_cache: list[TechnicSchema | None] = cache.get(cache_key) if cls.USE_CACHE else None
         if technic_list_from_cache is None:
             technic_list = cls.get_queryset(isArchive=False)
             technic_list_data = [TechnicSchema(**t.to_dict()) for t in technic_list]
@@ -259,7 +259,7 @@ class TechnicService(BaseService):
     def get_distinct_technic_title(cls) -> list[str]:
         cache_key = f"{cls.CacheKeys.DISTINCT_TECH_TITLE.value}"
         cache_ttl = 60 * 60
-        tech_list_from_cache = cache.get(cache_key)
+        tech_list_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if tech_list_from_cache is None:
             tech_list = cls.get_queryset(isArchive=False).values_list('title', flat=True)
             tech_list_data = sorted(set(tech_list))
