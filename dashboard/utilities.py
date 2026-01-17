@@ -14,6 +14,7 @@ from dashboard.schemas.technic_sheet_schema import TechnicSheetWithTechnicSchema
 from dashboard.schemas.user_schema import UserSchema
 from dashboard.schemas.utils_schema import BusiestTechnicDataSchema
 from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
+from dashboard.services.telegram_service import TelegramService
 from logger import getLogger
 
 #   ------------------------------------------------------------------------------------------------------------------
@@ -1185,3 +1186,18 @@ class Utilities:
             return WorkDayService.get_current_date_data(cls.TODAY)
         else:
             return WorkDayService.get_current_date_data(data_str)
+
+
+    @classmethod
+    def send_app_by_telegram(
+            cls,
+            workday_data: WorkDaySchema,
+            messages=None,
+            application_today_id=None
+    ):
+        TelegramService.send_application_by_telegram_for_all(workday_data, messages, application_today_id)
+        if application_today_id:
+            ApplicationTodayService.get_object(id=application_today_id).send_application()
+        else:
+            current_day = WorkDayService.get_object(id=workday_data.id)
+            current_day.send_all_application()
