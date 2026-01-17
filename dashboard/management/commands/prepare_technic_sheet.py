@@ -9,11 +9,13 @@ class Command(BaseCommand):
         from logger import getLogger
 
         log = getLogger(__name__)
-        from dashboard.services.work_day_sheet import get_workday
-        from dashboard.services.technic_sheet import prepare_technic_sheets
-        today_ = date.today()
-        workday = get_workday(today_)
-        if workday and workday.status:
-            prepare_technic_sheets(workday)
-            log.info('CRON: prepare_technic_sheets()')
+        from dashboard.services.work_day_sheet import WorkDayService
+        from dashboard.utilities import Utilities
 
+        today_ = date.today()
+        workday = WorkDayService.get_current_date_data(today_)
+        if workday and workday.status:
+            Utilities.prepare_technic_sheet(workday)
+            log.info('CRON: prepare_technic_sheets() - Done')
+        else:
+            log.info("CRON: prepare_technic_sheets() - Don't work today")

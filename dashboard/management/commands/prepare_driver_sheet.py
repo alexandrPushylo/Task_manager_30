@@ -9,10 +9,13 @@ class Command(BaseCommand):
         from logger import getLogger
         log = getLogger(__name__)
 
-        from dashboard.services.work_day_sheet import get_workday
-        from dashboard.services.driver_sheet import prepare_driver_sheet
+        from dashboard.services.work_day_sheet import WorkDayService
+        from dashboard.utilities import Utilities
         today_ = date.today()
-        workday = get_workday(today_)
+        workday = WorkDayService.get_current_date_data(today_)
         if workday and workday.status:
-            prepare_driver_sheet(workday)
-            log.info('CRON: prepare_driver_sheet()')
+            Utilities.prepare_driver_sheet(workday)
+            log.info('CRON: prepare_driver_sheet() - Done')
+        else:
+            log.info("CRON: prepare_driver_sheet() - Doesn't work today")
+
