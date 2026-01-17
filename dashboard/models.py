@@ -244,7 +244,7 @@ class ApplicationToday(models.Model):
         elif self.status == self.APPROVED:
             self.status = self.SEND
         else:
-            self.status = self.ABSENT
+            return
         self.save(update_fields=['status'])
 
     def make_edited(self, status: str = None):

@@ -10,9 +10,6 @@ from dashboard.models import ApplicationTechnic
 
 import dashboard.assets as ASSETS
 import config.endpoints as ENDPOINTS
-import dashboard.utilities as U
-from dashboard.schemas.application_material_schema import EditApplicationMaterialSchema
-from dashboard.schemas.application_technic_schema import EditApplicationTechnicSchema
 from dashboard.schemas.construction_site_schema import EditConstructionSiteSchema
 from dashboard.schemas.technic_schema import EditTechnicSchema
 from dashboard.schemas.user_schema import EditUserSchema
@@ -37,23 +34,7 @@ from dashboard.services.user import UserService
 from dashboard.services.parameter import ParameterService
 from dashboard.services.telegram_service import TelegramService
 from dashboard.services.add_edit_application import EditApplicationService
-
-
-
-
-
-
-
-
-
-
-import dashboard.services.user as USERS_SERVICE  #TODO
-import dashboard.services.technic as TECHNIC_SERVICE  #TODO
-import dashboard.services.technic_sheet as TECHNIC_SHEET_SERVICE  #TODO
-import dashboard.services.dashboard as DASHBOARD_SERVICE
-import dashboard.services.application_technic as APP_TECHNIC_SERVICE  #TODO
-import dashboard.services.parameter as PARAMETER_SERVICE  #TODO
-
+from dashboard.services.dashboard import DashboardService
 #   SERVICE--------------------------------------------------
 
 from logger import getLogger
@@ -143,10 +124,10 @@ def dashboard_view(request):
     #   POST    ===================================================================================================
 
 
-    dashboard, template = DASHBOARD_SERVICE.DashboardService.get_dashboard(current_user)
+    dashboard, template = DashboardService.get_dashboard(current_user)
     if Utilities.is_valid_get_request(request.GET.get('driver_id')):
-        context = DASHBOARD_SERVICE.DashboardService.get_dashboard_for_driver(request, current_day, context)
-        template = DASHBOARD_SERVICE.DashboardService.TemplateDashboardFor.INFO_ABOUT_DRIVER.value
+        context = DashboardService.get_dashboard_for_driver(request, current_day, context)
+        template = DashboardService.TemplateDashboardFor.INFO_ABOUT_DRIVER.value
     else:
         context = dashboard(request, current_day, context)
     return render(request, template, context)
@@ -161,13 +142,11 @@ def clear_or_restore_application_today(request):
                 Utilities.is_master(current_user),
                 Utilities.is_supply(current_user)
         )):
-            # current_user = UserService.get_current_user(request.user.id)
             if Utilities.is_foreman(current_user):
                 foreman = current_user
             else:
                 foreman_list = UserService.get_foreman_list()
                 foreman = UserService.filter_user_by_id_from_data(current_user.supervisor_user_id, foreman_list)
-            # foreman = USERS_SERVICE.get_foreman(request.user)
 
             app_today_id = request.GET.get('app_today_id')
             action = request.GET.get('action', 'delete')
@@ -181,7 +160,6 @@ def clear_or_restore_application_today(request):
                     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
                 elif Utilities.is_supply(current_user):
-                    # supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
                     supply_technic_ids_list = [t.id for t in TechnicService.get_supply_technic_list()]
                     if action == 'restore':
                         app_technic_list = ApplicationTechnicService.get_queryset(
@@ -200,12 +178,9 @@ def clear_or_restore_application_today(request):
                         app_technic_list.update(isChecked=False)
 
                 if action == 'restore':
-                    # default_status = APP_TODAY_SERVICE.get_default_status_for_apps_today(request.user)
                     default_status = Utilities.get_default_status_for_apps_today(current_user)
-                    # APP_TODAY_SERVICE.restore_application_today(application_today, default_status)
                     Utilities.restore_application_today(application_today_id=application_today.id, status=default_status)
                 else:
-                    # APP_TODAY_SERVICE.delete_application_today(application_today)
                     Utilities.delete_application_today(application_today.id)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -216,7 +191,7 @@ def clear_or_restore_application_today(request):
 
 def validate_application_today_view(request):
     if request.user.is_authenticated:
-        current_user = USERS_SERVICE.UserService.get_current_user(request.user.id)
+        current_user = UserService.get_current_user(request.user.id)
         app_today_id = request.GET.get('app_today_id')
         current_day = request.GET.get('current_day')
         construction_site_id = request.GET.get('constr_site_id')
@@ -361,6 +336,7 @@ def edit_application_view(request):
             post_application_technic_description: str = post_application_technic_description.strip()
             post_application_today_description: str = post_application_today_description.strip()
             post_application_material_description: str = post_application_material_description.strip()
+
             match operation:
                 case 'add_technic_to_application':
                     log.debug('add_technic_to_application')
@@ -644,8 +620,6 @@ def driver_sheet_view(request):
 
         if current_day.date >= Utilities.TODAY and current_day.status:
             Utilities.prepare_driver_sheet(current_day)
-            print('!!!!')
-
         driver_sheet = DriverSheetService.get_driver_sheet_for_date(current_day)
         drivers_list = UserService.get_driver_list()
         context['drivers_list'] = drivers_list
@@ -772,9 +746,9 @@ def edit_technic_view(request):
                 supervisor_technic=data.get('supervisor'),
             )
             if technic_id:
-                TECHNIC_SERVICE.TechnicService.edit(int(technic_id), technic_data)
+                TechnicService.edit(int(technic_id), technic_data)
             else:
-                TECHNIC_SERVICE.TechnicService.create(technic_data)
+                TechnicService.create(technic_data)
 
             return HttpResponseRedirect(ENDPOINTS.TECHNICS)
 
@@ -851,7 +825,7 @@ def edit_user_view(request):
                 return HttpResponseRedirect(ENDPOINTS.USERS)
 
         if request.method == 'POST':
-            user_data = USERS_SERVICE.EditUserSchema(
+            user_data = EditUserSchema(
                 username=request.POST.get('username'),
                 password=request.POST.get('password'),
                 first_name=request.POST.get('first_name'),
@@ -1031,40 +1005,32 @@ def edit_construction_sites(request):
 #   -----------------------------------------------------------------------------------------------
 
 
-def change_status_application_today(request):   #TODO: !!!!!!!!!!!!!!!!
+def change_status_application_today(request):
     if request.user.is_authenticated:
         application_today_id = request.GET.get('application_today_id')
         current_day_str = request.GET.get('current_day')
         current_status = request.GET.get('current_status')
 
-        # workday = WORK_DAY_SERVICE.get_current_day(request)
         workday = Utilities.get_current_day_data(current_day_str)
 
         if Utilities.is_valid_get_request(application_today_id):
             up_level_status = Utilities.change_up_status_for_application_today(
                 workday_data=workday,
                 application_today_id=application_today_id)
-            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title: #TODO: !!!!!!!!!!!!!!!
-                raise Exception
-                U.send_application_by_telegram_for_all(
-                    current_day=workday,
-                    application_today_id=application_today_id
-                )
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
+                Utilities.send_app_by_telegram(workday_data=workday, application_today_id=application_today_id)
 
         elif Utilities.is_valid_get_request(current_day_str) and Utilities.is_valid_get_request(current_status):
             up_level_status = Utilities.change_up_status_for_application_today(
                 workday_data=workday,
                 current_status=current_status
             )
-            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title: #TODO: !!!!!!!!!!!!!!!
-                raise Exception
-                U.send_application_by_telegram_for_all(workday)
+            if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
+                Utilities.send_app_by_telegram(workday_data=workday)
 
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
-
 
 def change_weekend_to_workday(request):
     """
@@ -1088,7 +1054,6 @@ def change_weekend_to_workday(request):
             return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={workday.date}')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
-
 def conflicts_list_view(request):
     if request.user.is_authenticated:
         current_user = UserService.get_current_user(request.user.pk)
@@ -1096,35 +1061,20 @@ def conflicts_list_view(request):
         if Utilities.is_admin(current_user):
             context = {'title': 'Conflict List'}
 
-            # current_day = WORK_DAY_SERVICE.get_current_day(request)
             current_day = Utilities.get_current_day_data(current_day_str)
             context['current_day'] = current_day
 
-            # technic_sheet_list = TECHNIC_SHEET_SERVICE.get_technic_sheet_queryset(
-            #     date_id=current_day.id,
-            #     driver_sheet__isnull=False,
-            #     status=True,
-            #     isArchive=False
-            # )
-
-
-            # priority_id_list = U.get_priority_id_list(technic_sheet_list)
             priority_id_list = Utilities.get_priority_ids_list(current_day)
             context['priority_id_list'] = priority_id_list
 
-            # busiest_technic_title_list = U.get_busiest_technic_title(technic_sheet_list)
             busiest_technic_title_list = Utilities.get_busiest_technic_title(current_day)
-            # conflict_technic_sheet = U.get_conflict_list_of_technic_sheet(
-            #     busiest_technic_title=busiest_technic_title_list,
-            #     priority_id_list=priority_id_list
-            # )
             conflict_technic_sheet = Utilities.get_conflict_list_of_technic_sheet(
                 busiest_technic_title=busiest_technic_title_list,
                 priority_id_list=priority_id_list
             )
             if conflict_technic_sheet:
                 for conflict_ts in conflict_technic_sheet:
-                    conflict_ts.total_technic_sheet_count = APP_TECHNIC_SERVICE.ApplicationTechnicService.get_queryset(
+                    conflict_ts.total_technic_sheet_count = ApplicationTechnicService.get_queryset(
                         isArchive=False,
                         is_cancelled=False,
                         isChecked=False,
@@ -1138,7 +1088,6 @@ def conflicts_list_view(request):
                 return HttpResponseRedirect(f'{ENDPOINTS.DASHBOARD}?current_day={current_day.date}')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
-
 
 def conflict_resolution_view(request):
     if request.user.is_authenticated:
@@ -1648,7 +1597,7 @@ def settings_view(request):
     if request.user.is_authenticated:
         context = {'title': 'Параметры'}
         current_user = UserService.get_current_user(request.user.id)
-        PARAMETER_SERVICE.ParameterService.prepare_global_parameters()
+        ParameterService.prepare_global_parameters()
 
         if request.method == 'POST':
 
@@ -1668,13 +1617,13 @@ def settings_view(request):
                         description = request_data.get(f"{name_}__description")
                     )
                 )
-            PARAMETER_SERVICE.ParameterService.set_parameters(set_param_list)
+            ParameterService.set_parameters(set_param_list)
 
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
         if Utilities.is_admin(current_user):
             parameter_list = ParameterService.get_queryset()
         elif Utilities.is_supply(current_user):
-            parameter_list = PARAMETER_SERVICE.ParameterService.get_parameter_for_supply()
+            parameter_list = ParameterService.get_parameter_for_supply()
         else:
             parameter_list = None
         context['parameter_list'] = parameter_list
@@ -1770,9 +1719,9 @@ def spec_page_view(request):
 def test_page_view(request):
     import time
     start_time = time.time()
-    wd = Utilities.get_current_day_data('2026-01-12')
-    d = Utilities.t2(18208, wd)
-    print(f"{d=}")
+    # wd = Utilities.get_current_day_data('2026-01-19')
+    # Utilities.send_app_by_telegram(wd)
+    # print(f"{d=}")
     # [print(day) for day in d]
 
 
