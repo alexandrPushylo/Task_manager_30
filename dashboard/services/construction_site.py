@@ -158,7 +158,7 @@ class ConstructionSiteService(BaseService):
         return is_exist
 
     @classmethod
-    def get_cs_active_list(cls) -> list[ConstructionSiteSchema]:
+    def get_active_cs_list(cls) -> list[ConstructionSiteSchema]:
         cache_key = f"{cls.CacheKeys.CS_ACTIVE_LIST.value}"
         cache_ttl = 60 * 60
         cs_list_from_cache = cache.get(cache_key)
@@ -172,8 +172,18 @@ class ConstructionSiteService(BaseService):
             cache.touch(cache_key, cache_ttl)
             return cs_list_from_cache
 
+
     @classmethod
-    def get_cs_deleted_list(cls) -> list[ConstructionSiteSchema]:
+    def get_showed_cs_list(cls) -> list[ConstructionSiteSchema]:
+        return [cs for cs in cls.get_active_cs_list() if cs.status == True]
+
+
+    @classmethod
+    def get_hidden_cs_list(cls) -> list[ConstructionSiteSchema]:
+        return [cs for cs in cls.get_active_cs_list() if cs.status == False]
+
+    @classmethod
+    def get_deleted_cs_list(cls) -> list[ConstructionSiteSchema]:
         cache_key = f"{cls.CacheKeys.CS_DELETED_LIST.value}"
         cache_ttl = 60 * 60
         cs_list_from_cache = cache.get(cache_key)

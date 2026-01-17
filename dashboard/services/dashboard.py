@@ -102,7 +102,7 @@ class DashboardService:
         tech_sheet_for_date = TechnicSheetService.get_tech_sheet_for_date(current_day)
         technic_list = TechnicService.get_all_technic_data()
         user_list = UserService.get_all_users_list()
-        cs_active = ConstructionSiteService.get_cs_active_list()
+        cs_active = ConstructionSiteService.get_showed_cs_list()
 
         if view_mode_ == ASSETS.ViewMode.ARCHIVE.value:
             app_today_for_date_ids = [at.construction_site for at in app_today_for_date]
@@ -228,7 +228,7 @@ class DashboardService:
         current_user = UserService.get_current_user(request.user.id)
         current_foreman_id = current_user.id if Utilities.is_foreman(current_user) else current_user.supervisor_user_id
 
-        cs_active = ConstructionSiteService.get_cs_active_list()
+        cs_active = ConstructionSiteService.get_showed_cs_list()
         app_today_for_date = ApplicationTodayService.get_app_today_for_date(current_day)
         app_tech_for_date = ApplicationTechnicService.get_app_tech_for_date(current_day)
         app_mat_for_date = ApplicationMaterialService.get_app_mat_for_date(current_day)
@@ -559,8 +559,7 @@ class DashboardService:
         tech_sheet_for_date = TechnicSheetService.get_tech_sheet_for_date(current_day)
         technic_list = TechnicService.get_all_technic_data()
         user_list = UserService.get_all_users_list()
-        cs_active = ConstructionSiteService.get_cs_active_list()
-
+        cs_active = ConstructionSiteService.get_showed_cs_list()
         applications_today = [
             at for at in app_today_for_date
             if not at.isArchive

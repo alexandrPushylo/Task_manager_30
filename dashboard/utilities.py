@@ -682,7 +682,7 @@ class Utilities:
         """
         foreman_list = UserService.get_foreman_list()
         construction_site_list = [
-            cs.model_dump() for cs in ConstructionSiteService.get_cs_active_list()
+            cs.model_dump() for cs in ConstructionSiteService.get_active_cs_list()
             if cs.status
         ]
         for cs in construction_site_list:

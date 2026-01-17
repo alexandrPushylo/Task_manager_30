@@ -905,17 +905,17 @@ def construction_site_view(request):
         context['foreman_list'] = foreman_list
 
         if Utilities.is_admin(current_user):
-            construction_site_list = ConstructionSiteService.get_cs_active_list()
+            construction_site_list = ConstructionSiteService.get_active_cs_list()
 
         if Utilities.is_foreman(current_user):
             construction_site_list = [
-                cs for cs in ConstructionSiteService.get_cs_active_list()
+                cs for cs in ConstructionSiteService.get_active_cs_list()
                 if cs.foreman == current_user.id
             ]
 
         if Utilities.is_master(current_user):
             construction_site_list = [
-                cs for cs in ConstructionSiteService.get_cs_active_list()
+                cs for cs in ConstructionSiteService.get_active_cs_list()
                 if cs.foreman == current_user.supervisor_user_id
             ]
 
@@ -954,17 +954,17 @@ def archive_construction_site_view(request):
 
 
         if Utilities.is_admin(current_user):
-            construction_site_list = ConstructionSiteService.get_cs_deleted_list()
+            construction_site_list = ConstructionSiteService.get_deleted_cs_list()
 
         if Utilities.is_foreman(current_user):
             construction_site_list = [
-                cs for cs in ConstructionSiteService.get_cs_deleted_list()
+                cs for cs in ConstructionSiteService.get_deleted_cs_list()
                 if cs.foreman == current_user.id
             ]
 
         if Utilities.is_master(current_user):
             construction_site_list = [
-                cs for cs in ConstructionSiteService.get_cs_deleted_list()
+                cs for cs in ConstructionSiteService.get_deleted_cs_list()
                 if cs.foreman == current_user.supervisor_user_id
             ]
 
