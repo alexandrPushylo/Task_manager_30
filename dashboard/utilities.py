@@ -3,7 +3,6 @@ from typing import Literal
 
 from django.core.cache import cache
 from django.db import models
-from pydantic import BaseModel
 
 from dashboard.assets import AcceptMode
 from dashboard.models import WorkDaySheet, ApplicationMaterial
@@ -40,7 +39,6 @@ from dashboard.services.parameter import ParameterService
 
 #   ------------------------------------------------------------------------------------------------------------------
 log = getLogger(__name__)
-
 
 
 class Utilities:
@@ -104,7 +102,6 @@ class Utilities:
         cls.prepare_driver_sheet(workday_data=workday_data)
         cls.prepare_technic_sheet(workday_data=workday_data)
         log.info("Prepare sheets done")
-
 
     @classmethod
     def prepare_driver_sheet(cls, workday_data: WorkDaySchema):
@@ -259,7 +256,6 @@ class Utilities:
         else:
             log.info(f"TechnicSheet for exists")
 
-
     @classmethod
     def change_driver_for_technic_sheet(cls, technic_sheet_id, driver_sheet_id) -> bool | None:
         if not driver_sheet_id or driver_sheet_id == '':
@@ -276,7 +272,6 @@ class Utilities:
             return ds.status
         else:
             return None
-
 
     @classmethod
     def autocomplete_driver_from_technic_sheet(cls, workday_data: WorkDaySchema):
@@ -315,7 +310,6 @@ class Utilities:
         else:
             log.info("empty_technic_sheet.exists() is False")
 
-
     @classmethod
     def calculate_count_app_for_technic_sheet(cls, technic_sheet_id, exclude_app_tech_list: list = None) -> int:
         ts = TechnicSheetService.get_object(id=technic_sheet_id)
@@ -333,7 +327,6 @@ class Utilities:
         ts.save(update_fields=['count_application'])
         return count_app_tech
 
-
     @classmethod
     def calculate_all_app_for_technic_sheet(cls, ids_list: list[int], **kwargs):
         ts_list = TechnicSheetService.get_queryset(
@@ -343,7 +336,6 @@ class Utilities:
         for ts in ts_list:
             cls.calculate_count_app_for_technic_sheet(technic_sheet_id=ts.id, **kwargs)
 
-
     @classmethod
     def get_ids_list_from_model(cls, model: models.Model | QuerySet[models.Model]) -> list[int]:
         if isinstance(model, models.Model):
@@ -352,7 +344,6 @@ class Utilities:
             return list(model.values_list('id', flat=True))
         else:
             return []
-
 
     @classmethod
     def get_busiest_technic_title(cls, workday_data: WorkDaySchema) -> list[BusiestTechnicDataSchema]:
@@ -408,13 +399,13 @@ class Utilities:
             ))
         return out
 
-
     @classmethod
     def get_conflict_list_of_technic_sheet(
             cls,
             busiest_technic_title: list[BusiestTechnicDataSchema],
             priority_id_list: set,
-            get_only_id_list=False) -> list[BusiestTechnicDataSchema | int]:
+            get_only_id_list=False
+    ) -> list[BusiestTechnicDataSchema | int]:
         """
         Получить список конфликтов technic_sheet
         :param busiest_technic_title: список с информацией о загруженности technic_title
@@ -430,7 +421,6 @@ class Utilities:
                 else:
                     out.append(busiest_tt)
         return out
-
 
     @classmethod
     def get_priority_ids_list(cls, workday_data: WorkDaySchema) -> set:
@@ -465,7 +455,6 @@ class Utilities:
 
         return set(item['technic_sheet__id'] for item in app_technic_list if app_technic_list.count(item)>1)
 
-
     @classmethod
     def set_color_for_list(cls, some_list: list) -> dict:
         """
@@ -480,7 +469,6 @@ class Utilities:
             for id_, color in zip(some_list, colors)
         }
         return out
-
 
     @classmethod
     def sort_applications_by_status(cls, item):
@@ -507,7 +495,6 @@ class Utilities:
         if status == ASSETS.ApplicationTodayStatus.ABSENT.title:
             return 9
         return 9
-
 
     @classmethod
     def accept_app_tech_to_supply(cls, application_technic_id: int, application_today_id: int):
@@ -564,9 +551,8 @@ class Utilities:
                 cls.calculate_count_app_for_technic_sheet(application_technic.technic_sheet_id)
             cache.delete(f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{application_today.date.date}")
 
-
     @classmethod
-    def get_table_working_technic_sheet(cls, workday_data: WorkDaySchema):  #TODO ??????????
+    def get_table_working_technic_sheet(cls, workday_data: WorkDaySchema):
         """
         Получить таблицу загруженность для dashboard
         :param workday_data:
@@ -582,9 +568,14 @@ class Utilities:
         )
         return _technic_sheet
 
-
     @classmethod
-    def change_view_props(cls, io_name: str, io_status: str, io_value: str, user_id: int) -> bool:
+    def change_view_props(
+            cls,
+            io_name: str,
+            io_status: str,
+            io_value: str,
+            user_id: int
+    ) -> bool:
         user = UserService.get_object(id=user_id)
         if user:
             if io_status == 'true':
@@ -639,7 +630,6 @@ class Utilities:
             return False
         return False
 
-
     @classmethod
     def set_data_for_filter(cls, request):
         """
@@ -673,7 +663,6 @@ class Utilities:
             _user.save()
             cache.delete(f"{UserService.CacheKeys.CURRENT_USER.value}:{_user.pk}")
 
-
     @classmethod
     def prepare_data_for_filter(cls, context: dict) -> dict:
         """
@@ -698,16 +687,16 @@ class Utilities:
         context['sort_by_list'] = sort_by_list
         return context
 
-
     @classmethod
     def copy_application_to_target_day(
             cls,
             application_today_id: int,
             target_workday_data: WorkDaySchema,
-            default_status: str = ASSETS.ApplicationTodayStatus.SAVED.title):
+            default_status: str = ASSETS.ApplicationTodayStatus.SAVED.title
+    ):
         """
         Копирование заявки ApplicationToday(id=id_application_today) на _target_day
-        :param target_day_id:
+        :param target_workday_data:
         :param application_today_id:
         :param default_status: saved | submitted
         :return:
@@ -716,14 +705,12 @@ class Utilities:
         current_application = ApplicationTodayService.get_object(id=application_today_id)
         new_application, _ = ApplicationTodayService.get_or_create(
             date_id=target_workday_data.id,
-            # status=default_status,
             description=current_application.description,
             construction_site=current_application.construction_site
         )
         new_application.status = default_status
         new_application.isArchive = False
         new_application.save()
-
 
         current_application_material = ApplicationMaterialService.get_queryset(
             application_today=current_application
@@ -758,8 +745,6 @@ class Utilities:
         cache.delete(f"{TechnicSheetService.CacheKeys.TECH_SHEET_FOR_DAY.value}:{target_workday_data.date}")
         cache.delete(f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{target_workday_data.date}")
         cache.delete(f"{ApplicationTodayService.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{target_workday_data.date}")
-
-
 
     @classmethod
     def set_spec_task(cls, technic_sheet_id: int):
@@ -853,9 +838,10 @@ class Utilities:
                 return True
             elif workday.accept_mode == ASSETS.AcceptMode.OFF.value:
                 return False
+        return False
 
     @classmethod
-    def get_accept_mode(cls, accept_mode: str) -> Literal[AcceptMode.AUTO, AcceptMode.MANUAL, AcceptMode.OFF] | None:
+    def get_accept_mode(cls, accept_mode: str) -> Literal[AcceptMode.AUTO, AcceptMode.MANUAL, AcceptMode.OFF]:
         """ Получить режим accept mode"""
         if accept_mode == ASSETS.AcceptMode.AUTO.value:
             return ASSETS.AcceptMode.AUTO
@@ -863,6 +849,8 @@ class Utilities:
             return ASSETS.AcceptMode.MANUAL
         elif accept_mode == ASSETS.AcceptMode.OFF.value:
             return ASSETS.AcceptMode.OFF
+        else:
+            return ASSETS.AcceptMode.AUTO
 
     @classmethod
     def set_accept_mode(cls, workday_data: WorkDaySchema, mode: ASSETS.AcceptMode):
@@ -880,7 +868,7 @@ class Utilities:
             cache.delete(f"{WorkDayService.CacheKeys.RANGE_WORKDAYS.value}")
 
     @classmethod
-    def is_valid_get_request(cls, value: str | None) -> bool:
+    def is_valid_str(cls, value: str | None) -> bool:
         """
         Проверка : value is not None and value != ''
         :param value:
@@ -926,7 +914,7 @@ class Utilities:
                 return current_status
 
     @classmethod
-    def get_status_lists_of_apps_today(cls, applications_today: list[ApplicationTodaySchema]) -> dict:
+    def get_status_lists_of_app_today(cls, applications_today: list[ApplicationTodaySchema]) -> dict:
         """
         Получить сгруппированный по статусам dict с id объектами ApplicationToday
         :param applications_today:
@@ -1025,7 +1013,6 @@ class Utilities:
             for _app_today in _application_today:
                 cls.validate_application_today(application_today=_app_today)
 
-
     @classmethod
     def delete_construction_site(cls, construction_site_id: int) -> bool:
         cs = ConstructionSiteService.delete(id=construction_site_id)
@@ -1047,7 +1034,6 @@ class Utilities:
             app_today.delete()
             return True
         return False
-
 
     @classmethod
     def delete_application_today(cls, application_today_id: int):
@@ -1186,7 +1172,6 @@ class Utilities:
             return WorkDayService.get_current_date_data(cls.TODAY)
         else:
             return WorkDayService.get_current_date_data(data_str)
-
 
     @classmethod
     def send_app_by_telegram(
