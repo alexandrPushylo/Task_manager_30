@@ -113,19 +113,19 @@ def dashboard_view(request):
         if operation == 'copy':
             target_day = request.POST.get('target_day')
             application_today_id = request.POST.get('application_id')
-            if Utilities.is_valid_get_request(target_day) and Utilities.is_valid_get_request(application_today_id):
+            if Utilities.is_valid_str(target_day) and Utilities.is_valid_str(application_today_id):
                 target_workday_data = WorkDayService.get_current_date_data(target_day)
                 default_app_status = Utilities.get_default_status_for_apps_today(current_user)
                 Utilities.copy_application_to_target_day(int(application_today_id), target_workday_data, default_app_status)
 
-        if Utilities.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+        if Utilities.is_valid_str(operation) and operation == 'set_props_for_filter':
             Utilities.set_data_for_filter(request)
 
     #   POST    ===================================================================================================
 
 
     dashboard, template = DashboardService.get_dashboard(current_user)
-    if Utilities.is_valid_get_request(request.GET.get('driver_id')):
+    if Utilities.is_valid_str(request.GET.get('driver_id')):
         context = DashboardService.get_dashboard_for_driver(request, current_day, context)
         template = DashboardService.TemplateDashboardFor.INFO_ABOUT_DRIVER.value
     else:
@@ -197,7 +197,7 @@ def validate_application_today_view(request):
         construction_site_id = request.GET.get('constr_site_id')
         default_status = Utilities.get_default_status_for_apps_today(current_user)
 
-        if Utilities.is_valid_get_request(app_today_id):
+        if Utilities.is_valid_str(app_today_id):
             application_today = ApplicationTodayService.get_object(id=app_today_id)
         else:
             date = Utilities.get_current_day_data(current_day)
@@ -225,7 +225,7 @@ def edit_application_view(request):
         context = Utilities.get_prepared_data(context, current_day)
 
         constr_site_id = request.GET.get('constr_site_id')
-        if Utilities.is_valid_get_request(constr_site_id):
+        if Utilities.is_valid_str(constr_site_id):
             construction_site = ConstructionSiteService.get_object(id=constr_site_id)
         else:
             construction_site = None
@@ -516,7 +516,7 @@ def restore_password_view(request):
         else:
             context['msg'] = 'Данный пользователь не найден'
     user_id = request.GET.get('user_id')
-    if Utilities.is_valid_get_request(user_id):
+    if Utilities.is_valid_str(user_id):
         restore_user = UserService.get_object(id=user_id)
         if restore_user:
             default_passwd = ParameterService.get_object(name=VAR.VAR_DEFAULT_PASSWORD['name'])
@@ -585,7 +585,7 @@ def workday_sheet_view(request):
 
         if request.method == 'POST' and request.POST.get('operation') == 'toggleWorkdayStatus':
             workday_id = request.POST.get('workday_id')
-            if Utilities.is_valid_get_request(workday_id):
+            if Utilities.is_valid_str(workday_id):
                 status = WorkDayService.change_status(id=workday_id)
                 if status:
                     return HttpResponse(b'ok')
@@ -606,7 +606,7 @@ def driver_sheet_view(request):
         if request.method == "POST":
             driver_sheet_id = request.POST.get('item_id')
             operation = request.POST.get('operation')
-            if Utilities.is_valid_get_request(driver_sheet_id) and operation == 'toggleDriverSheetStatus':
+            if Utilities.is_valid_str(driver_sheet_id) and operation == 'toggleDriverSheetStatus':
                 status = DriverSheetService.change_status(driver_sheet_id=int(driver_sheet_id))
                 if status:
                     return HttpResponse(b"true")
@@ -645,7 +645,7 @@ def technic_sheet_view(request):
             item_id = request.POST.get('item_id')
             operation = request.POST.get('operation')
 
-            if operation == 'toggleTechnicSheetStatus' and Utilities.is_valid_get_request(item_id):
+            if operation == 'toggleTechnicSheetStatus' and Utilities.is_valid_str(item_id):
                 technic_sheet_id = request.POST.get('item_id')
                 status = TechnicSheetService.change_status(technic_sheet_id=int(technic_sheet_id))
                 if status:
@@ -655,7 +655,7 @@ def technic_sheet_view(request):
                 else:
                     return HttpResponse(b"none")
 
-            if operation == 'changeDriverForTechnic' and Utilities.is_valid_get_request(technic_sheet_id):
+            if operation == 'changeDriverForTechnic' and Utilities.is_valid_str(technic_sheet_id):
                 status = Utilities.change_driver_for_technic_sheet(
                     technic_sheet_id=technic_sheet_id,
                     driver_sheet_id=driver_sheet_id)
@@ -816,7 +816,7 @@ def edit_user_view(request):
             context['posts'] = ASSETS.UserPosts.EMPLOYEE.get_dict()
 
         user_id = request.GET.get('user_id')
-        if Utilities.is_valid_get_request(user_id):
+        if Utilities.is_valid_str(user_id):
             user_ = UserService.get_object(id=user_id)
             if user_:
                 context['user_list'] = user_
@@ -853,7 +853,7 @@ def delete_user_view(request):
         current_user = UserService.get_current_user(request.user.pk)
         if Utilities.is_admin(current_user):
             user_id = request.GET.get('user_id')
-            if Utilities.is_valid_get_request(user_id):
+            if Utilities.is_valid_str(user_id):
                 user_id_int = int(user_id)
                 Utilities.delete_user(user_id=user_id_int)
     return HttpResponseRedirect(ENDPOINTS.USERS)
@@ -900,12 +900,12 @@ def construction_site_view(request):
                 context['hidden_construction_sites'].append(construction_site)
 
         hide_constr_site_id = request.GET.get('hide')
-        if Utilities.is_valid_get_request(hide_constr_site_id):
+        if Utilities.is_valid_str(hide_constr_site_id):
             ConstructionSiteService.hide_or_show(id=hide_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         delete_constr_site_id = request.GET.get('delete')
-        if Utilities.is_valid_get_request(delete_constr_site_id):
+        if Utilities.is_valid_str(delete_constr_site_id):
             Utilities.delete_construction_site(construction_site_id=int(delete_constr_site_id))
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
@@ -945,7 +945,7 @@ def archive_construction_site_view(request):
         context['construction_sites'] = construction_site_list
         delete_constr_site_id = request.GET.get('delete')
 
-        if Utilities.is_valid_get_request(delete_constr_site_id):
+        if Utilities.is_valid_str(delete_constr_site_id):
             ConstructionSiteService.delete(id=delete_constr_site_id)
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
@@ -992,7 +992,7 @@ def edit_construction_sites(request):
             return HttpResponseRedirect(ENDPOINTS.CONSTRUCTION_SITES)
 
         constr_site_id = request.GET.get('id')
-        if Utilities.is_valid_get_request(constr_site_id):
+        if Utilities.is_valid_str(constr_site_id):
             constr_site = ConstructionSiteService.get_object(id=constr_site_id)
             if constr_site:
                 context['constr_site'] = constr_site
@@ -1013,14 +1013,14 @@ def change_status_application_today(request):
 
         workday = Utilities.get_current_day_data(current_day_str)
 
-        if Utilities.is_valid_get_request(application_today_id):
+        if Utilities.is_valid_str(application_today_id):
             up_level_status = Utilities.change_up_status_for_application_today(
                 workday_data=workday,
                 application_today_id=application_today_id)
             if up_level_status == ASSETS.ApplicationTodayStatus.SEND.title:
                 Utilities.send_app_by_telegram(workday_data=workday, application_today_id=application_today_id)
 
-        elif Utilities.is_valid_get_request(current_day_str) and Utilities.is_valid_get_request(current_status):
+        elif Utilities.is_valid_str(current_day_str) and Utilities.is_valid_str(current_status):
             up_level_status = Utilities.change_up_status_for_application_today(
                 workday_data=workday,
                 current_status=current_status
@@ -1040,7 +1040,7 @@ def change_weekend_to_workday(request):
     """
     if request.user.is_authenticated:
         _workday = request.GET.get('current_day')
-        if Utilities.is_valid_get_request(_workday):
+        if Utilities.is_valid_str(_workday):
             current_workday = Utilities.get_current_day_data(_workday)
             workday = WorkDayService.get_object(id=current_workday.id)
             if not workday.status:
@@ -1165,7 +1165,7 @@ def conflict_resolution_view(request):
                     description = request.POST.get(f"{application_technic_id}_description")
 
                     application_technic = ApplicationTechnicService.get_object(id=application_technic_id)
-                    if not Utilities.is_valid_get_request(technic_sheet_id):
+                    if not Utilities.is_valid_str(technic_sheet_id):
                         technic_title_dict = [*filter(lambda item: item['short_title'] == title,
                                                       technic_titles_dict)][0]
                         n_technic_title = technic_title_dict.get('title')
@@ -1235,7 +1235,7 @@ def show_technic_application(request):
 
         if request.method == 'POST':
             operation = request.POST.get('operation')
-            if Utilities.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+            if Utilities.is_valid_str(operation) and operation == 'set_props_for_filter':
                 Utilities.set_data_for_filter(request)
 
             app_technic_id_list = request.POST.getlist('app_technic_id')
@@ -1244,7 +1244,7 @@ def show_technic_application(request):
 
             list_for_updates = []
             for _id, _priority, _description in zip(app_technic_id_list, app_technic_priority, app_technic_description):
-                if Utilities.is_valid_get_request(_priority) and Utilities.is_valid_get_request(_id):
+                if Utilities.is_valid_str(_priority) and Utilities.is_valid_str(_id):
                     app_technic = ApplicationTechnicService.get_object(id=_id)
                     if app_technic is not None:
                         app_technic.priority = _priority
@@ -1355,7 +1355,7 @@ def show_material_application(request):
 
         if request.method == 'POST':
             operation = request.POST.get('operation')
-            if Utilities.is_valid_get_request(operation) and operation == 'set_props_for_filter':
+            if Utilities.is_valid_str(operation) and operation == 'set_props_for_filter':
                 Utilities.set_data_for_filter(request)
 
         application_today_id_list = ApplicationTodayService.get_queryset(
@@ -1391,7 +1391,7 @@ def material_application_supply_view(request):
         current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
         context = Utilities.get_prepared_data(context, current_day)
 
-        if Utilities.is_valid_get_request(_is_print):
+        if Utilities.is_valid_str(_is_print):
             application_materials_list = ApplicationMaterialService.get_queryset(
                 application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
                 isArchive=False,
@@ -1406,7 +1406,7 @@ def material_application_supply_view(request):
             application_material_id = request.POST.get('application_material_id')
             application_material_description = request.POST.get('app_material_description')
             operation = request.POST.get('operation')
-            if operation == 'accept_application_material' and Utilities.is_valid_get_request(application_material_id):
+            if operation == 'accept_application_material' and Utilities.is_valid_str(application_material_id):
 
                 application_material = ApplicationMaterialService.get_object(id=application_material_id)
                 if application_material:
@@ -1508,20 +1508,20 @@ def profile_view(request):
             telephone = request.POST.get('telephone')
 
             if operation == 'change_profiler':
-                if Utilities.is_valid_get_request(username):
+                if Utilities.is_valid_str(username):
                     current_user.username = username
-                if Utilities.is_valid_get_request(last_name):
+                if Utilities.is_valid_str(last_name):
                     current_user.last_name = last_name
-                if Utilities.is_valid_get_request(first_name):
+                if Utilities.is_valid_str(first_name):
                     current_user.first_name = first_name
-                if Utilities.is_valid_get_request(telephone):
+                if Utilities.is_valid_str(telephone):
                     current_user.telephone = UserService.validate_telephone(telephone)
                 current_user.save()
                 log.info("Changed profile successfully")
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
             if operation == 'changePassword':
-                if Utilities.is_valid_get_request(new_password_0) and Utilities.is_valid_get_request(new_password_1):
+                if Utilities.is_valid_str(new_password_0) and Utilities.is_valid_str(new_password_1):
                     if new_password_0 == new_password_1:
                         current_user.set_password(new_password_0)
                         current_user.save()
@@ -1719,10 +1719,14 @@ def spec_page_view(request):
 def test_page_view(request):
     import time
     start_time = time.time()
-    # wd = Utilities.get_current_day_data('2026-01-19')
-    # Utilities.send_app_by_telegram(wd)
-    # print(f"{d=}")
-    # [print(day) for day in d]
+    # wd = Utilities.get_current_day_data('2026-01-17')
+    # ds, ts = Utilities.clear_sheets_for_day(
+    #     workday_data=wd,
+    #     lt=90,
+    #     gt=0
+    # )
+    # print(ds)
+    # print(ts)
 
 
     end_time = time.time()

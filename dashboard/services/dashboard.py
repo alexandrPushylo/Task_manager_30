@@ -135,7 +135,7 @@ class DashboardService:
         if not current_user.is_show_deleted_app:
             applications_today = [at for at in applications_today if not at.isArchive]
 
-        status_list_application_today = Utilities.get_status_lists_of_apps_today(
+        status_list_application_today = Utilities.get_status_lists_of_app_today(
             applications_today=applications_today
         )
         context["status_list_application_today"] = status_list_application_today
@@ -279,7 +279,7 @@ class DashboardService:
         if not current_user.is_show_deleted_app:
             applications_today = [at for at in applications_today if not at.isArchive]
 
-        status_list_application_today = Utilities.get_status_lists_of_apps_today(
+        status_list_application_today = Utilities.get_status_lists_of_app_today(
             applications_today=applications_today
         )
         context["status_list_application_today"] = status_list_application_today
@@ -422,7 +422,7 @@ class DashboardService:
 
         # application_today_ids = [at.id for at in application_today]
         if application_today:
-            status_list_application_today = Utilities.get_status_lists_of_apps_today(
+            status_list_application_today = Utilities.get_status_lists_of_app_today(
                 applications_today=[application_today]
             )
             context["status_list_application_today"] = status_list_application_today
@@ -651,7 +651,7 @@ class DashboardService:
             current_day: WorkDaySchema,
             context: dict
     ) -> dict:
-        if Utilities.is_valid_get_request(request.GET.get("driver_id")):
+        if Utilities.is_valid_str(request.GET.get("driver_id")):
             current_driver = UserService.get_current_user(request.GET.get("driver_id"))
         else:
             current_driver = UserService.get_current_user(request.user.id)
