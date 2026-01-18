@@ -4,7 +4,6 @@ from django.core.cache import cache
 from django.db.utils import IntegrityError
 from django.db.models import Q
 
-
 from dashboard.models import User
 
 import dashboard.assets as A

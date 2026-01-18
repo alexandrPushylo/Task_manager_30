@@ -4,9 +4,8 @@ from django.core.cache import cache
 
 from dashboard.models import ConstructionSite
 from dashboard.schemas.construction_site_schema import ConstructionSiteSchema, EditConstructionSiteSchema
-from django.db.models import QuerySet  # type: ignore
+from django.db.models import QuerySet
 
-import dashboard.utilities as U
 import dashboard.assets as A
 from dashboard.services.base import BaseService
 

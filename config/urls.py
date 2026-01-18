@@ -20,22 +20,22 @@ from django.conf import settings
 from django.conf.urls.static import static
 from config.settings import TECH_SUPPORT_MODE
 
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+# from rest_framework import permissions
+# from drf_yasg.views import get_schema_view
+# from drf_yasg import openapi
 
 
 # from dashboard.views import dashboard, edit_application_view
 # from dashboard.views import clear_application_today
-from dashboard.views import conflicts_list_view, conflict_resolution_view
+# from dashboard.views import conflicts_list_view, conflict_resolution_view
 from dashboard.views import login_view, logout_view, register_view, restore_password_view
-from dashboard.views import show_technic_application, show_material_application, material_application_supply_view
+# from dashboard.views import show_technic_application, show_material_application, material_application_supply_view
 
 # from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
 
-from dashboard.views import construction_site_view, edit_construction_sites
-from dashboard.views import technic_view, edit_technic_view, delete_technic_view
-from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
+# from dashboard.views import construction_site_view, edit_construction_sites
+# from dashboard.views import technic_view, edit_technic_view, delete_technic_view
+# from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
 
 from dashboard.views import change_status_application_today, change_weekend_to_workday, validate_application_today_view
 from dashboard.views import settings_view

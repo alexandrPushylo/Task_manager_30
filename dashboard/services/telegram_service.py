@@ -3,7 +3,6 @@ import random
 import dashboard.assets as ASSETS
 import dashboard.telegram_bot as telegram
 from config.creds import USE_TELEGRAM
-from dashboard.models import WorkDaySheet
 from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
 from dashboard.services.application_technic import ApplicationTechnicService
 from dashboard.services.application_today import ApplicationTodayService
