@@ -49,8 +49,12 @@
             {% for application_technic in application_technics %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet.driver.last_name }}</span>
-                        <span class="fw-bolder">({{ application_technic.technic_sheet.technic.title }})</span>
+                        {% if application_technic.technic_sheet.driver_sheet__driver__last_name %}
+                            <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet__driver__last_name }}</span>
+                            {% else %}
+                            <span class="fw-bolder text-warning">Не назначен</span>
+                        {% endif %}
+                        <span class="fw-bolder">({{ application_technic.technic_sheet.technic__title }})</span>
                     </div>
                     <div class="card-title">
                         {% for application in application_technic.applications_list %}
@@ -70,9 +74,9 @@
                                 </div>
 
                                 <div class="col ms-1">
-                                    <span class="fw-bolder small ms-2">{{ application.application_today.construction_site.address }}</span>
-                                    {% if application.application_today.construction_site.foreman %}
-                                    <span class="small">({{ application.application_today.construction_site.foreman.last_name }})</span>
+                                    <span class="fw-bolder small ms-2">{{ application.application_today__construction_site__address }}</span>
+                                    {% if application.application_today__construction_site__foreman__last_name %}
+                                    <span class="small">({{ application.application_today__construction_site__foreman__last_name }})</span>
                                     {% endif %}
 
                                     <textarea class="form-control p-1 general_tech_description_font text_area_description" name="app_technic_description"

@@ -39,7 +39,7 @@
                                         <option 
                                                 value="{{ technic_sheet.id }}"
                                                 {% if technic_sheet.count_application == 0 %} style="color: green;" {% else %} style="color: red" {% endif %}
-                                        >{{ technic_sheet.driver_sheet.driver.last_name }}{% if technic_sheet.count_application > 0 %} (Занят){% elif not technic_sheet.status %} (Не работает){% else %} (Свободен){% endif %}</option>
+                                        >{{ technic_sheet.driver_sheet__driver__last_name }}{% if technic_sheet.count_application > 0 %} (Занят){% elif not technic_sheet.status %} (Не работает){% else %} (Свободен){% endif %}</option>
                                     {% endfor %}
                                 </select>
                             {% endfor %}

@@ -91,6 +91,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = creds.DATABASES
 
+USE_CACHE = creds.USE_CACHE
 CACHES = creds.CACHES
 
 # Password validation

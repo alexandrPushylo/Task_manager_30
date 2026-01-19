@@ -14,8 +14,9 @@ class Command(BaseCommand):
 
         today_ = date.today()
         workday = WorkDayService.get_current_date_data(today_)
-        if workday and workday.status:
-            Utilities.prepare_technic_sheet(workday)
-            log.info('CRON: prepare_technic_sheets() - Done')
-        else:
-            log.info("CRON: prepare_technic_sheets() - Don't work today")
+
+        log.info("CRON: starting... clear_sheets_for_day")
+        ds, ts = Utilities.clear_sheets_for_day(workday, lt=0, gt=7)
+        log.info(f"CRON: {ds} driver_sheets has been deleted\n\tCRON: {ts} technic_sheets has been deleted")
+
+

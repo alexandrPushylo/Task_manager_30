@@ -9,9 +9,9 @@ class Command(BaseCommand):
         from logger import getLogger
 
         log = getLogger(__name__)
-        from dashboard.services.work_day_sheet import prepare_workday
+        from dashboard.services.work_day_sheet import WorkDayService
         today_ = date.today()
-        prepare_workday(today_)
+        WorkDayService.prepare_workday_sheet(today_)
         log.info('CRON: prepare_workday()')
 
 

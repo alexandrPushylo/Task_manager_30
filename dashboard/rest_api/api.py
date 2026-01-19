@@ -26,7 +26,7 @@ import dashboard.services.application_today as APP_TODAY_SERVICE
 import dashboard.services.application_technic as APP_TECHNIC_SERVICE
 import dashboard.services.application_material as APP_MATERIAL_SERVICE
 import dashboard.services.add_edit_application as ADD_EDIT_APP_SERVICE
-import dashboard.services.parametr as PARAMETER_SERVICE
+import dashboard.services.parameter as PARAMETER_SERVICE
 #   SERVICE--------------------------------------------------
 
 
@@ -91,7 +91,7 @@ class DataBaseApiView(APIView):
         queryset = {
             "today": {
                 "date": U.TODAY,
-                "weekday": U.get_weekday(U.TODAY),
+                "weekday": U.get_ru_weekday(U.TODAY),
                 "day": U.TODAY.day,
                 "month": U.TODAY.month,
                 "year": U.TODAY.year,
@@ -100,7 +100,7 @@ class DataBaseApiView(APIView):
             "current_date": {
                 "id": current_workday.pk,
                 "date": current_workday.date,
-                "weekday": U.get_weekday(current_workday.date),
+                "weekday": U.get_ru_weekday(current_workday.date),
                 "day": current_workday.date.day,
                 "month": current_workday.date.month,
                 "year": current_workday.date.year,
@@ -110,7 +110,7 @@ class DataBaseApiView(APIView):
             "prev_work_day": WORK_DAY_SERVICE.get_prev_workday(current_workday.date).date,
             "next_work_day": WORK_DAY_SERVICE.get_next_workday(current_workday.date).date,
             "view_mode": U.get_view_mode(current_workday.date),
-            "accept_mode": U.get_accept_mode_by_date(workday=current_workday),
+            # "accept_mode": U.get_accept_mode_by_date(workday=current_workday),
         }
         return queryset
 
@@ -267,7 +267,7 @@ class WorkDaySheetsApiView(ListAPIView):
             "isArchive": item.isArchive,
             "is_all_application_send": item.is_all_application_send,
             "accept_mode": item.accept_mode,
-            "weekday": U.get_weekday(item.date),
+            "weekday": U.get_ru_weekday(item.date),
         } for item in queryset_raw]
         return queryset
 
@@ -291,7 +291,7 @@ class GetPrevOrNextWorkDayApiView(APIView):
             "date": queryset_raw.date,
             "status": queryset_raw.status,
             "accept_mode": queryset_raw.accept_mode,
-            "weekday": U.get_weekday(queryset_raw.date)
+            "weekday": U.get_ru_weekday(queryset_raw.date)
         }
     def get(self, request):
         return JsonResponse(self.get_object(), status=status.HTTP_200_OK)
@@ -314,14 +314,14 @@ class GetWorkDayApiView(ListAPIView):
             "day": item.date.day,
             "month": item.date.month,
             "status": item.status,
-            "weekday": U.get_weekday(item.date)[:3],
+            "weekday": U.get_ru_weekday(item.date)[:3],
         } for item in queryset_raw]
         return queryset
 
 class WorkDaySheetApiView(RetrieveUpdateAPIView):
     serializer_class = S.WorkDaySheetSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = WORK_DAY_SERVICE.get_workday_queryset()
+    # queryset = WORK_DAY_SERVICE.get_workday_queryset()
 
 #   DRIVER_SHEET--------------------------------------------------
 class DriverSheetsApiView(ListAPIView):
@@ -330,13 +330,13 @@ class DriverSheetsApiView(ListAPIView):
 
     def get_queryset(self):
         date = self.request.GET.get("current_day", U.TODAY)
-        return DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(date__date=date)
+        # return DRIVER_SHEET_SERVICE.get_driver_sheet_queryset(date__date=date)
 
 
 class DriverSheetApiView(RetrieveUpdateAPIView):
     serializer_class = S.DriverSheetSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset()
+    # queryset = DRIVER_SHEET_SERVICE.get_driver_sheet_queryset()
 
 
 #   TECHNIC_SHEET--------------------------------------------------
@@ -370,15 +370,18 @@ class GetTechnicSheetWithTechTitleApiView(APIView):
             date=workday
         )
         if is_for_add:
-            technic_title = TECHNIC_SERVICE.get_distinct_technic_title(
-                technic_sheets=technic_sheets.filter(
-                    status=True,
-                    driver_sheet__status=True,
-                )
-            )
+            # technic_title = TECHNIC_SERVICE.get_distinct_technic_title(
+            #     technic_sheets=technic_sheets.filter(
+            #         status=True,
+            #         driver_sheet__status=True,
+            #     )
+            # )
+            pass
         else:
-            technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
+            # technic_title = TECHNIC_SERVICE.get_distinct_technic_title(technic_sheets=technic_sheets)
+            pass
 
+        technic_title = []#######!!!
         workload = []
         for title in technic_title:
             filtered_technic_sheets = technic_sheets.filter(technic__title=title)
@@ -408,20 +411,20 @@ class ApplicationsTodayApiView(ListCreateAPIView):
 class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
+    # queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
     def delete(self, request, *args, **kwargs):
         if request.user.post in A.UserPosts.get_set():
             instance = self.get_object()
 
-            if USERS_SERVICE.is_supply(request.user):
-                supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
-                app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
-                    application_today__date=instance.date,
-                    isArchive=False,
-                    technic_sheet__technic__in=supply_technic_list
-                ).exclude(application_today=instance)
-                app_technic_list.update(isChecked=False)
-            APP_TODAY_SERVICE.delete_application_today(instance)
+            # if USERS_SERVICE.is_supply(request.user):
+            #     supply_technic_list = TECHNIC_SERVICE.get_supply_technic_list()
+            #     app_technic_list = APP_TECHNIC_SERVICE.get_apps_technic_queryset(
+            #         application_today__date=instance.date,
+            #         isArchive=False,
+            #         technic_sheet__technic__in=supply_technic_list
+            #     ).exclude(application_today=instance)
+            #     app_technic_list.update(isChecked=False)
+            # APP_TODAY_SERVICE.delete_application_today(instance)
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -431,7 +434,7 @@ class ApplicationTodayApiView(RetrieveUpdateDestroyAPIView):
 class ApplicationTodayByCWApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTodaySerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
+    # queryset = APP_TODAY_SERVICE.get_apps_today_queryset()
 
     def get_object(self):
         construction_site_id = self.request.GET.get("construction_site_id")
@@ -479,7 +482,7 @@ class ApplicationTechnicByATApiView(ListAPIView):
 class ApplicationTechnicApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationTechnicSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = APP_TECHNIC_SERVICE.get_apps_technic_queryset()
+    # queryset = APP_TECHNIC_SERVICE.get_apps_technic_queryset()
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -526,7 +529,7 @@ class ApplicationMaterialByATApiView(ListAPIView):
 class ApplicationMaterialApiView(RetrieveUpdateDestroyAPIView):
     serializer_class = S.ApplicationMaterialSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = APP_MATERIAL_SERVICE.get_apps_material_queryset()
+    # queryset = APP_MATERIAL_SERVICE.get_apps_material_queryset()
 
 
 #   Services--------------------------------------------------------------
