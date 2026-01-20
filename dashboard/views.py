@@ -1506,35 +1506,42 @@ def profile_view(request):
             last_name = request.POST.get('last_name')
             first_name = request.POST.get('first_name')
             telephone = request.POST.get('telephone')
+            user = UserService.get_object(id=current_user.id)
 
             if operation == 'change_profiler':
-                if Utilities.is_valid_str(username):
-                    current_user.username = username
-                if Utilities.is_valid_str(last_name):
-                    current_user.last_name = last_name
-                if Utilities.is_valid_str(first_name):
-                    current_user.first_name = first_name
-                if Utilities.is_valid_str(telephone):
-                    current_user.telephone = UserService.validate_telephone(telephone)
-                current_user.save()
+                if user:
+                    if Utilities.is_valid_str(username):
+                        user.username = username
+                    if Utilities.is_valid_str(last_name):
+                        user.last_name = last_name
+                    if Utilities.is_valid_str(first_name):
+                        user.first_name = first_name
+                    if Utilities.is_valid_str(telephone):
+                        user.telephone = UserService.validate_telephone(telephone)
+                    user.save()
+                    cache.delete(f"{UserService.CacheKeys.ALL_USER_LIST.value}")
+                    cache.delete(f"{UserService.CacheKeys.CURRENT_USER.value}:{current_user.id}")
                 log.info("Changed profile successfully")
                 return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
             if operation == 'changePassword':
-                if Utilities.is_valid_str(new_password_0) and Utilities.is_valid_str(new_password_1):
-                    if new_password_0 == new_password_1:
-                        current_user.set_password(new_password_0)
-                        current_user.save()
-                        log.info("Changed password successfully")
-                        return HttpResponse(b"accept")
+                if user:
+                    if Utilities.is_valid_str(new_password_0) and Utilities.is_valid_str(new_password_1):
+                        if new_password_0 == new_password_1:
+                            user.set_password(new_password_0)
+                            user.save()
+                            log.info("Changed password successfully")
+                            return HttpResponse(b"accept")
 
             _user_key = request.POST.get('user_key')
             if _user_key is not None and _user_key != '':
                 _chat_id = telegram.get_id_chat(key=_user_key, result=telegram.get_result())
                 if _chat_id:
-                    current_user.telegram_id_chat = _chat_id
-                    current_user.save()
+                    user.telegram_id_chat = _chat_id
+                    user.save()
                     TelegramService.send_messages(chat_id=_chat_id, messages='Связь установлена')
+                    cache.delete(f"{UserService.CacheKeys.ALL_USER_LIST.value}")
+                    cache.delete(f"{UserService.CacheKeys.CURRENT_USER.value}:{current_user.id}")
 
         context['current_user'] = current_user
         return render(request, template, context)
