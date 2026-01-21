@@ -1726,14 +1726,7 @@ def spec_page_view(request):
 def test_page_view(request):
     import time
     start_time = time.time()
-    # wd = Utilities.get_current_day_data('2026-01-17')
-    # ds, ts = Utilities.clear_sheets_for_day(
-    #     workday_data=wd,
-    #     lt=90,
-    #     gt=0
-    # )
-    # print(ds)
-    # print(ts)
+
 
 
     end_time = time.time()
