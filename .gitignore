@@ -342,3 +342,4 @@ fabric.properties
 /tmp
 .htaccess
 /dashboard/migrations
+.DS_Store
