@@ -282,7 +282,11 @@ def edit_application_view(request):
         driver_sheet_ids = [ ds.id for ds in driver_sheet_data]
         technic_sheets_data = [ts for ts in technic_sheets_data if ts.driver_sheet in driver_sheet_ids]
         driver_sheet_ids_for_add = [ ds.id for ds in driver_sheet_data if ds.status]
-        technic_sheets_data_for_add = [ts for ts in technic_sheets_data if ts.driver_sheet in driver_sheet_ids_for_add]
+        technic_sheets_data_for_add = [
+            ts for ts in technic_sheets_data
+            if ts.driver_sheet in driver_sheet_ids_for_add
+               and ts.status
+        ]
 
         technic_titles_dict = TechnicService.get_dict_short_technic_names(
             technic_sheets_data=technic_sheets_data
