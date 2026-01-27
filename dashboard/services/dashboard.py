@@ -509,7 +509,9 @@ class DashboardService:
 
         _app_tech = (
             ApplicationTechnicService.get_queryset(
-                application_today__date_id=current_day.id, isArchive=False
+                application_today__date_id=current_day.id,
+                isArchive=False,
+                application_today__isArchive=False
             )
             .select_related("application_today__construction_site")
             .exclude(application_today__construction_site=construction_site.id)
