@@ -143,7 +143,8 @@ class EditApplicationService:
         current_day: WorkDaySchema,
         current_user: UserSchema,
         app_today_inst: ApplicationToday,
-    ):
+    ) -> dict:
+        data = {"status": "fail", "driver_status": "false"}
         if Utilities.is_valid_str(post_technic_title_shrt):
             try:
                 application_technic = ApplicationTechnicService.get_object(
@@ -177,7 +178,8 @@ class EditApplicationService:
                         if application_technic.technic_sheet is not None:
                             TechnicSheetService.decrement_count_application(application_technic.technic_sheet)
                         application_technic.technic_sheet = some_technic_sheet
-                        TechnicSheetService.increment_count_application(some_technic_sheet )
+                        TechnicSheetService.increment_count_application(some_technic_sheet)
+                        data["driver_status"] = "true" if some_technic_sheet.driver_sheet.status else "false"
                 else:
                     application_technic.technic_sheet = None
                 application_technic.description = description
@@ -187,13 +189,14 @@ class EditApplicationService:
                 )
                 default_status = Utilities.get_default_status_for_apps_today(current_user)
                 ApplicationTodayService.make_edited(app_today_inst, default_status)
-                return b"ok"
+                data["status"] = "ok"
+                return data
             except Exception as e:
                 log.error(
                     f"ERROR: edit_application_view(): apply_changes_application_technic | {e}"
                 )
-                return b"fail"
-        return b"fail"
+                return data
+        return data
 
     @classmethod
     def save_application_description(
