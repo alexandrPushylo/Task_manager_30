@@ -101,11 +101,12 @@
                                                                     value="{{ technic_sheet.id }}"
                                                                     {% if technic_sheet.count_application == 0 %} style="color: green;" {% else %} style="color: red" {% endif %}
                                                         >{% if not technic_sheet.driver_sheet__status %}Не назначен{% else %}{{ technic_sheet.driver_sheet__driver__last_name }}{% if technic_sheet.count_application > 0 %} (Занят){% endif %}{% endif %}</option>
-
                                                     {% endfor %}
                                                 </select>
                                             {% endfor %}  
                                         </label>
+                                        <p class="m-0" style="display: none" id="span_notwork_driver_{{ app_technic.id }}"><span
+                                          class="small text-warning">Данный водитель не работает</span></p>
                                         </div>
                                         <div class="col-auto" id="btn_options_{{ app_technic.id }}">
                                             {% include 'includes/btn_btns_control_edit_apps.html' %}

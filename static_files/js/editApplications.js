@@ -205,6 +205,7 @@ function applyChangesAppTechnic(app_technic_id) {
     const app_tech_description = $('#app_tech_description_' + appTechId);
     const btn_options = $('#btn_options_'+appTechId);
     const btn_edit_technics_and_materials = $('#btn_edit_technics_and_materials');
+    const span_notwork_driver = $('#span_notwork_driver_'+app_technic_id);
 
     $.ajax({
         type: 'POST',
@@ -221,7 +222,8 @@ function applyChangesAppTechnic(app_technic_id) {
             operation: operation
         },
         success: (response) => {
-            if (response==='ok'){
+            let data = parseResponse(response)
+            if (data.status==='ok'){
                 orig_technic_description.val(app_tech_description.val())
                 btn_options.show()
                 btn_edit_technics_and_materials.show()
@@ -233,6 +235,11 @@ function applyChangesAppTechnic(app_technic_id) {
                 btn_edit_technics_and_materials.show()
                 $('#main_footer').show();
                 MESS_STATUS_FAIL()
+            }
+            if (data.driver_status==='true'){
+                span_notwork_driver.hide();
+            }else {
+                span_notwork_driver.show();
             }
         }
     })

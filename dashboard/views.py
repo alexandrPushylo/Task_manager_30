@@ -282,7 +282,11 @@ def edit_application_view(request):
         driver_sheet_ids = [ ds.id for ds in driver_sheet_data]
         technic_sheets_data = [ts for ts in technic_sheets_data if ts.driver_sheet in driver_sheet_ids]
         driver_sheet_ids_for_add = [ ds.id for ds in driver_sheet_data if ds.status]
-        technic_sheets_data_for_add = [ts for ts in technic_sheets_data if ts.driver_sheet in driver_sheet_ids_for_add]
+        technic_sheets_data_for_add = [
+            ts for ts in technic_sheets_data
+            if ts.driver_sheet in driver_sheet_ids_for_add
+               and ts.status
+        ]
 
         technic_titles_dict = TechnicService.get_dict_short_technic_names(
             technic_sheets_data=technic_sheets_data
@@ -292,10 +296,6 @@ def edit_application_view(request):
 
         context['technic_titles_dict_for_add'] = TechnicService.get_dict_short_technic_names(
             technic_sheets_data=technic_sheets_data_for_add
-            # technic_sheets=technic_sheets.filter(
-            #     status=True,
-            #     driver_sheet__status=True,
-            # )
         )
         context['technic_driver_list_for_add'] = EditApplicationService.get_technic_driver_list(
             technic_titles=technic_titles_dict,
@@ -394,7 +394,7 @@ def edit_application_view(request):
                         construction_site_id=construction_site.id,
                         date_id=current_day.id
                     )
-                    status = EditApplicationService.apply_changes_application_technic(
+                    data = EditApplicationService.apply_changes_application_technic(
                         post_technic_title_shrt=post_technic_title_shrt,
                         post_technic_sheet_id=post_technic_sheet_id,
                         post_application_technic_id=post_application_technic_id,
@@ -404,7 +404,7 @@ def edit_application_view(request):
                         current_user=current_user,
                         app_today_inst=app_today,
                     )
-                    return HttpResponse(status)
+                    return HttpResponse(json.dumps(data))
 
                 case 'save_application_description':
                     log.debug('save_application_description')
