@@ -396,31 +396,15 @@ class DashboardService:
             current_day: WorkDaySchema,
             context: dict
     ) -> dict:
-
-        # construction_site, _created = ConstructionSite.objects.get_or_create(
-        #     address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value
-        # )
-
         construction_site = ConstructionSiteService.get_construction_site_for_supply()
         app_today_for_date = ApplicationTodayService.get_app_today_for_date(current_day)
         app_mat_for_date = ApplicationMaterialService.get_app_mat_for_date(current_day)
         driver_list = UserService.get_driver_list()
-        # app_tech_for_date = ApplicationTechnicService.get_app_tech_for_date(current_day)
-
-        # application_today = ApplicationTodayService.get_queryset(
-        #     date_id=current_day.id,
-        #     construction_site=construction_site,
-        #     # isArchive=False
-        # )
-        # application_today = [at for at in app_today_for_date if at.construction_site == construction_site.id]
         application_today = ApplicationTodayService.get_app_today_by_cs_id_from_data(construction_site.id, app_today_for_date)
 
         if not request.user.is_show_deleted_app:
-            # application_today = application_today.filter(isArchive=False)
-            # application_today = [at for at in application_today if not at.isArchive]
             application_today = application_today if application_today and not application_today.isArchive else None
 
-        # application_today_ids = [at.id for at in application_today]
         if application_today:
             status_list_application_today = Utilities.get_status_lists_of_app_today(
                 applications_today=[application_today]
@@ -431,7 +415,6 @@ class DashboardService:
                 application_today_id=application_today.id,
                 isArchive=False
             )
-            # .select_related("technic_sheet__technic__title", "technic_sheet__driver_sheet__driver__last_name")
             .values(
                 "id",
                 "description",
@@ -461,13 +444,9 @@ class DashboardService:
 
             elif application_technic_id and operation == "accept":
                 if not application_today_id:
-                    # _application_today = APP_TODAY_SERVICE.create_app_today(
-                    #     date=current_day,
-                    #     construction_site=construction_site
-                    # )
                     create_data = CreateApplicationTodaySchema(
-                        construction_site_id=construction_site.pk,
-                        date_id=current_day.pk,
+                        construction_site_id=construction_site.id,
+                        date_id=current_day.id,
                     )
                     _application_today = ApplicationTodayService.get_or_create_by_data(
                         create_data
