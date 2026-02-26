@@ -144,7 +144,7 @@ class EditApplicationService:
         current_user: UserSchema,
         app_today_inst: ApplicationToday,
     ) -> dict:
-        data = {"status": "fail", "driver_status": "false"}
+        data = {"status": "fail", "driver_status": "true"}
         if Utilities.is_valid_str(post_technic_title_shrt):
             try:
                 application_technic = ApplicationTechnicService.get_object(
