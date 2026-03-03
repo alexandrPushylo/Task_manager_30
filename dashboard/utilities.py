@@ -1171,7 +1171,11 @@ class Utilities:
         if data_str is None or data_str == "":
             return WorkDayService.get_current_date_data(cls.TODAY)
         else:
-            return WorkDayService.get_current_date_data(data_str)
+            work_day = WorkDayService.get_current_date_data(data_str)
+            if work_day is None:
+                return WorkDayService.get_current_date_data(cls.TODAY)
+            else:
+                return WorkDayService.get_current_date_data(data_str)
 
     @classmethod
     def send_app_by_telegram(

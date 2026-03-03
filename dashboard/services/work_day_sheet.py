@@ -183,10 +183,13 @@ class WorkDayService(BaseService):
         current_date_data_from_cache = cache.get(cache_kay) if cls.USE_CACHE else None
         if current_date_data_from_cache is None:
             current_date_data = cls.get_object(date = current_date)
-            current_date_data__data = WorkDaySchema(**current_date_data.to_dict())
-            if cls.USE_CACHE:
-                cache.set(cache_kay, current_date_data__data, cache_ttl)
-            return current_date_data__data
+            if not current_date_data is None:
+                current_date_data__data = WorkDaySchema(**current_date_data.to_dict())
+                if cls.USE_CACHE:
+                    cache.set(cache_kay, current_date_data__data, cache_ttl)
+                return current_date_data__data
+            else:
+                return None
         else:
             cache.touch(cache_kay, cache_ttl)
             return current_date_data_from_cache
