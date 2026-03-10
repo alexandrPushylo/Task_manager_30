@@ -542,7 +542,7 @@ def register_view(request):
     context = {
         'user_posts': {
             **ASSETS.UserPosts.EMPLOYEE.get_dict(),
-            **ASSETS.UserPosts.DRIVER.get_dict(),
+            # **ASSETS.UserPosts.DRIVER.get_dict(),
         }
     }
 
