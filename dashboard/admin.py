@@ -49,8 +49,8 @@ class CustomUserAdmin(UserAdmin):
          ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-    list_display = ("username", "last_name", "post", "isArchive")
-    list_filter = ("post", "isArchive")
+    list_display = ("username", "last_name", "post", "isArchive", "is_active")
+    list_filter = ("post", "is_active")
 
 
 #   Technic ----------------------------------------------------------------
