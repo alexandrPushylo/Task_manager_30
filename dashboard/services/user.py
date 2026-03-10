@@ -68,6 +68,8 @@ class UserService(BaseService):
             return None, A.UserEditResult.ERROR
         try:
             new_user = cls.model.objects.create(**validated_user_data.model_dump())
+            new_user.set_password(validated_user_data.password)
+            new_user.save(update_fields=['password'])
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
             log.info(f"User {validated_user_data.last_name} has been added")
             return new_user, A.UserEditResult.OK
