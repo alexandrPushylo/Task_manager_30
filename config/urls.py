@@ -25,18 +25,7 @@ from config.settings import TECH_SUPPORT_MODE
 # from drf_yasg import openapi
 
 
-# from dashboard.views import dashboard, edit_application_view
-# from dashboard.views import clear_application_today
-# from dashboard.views import conflicts_list_view, conflict_resolution_view
 from dashboard.views import login_view, logout_view, register_view, restore_password_view
-# from dashboard.views import show_technic_application, show_material_application, material_application_supply_view
-
-# from dashboard.views import workday_sheet_view, driver_sheet_view, technic_sheet_view
-
-# from dashboard.views import construction_site_view, edit_construction_sites
-# from dashboard.views import technic_view, edit_technic_view, delete_technic_view
-# from dashboard.views import users_view, edit_user_view, delete_user_view, profile_view
-
 from dashboard.views import change_status_application_today, change_weekend_to_workday, validate_application_today_view
 from dashboard.views import settings_view
 from dashboard.views import maintenance_view
@@ -44,6 +33,7 @@ from dashboard.views import def_test
 from dashboard.views import routing
 from dashboard.views import task_desc_for_spec_constr_site_view
 from dashboard.views import calculate_all_applications
+from dashboard.views import clear_cache_view
 
 
 # schema_view = get_schema_view(
@@ -79,6 +69,7 @@ urlpatterns = [
     path('pr_wd_f_app/', change_weekend_to_workday, name='prepare_workday_for_app'),
     # path('ck_app_stat/', check_application_status, name='check_application_status'),
     path('validate_app_today', validate_application_today_view, name='validate_application_today'),
+    path('clear_cache', clear_cache_view, name='clear_cache'),
     path('test/', def_test, name='test'),
 
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),

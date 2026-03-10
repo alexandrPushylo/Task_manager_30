@@ -1722,6 +1722,15 @@ def spec_page_view(request):
         return HttpResponse(file, content_type='text/plain')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
+def clear_cache_view(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            cache.clear()
+            log.info("cache cleared")
+        else:
+            log.info("cache not cleared")
+        return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 def test_page_view(request):
     import time
