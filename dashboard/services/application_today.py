@@ -31,7 +31,7 @@ class ApplicationTodayService(BaseService):
             obj = cls.model.objects.get(*args, **kwargs)
             return obj
         except cls.model.DoesNotExist:
-            log.warning(f"get_object({kwargs}): ApplicationToday.DoesNotExist ")
+            log.debug(f"get_object({kwargs}): ApplicationToday.DoesNotExist ")
             return None
         except ValueError:
             log.warning(f"get_object({kwargs}): ValueError")
