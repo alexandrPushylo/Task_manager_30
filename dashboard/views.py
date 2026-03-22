@@ -1713,13 +1713,13 @@ def spec_page_view(request):
         # file = ''
 
         try:
-            with open(file_url, 'rt') as f:
+            with open(file_url, 'rt', encoding="utf-8") as f:
                 file = f.readlines()[-200:]
         except FileNotFoundError:
             file = 'FileNotFoundError'
             log.error('spec_page_view(): FileNotFoundError')
 
-        return HttpResponse(file, content_type='text/plain')
+        return HttpResponse(file, content_type='text/plain', charset='windows-1251')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 def clear_cache_view(request):
