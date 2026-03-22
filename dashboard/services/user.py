@@ -74,7 +74,7 @@ class UserService(BaseService):
             log.info(f"User {validated_user_data.last_name} has been added")
             return new_user, A.UserEditResult.OK
         except IntegrityError:
-            log.error("create_new_user(): IntegrityError; | username= [{validated_user_data.username}]")
+            log.error(f"create_new_user(): IntegrityError; | username= [{validated_user_data.username}]")
             return None, A.UserEditResult.EXISTS
         except Exception as e:
             log.error("create_new_user(): Unexpected error", e)
