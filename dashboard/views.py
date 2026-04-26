@@ -512,7 +512,7 @@ def login_view(request):
         username = username.strip()
         password = request.POST.get('password')
 
-        phn_user = UserService.get_user_by_phone(username)
+        phn_user = UserService.get_user_by_phone(username, length=9, use_pref=False)
         if phn_user:
             user = authenticate(request, username=phn_user.username, password=password)
         else:

@@ -68,6 +68,12 @@ class UserService(BaseService):
         validated_user_data = cls._prepare_user_data(user_data)
         if validated_user_data is None:
             return None, A.UserEditResult.ERROR
+
+        user_with_phone = cls.get_user_by_phone(telephone=user_data.telephone)
+
+        if user_with_phone:
+            return None, A.UserEditResult.EXISTS
+
         try:
             new_user = cls.model.objects.create(**validated_user_data.model_dump())
             new_user.set_password(validated_user_data.password)
