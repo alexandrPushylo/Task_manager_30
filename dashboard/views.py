@@ -547,7 +547,10 @@ def register_view(request):
     }
 
     if request.method == 'GET':
-        return render(request, 'content/register.html', context)
+        if request.GET.get('confirmed', False):
+            return render(request, 'content/register.html', context)
+        else:
+            return render(request, 'content/before_register.html', context)
     if request.method == 'POST':
         user_data = EditUserSchema(
             username=request.POST.get('username'),
