@@ -56,7 +56,7 @@ def routing(request):
         isArchive=False,
         date=next_work_day.id
     )
-    
+
     if Utilities.is_admin(current_user):
         if next_app_today.exists():
             log.debug("routing to admin dashboard current day")
@@ -104,6 +104,7 @@ def routing(request):
 def dashboard_view(request):
     if not request.user.is_authenticated or not request.user.is_active:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
     current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
     current_user = UserService.get_current_user(request.user.pk)
 
