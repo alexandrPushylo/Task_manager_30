@@ -46,34 +46,59 @@ log = getLogger(__name__)
 
 
 def routing(request):
-    if request.user.is_authenticated:
-        current_user = UserService.get_current_user(request.user.pk)
-        next_work_day = WorkDayService.get_next_workday()
-        next_app_today = ApplicationTodayService.get_queryset(
-            isArchive=False,
-            date=next_work_day.id
-        )
-        if Utilities.is_admin(current_user):
-            if next_app_today.exists():
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+    if not request.user.is_authenticated or not request.user.is_active:
+        log.debug("routing to login")
+        return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
-        elif Utilities.is_foreman(current_user) or Utilities.is_master(current_user):
-            if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-
-        elif Utilities.is_supply(current_user):
+    current_user = UserService.get_current_user(request.user.pk)
+    next_work_day = WorkDayService.get_next_workday()
+    next_app_today = ApplicationTodayService.get_queryset(
+        isArchive=False,
+        date=next_work_day.id
+    )
+    
+    if Utilities.is_admin(current_user):
+        if next_app_today.exists():
+            log.debug("routing to admin dashboard current day")
             return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-        elif Utilities.is_mechanic(current_user):
-            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-        elif Utilities.is_driver(current_user):
-            if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-        elif Utilities.is_employee(current_user):
-            if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         else:
-            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+
+    elif Utilities.is_foreman(current_user) or Utilities.is_master(current_user):
+        if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
+            log.debug("routing to foreman or master dashboard current day")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+
+    elif Utilities.is_supply(current_user):
+        log.debug("routing to supply dashboard current day")
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+
+    elif Utilities.is_mechanic(current_user):
+        log.debug("routing to mechanic dashboard current day")
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+
+    elif Utilities.is_driver(current_user):
+        if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
+            log.debug("routing to driver dashboard current day")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+
+    elif Utilities.is_employee(current_user):
+        if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
+            log.debug("routing to employee dashboard current day")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+    else:
+        log.debug("routing to DASHBOARD")
+        return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
 
 def dashboard_view(request):
