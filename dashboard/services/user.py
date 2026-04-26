@@ -55,6 +55,8 @@ class UserService(BaseService):
         cache.touch(cache_key, cache_ttl)
         if current_user_from_cache is None:
             current_user = cls.get_object(id=user_id)
+            if current_user is None:
+                return None
             current_user_data = UserSchema(**current_user.to_dict())
             if cls.USE_CACHE:
                 cache.set(cache_key, current_user_data, cache_ttl)
