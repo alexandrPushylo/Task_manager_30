@@ -118,16 +118,20 @@ class UserService(BaseService):
         return False
 
     @classmethod
-    def get_user_by_phone(cls, telephone: str) -> User | None:
+    def get_user_by_phone(cls, telephone: str, **kwargs) -> User | None:
         """
             Проверка существования пользователя с телефоном "telephone"
             :param telephone:
             :return:
             """
-        validate_telephone = cls.validate_telephone(telephone, length=7, use_pref=False)
+        length = kwargs.get('length', 9)
+        use_pref = kwargs.get('use_pref', True)
+        validate_telephone = cls.validate_telephone(telephone, length=length, use_pref=use_pref)
         if validate_telephone:
             user = cls.get_queryset(
-                isArchive=False, telephone__contains=validate_telephone
+                is_active=True,
+                isArchive=False,
+                telephone__iendswith=validate_telephone
             )
         else:
             user = cls.model.objects.none()
