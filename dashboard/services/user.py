@@ -106,8 +106,9 @@ class UserService(BaseService):
     def delete(cls, *args, **kwargs) -> bool:
         user = cls.get_object(*args, **kwargs)
         if user:
+            user.is_active = False
             user.isArchive = True
-            user.save(update_fields=["isArchive"])
+            user.save(update_fields=["isArchive", "is_active"])
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
             cache.delete(f"{cls.CacheKeys.CURRENT_USER.value}:{user.pk}")
             log.info(f'User: ({user.last_name} {user.first_name}) has been archived')
