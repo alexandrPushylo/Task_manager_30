@@ -524,7 +524,7 @@ def login_view(request):
             log.info(f"Пользователь {user} зашел в систему")
             return HttpResponseRedirect(ENDPOINTS.ROUTING_DASHBOARD)
         else:
-            log.warning(f'Username: {username} or Password is incorrect')
+            log.warning(f'"{username}": Username or Password is incorrect')
             return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
 
