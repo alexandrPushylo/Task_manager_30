@@ -77,7 +77,7 @@ def routing(request):
 
 
 def dashboard_view(request):
-    if request.user.is_anonymous:
+    if not request.user.is_authenticated or not request.user.is_active:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
     current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
     current_user = UserService.get_current_user(request.user.pk)
@@ -477,7 +477,8 @@ def edit_application_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+        if request.user.is_active:
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
     if request.method == 'GET':
         return render(request, 'content/login.html')
     if request.method == 'POST':
