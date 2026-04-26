@@ -165,7 +165,8 @@
             <li>
                 <hr class="m-0">
             </li>
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Выйти</a></li>
+            <li><button class="dropdown-item" type="submit" form="logout_form" >Выйти</button></li>
         </ul>
     {% endif %}
 </div>
+<form id="logout_form" method="post" action="{% url 'logout' %}">{% csrf_token %}</form>

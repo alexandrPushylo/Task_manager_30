@@ -533,9 +533,10 @@ def restore_password_view(request):
     return render(request, 'content/spec/restore_password.html', context)
 
 def logout_view(request):
-    if request.user.is_authenticated:
-        log.info(f"Пользователь {request.user.username} вышел из системы")
-        logout(request)
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            log.info(f"Пользователь {request.user.username} вышел из системы")
+            logout(request)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 def register_view(request):
