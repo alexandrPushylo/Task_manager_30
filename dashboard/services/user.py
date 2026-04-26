@@ -55,6 +55,8 @@ class UserService(BaseService):
         cache.touch(cache_key, cache_ttl)
         if current_user_from_cache is None:
             current_user = cls.get_object(id=user_id)
+            if current_user is None:
+                return None
             current_user_data = UserSchema(**current_user.to_dict())
             if cls.USE_CACHE:
                 cache.set(cache_key, current_user_data, cache_ttl)
@@ -66,6 +68,12 @@ class UserService(BaseService):
         validated_user_data = cls._prepare_user_data(user_data)
         if validated_user_data is None:
             return None, A.UserEditResult.ERROR
+
+        user_with_phone = cls.get_user_by_phone(telephone=user_data.telephone)
+
+        if user_with_phone:
+            return None, A.UserEditResult.EXISTS
+
         try:
             new_user = cls.model.objects.create(**validated_user_data.model_dump())
             new_user.set_password(validated_user_data.password)
@@ -106,8 +114,9 @@ class UserService(BaseService):
     def delete(cls, *args, **kwargs) -> bool:
         user = cls.get_object(*args, **kwargs)
         if user:
+            user.is_active = False
             user.isArchive = True
-            user.save(update_fields=["isArchive"])
+            user.save(update_fields=["isArchive", "is_active"])
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
             cache.delete(f"{cls.CacheKeys.CURRENT_USER.value}:{user.pk}")
             log.info(f'User: ({user.last_name} {user.first_name}) has been archived')
@@ -115,16 +124,20 @@ class UserService(BaseService):
         return False
 
     @classmethod
-    def get_user_by_phone(cls, telephone: str) -> User | None:
+    def get_user_by_phone(cls, telephone: str, **kwargs) -> User | None:
         """
             Проверка существования пользователя с телефоном "telephone"
             :param telephone:
             :return:
             """
-        validate_telephone = cls.validate_telephone(telephone, length=7, use_pref=False)
+        length = kwargs.get('length', 9)
+        use_pref = kwargs.get('use_pref', True)
+        validate_telephone = cls.validate_telephone(telephone, length=length, use_pref=use_pref)
         if validate_telephone:
             user = cls.get_queryset(
-                isArchive=False, telephone__contains=validate_telephone
+                is_active=True,
+                isArchive=False,
+                telephone__iendswith=validate_telephone
             )
         else:
             user = cls.model.objects.none()

@@ -46,39 +46,65 @@ log = getLogger(__name__)
 
 
 def routing(request):
-    if request.user.is_authenticated:
-        current_user = UserService.get_current_user(request.user.pk)
-        next_work_day = WorkDayService.get_next_workday()
-        next_app_today = ApplicationTodayService.get_queryset(
-            isArchive=False,
-            date=next_work_day.id
-        )
-        if Utilities.is_admin(current_user):
-            if next_app_today.exists():
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+    if not request.user.is_authenticated or not request.user.is_active:
+        log.debug("routing to login")
+        return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
-        elif Utilities.is_foreman(current_user) or Utilities.is_master(current_user):
-            if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+    current_user = UserService.get_current_user(request.user.pk)
+    next_work_day = WorkDayService.get_next_workday()
+    next_app_today = ApplicationTodayService.get_queryset(
+        isArchive=False,
+        date=next_work_day.id
+    )
 
-        elif Utilities.is_supply(current_user):
+    if Utilities.is_admin(current_user):
+        if next_app_today.exists():
+            log.debug("routing to admin dashboard current day")
             return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-        elif Utilities.is_mechanic(current_user):
-            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-        elif Utilities.is_driver(current_user):
-            if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
-        elif Utilities.is_employee(current_user):
-            if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
-                return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
         else:
-            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-    return HttpResponseRedirect(ENDPOINTS.LOGIN)
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+
+    elif Utilities.is_foreman(current_user) or Utilities.is_master(current_user):
+        if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_FOREMAN:
+            log.debug("routing to foreman or master dashboard current day")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+
+    elif Utilities.is_supply(current_user):
+        log.debug("routing to supply dashboard current day")
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+
+    elif Utilities.is_mechanic(current_user):
+        log.debug("routing to mechanic dashboard current day")
+        return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+
+    elif Utilities.is_driver(current_user):
+        if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_DRIVER:
+            log.debug("routing to driver dashboard current day")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+
+    elif Utilities.is_employee(current_user):
+        if Utilities.NOW() > ASSETS.TIME_REDIRECT_DASHBOARD_FOR_EMPLOYEE:
+            log.debug("routing to employee dashboard current day")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}?current_day={next_work_day.date}")
+        else:
+            log.debug("routing to dashboard")
+            return HttpResponseRedirect(f"{ENDPOINTS.DASHBOARD}")
+    else:
+        log.debug("routing to DASHBOARD")
+        return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
 
 def dashboard_view(request):
-    if request.user.is_anonymous:
+    if not request.user.is_authenticated or not request.user.is_active:
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
+
     current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
     current_user = UserService.get_current_user(request.user.pk)
 
@@ -477,7 +503,8 @@ def edit_application_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+        if request.user.is_active:
+            return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
     if request.method == 'GET':
         return render(request, 'content/login.html')
     if request.method == 'POST':
@@ -485,7 +512,7 @@ def login_view(request):
         username = username.strip()
         password = request.POST.get('password')
 
-        phn_user = UserService.get_user_by_phone(username)
+        phn_user = UserService.get_user_by_phone(username, length=9, use_pref=False)
         if phn_user:
             user = authenticate(request, username=phn_user.username, password=password)
         else:
@@ -498,7 +525,7 @@ def login_view(request):
             log.info(f"Пользователь {user} зашел в систему")
             return HttpResponseRedirect(ENDPOINTS.ROUTING_DASHBOARD)
         else:
-            log.warning(f'Username: {username} or Password is incorrect')
+            log.warning(f'"{username}": Username or Password is incorrect')
             return render(request, 'content/login.html', {'error': ASSETS.ErrorMessages.invalid_signin.value})
     return HttpResponse(status=403)
 
@@ -533,9 +560,10 @@ def restore_password_view(request):
     return render(request, 'content/spec/restore_password.html', context)
 
 def logout_view(request):
-    if request.user.is_authenticated:
-        log.info(f"Пользователь {request.user.username} вышел из системы")
-        logout(request)
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            log.info(f"Пользователь {request.user.username} вышел из системы")
+            logout(request)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 def register_view(request):
@@ -547,7 +575,10 @@ def register_view(request):
     }
 
     if request.method == 'GET':
-        return render(request, 'content/register.html', context)
+        if request.GET.get('confirmed', False):
+            return render(request, 'content/register.html', context)
+        else:
+            return render(request, 'content/before_register.html', context)
     if request.method == 'POST':
         user_data = EditUserSchema(
             username=request.POST.get('username'),

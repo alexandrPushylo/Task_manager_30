@@ -2,7 +2,7 @@
 {% block content %}
     
     <div id="register_form" class="container-sm translate-middle-x position-absolute start-50 mt-5">
-        <div id="register_div" style="display: none">
+        <div id="register_div">
             <form method="post" id="form_register">{% csrf_token %}
                 <div>
                     <label class="w-100">Логин (Фамилия)*
@@ -54,18 +54,6 @@
                 <br>
                 <button type="submit" class="btn btn-success" form="form_register" style="float: right">Зарегистрировать</button>
             </form>
-        </div>
-        <div id="messages_div"
-             class="alert alert-success"
-             style="display: block; text-align: center;"
-        >
-            <p>Если вы <span class="fw-bolder">уже зарегистрированные</span>, но забыли пароль,
-                <br> то вы можете <a href="{% url 'restore_password' %}">сбросить пароль</a></p>
-            <button id="btn_reg_mess" 
-                    type="button"
-                    class="btn btn-primary end-0"
-                    onclick="$('#register_div').show();$('#messages_div').hide();"
-            >Понятно</button>
         </div>
     </div>
 {% endblock %}
