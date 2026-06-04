@@ -249,6 +249,8 @@ def edit_application_view(request):
         context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
 
         context = Utilities.get_prepared_data(context, current_day)
+        if context['ACCEPT_MODE']:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         constr_site_id = request.GET.get('constr_site_id')
         if Utilities.is_valid_str(constr_site_id):

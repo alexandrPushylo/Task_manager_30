@@ -186,7 +186,7 @@
                                                 {% endif %}                                       
                                         
                                         <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                           class="btn btn-outline-primary" aria-current="page">{% if application_today.isArchive %}<i
+                                           class="btn btn-outline-primary {% if ACCEPT_MODE %}disabled btn-outline-secondary{% endif %}" aria-current="page">{% if application_today.isArchive %}<i
                                                     class="fa-solid fa-plus"></i>{% else %}<i
                                                     class="fa-regular fa-pen-to-square"></i>{% endif %}</a>
 
@@ -197,7 +197,7 @@
                                         {% endif %}
                                     {% else %}
                                         <a href="{% url 'edit_application' %}?constr_site_id={{ construction_site.id }}&current_day={{ current_day.date.isoformat }}"
-                                           class="btn btn-sm btn-outline-primary" aria-current="page">
+                                           class="btn btn-sm btn-outline-primary {% if ACCEPT_MODE %}disabled btn-outline-secondary{% endif %}" aria-current="page">
                                             <i class="fa-solid fa-plus"></i></a>
                                     {% endif %}
                                 </div>
