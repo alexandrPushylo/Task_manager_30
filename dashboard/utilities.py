@@ -841,14 +841,14 @@ class Utilities:
         return False
 
     @classmethod
-    def get_accept_mode(cls, accept_mode: str) -> Literal[AcceptMode.AUTO, AcceptMode.MANUAL, AcceptMode.OFF]:
+    def get_accept_mode(cls, accept_mode: str) -> Literal[AcceptMode.AUTO, AcceptMode.CLOSE, AcceptMode.OPEN]:
         """ Получить режим accept mode"""
         if accept_mode == ASSETS.AcceptMode.AUTO.value:
             return ASSETS.AcceptMode.AUTO
-        elif accept_mode == ASSETS.AcceptMode.MANUAL.value:
-            return ASSETS.AcceptMode.MANUAL
-        elif accept_mode == ASSETS.AcceptMode.OFF.value:
-            return ASSETS.AcceptMode.OFF
+        elif accept_mode == ASSETS.AcceptMode.CLOSE.value:
+            return ASSETS.AcceptMode.CLOSE
+        elif accept_mode == ASSETS.AcceptMode.OPEN.value:
+            return ASSETS.AcceptMode.OPEN
         else:
             return ASSETS.AcceptMode.AUTO
 

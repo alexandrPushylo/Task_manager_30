@@ -65,9 +65,9 @@ ViewModeType = Literal['view_mode_future', 'view_mode_current', 'view_mode_archi
 
 class AcceptMode(Enum):
     AUTO = 'auto'
-    MANUAL = 'manual'
-    OFF = 'off'
-AcceptModeType = Literal['auto', 'manual', 'off']
+    CLOSE = 'close'
+    OPEN = 'open'
+AcceptModeType = Literal['auto', 'close', 'open']
 
 
 class TaskDescriptionMode(Enum):
