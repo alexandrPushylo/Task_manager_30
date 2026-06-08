@@ -221,7 +221,7 @@
                                                     class="fa-regular fa-pen-to-square"></i>{% endif %}</a>
 
 
-                                            {% if construction_site.application_today.status == 'saved' and not ACCEPT_MODE %}
+                                            {% if construction_site.application_today.status == 'saved' and ACCEPT_MODE %}
                                                 <a href="{% url 'change_app_status' %}?application_today_id={{ construction_site.application_today.id }}"
                                                    class="btn btn-outline-primary ps-4 pe-4"
                                                    aria-current="page"><i class="fa-solid fa-check"></i></a>

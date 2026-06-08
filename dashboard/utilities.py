@@ -822,6 +822,7 @@ class Utilities:
         Получить режим accept mode
         True - заявки принимаются
         False - заявки не принимаются
+        :param next_workday:
         :param workday:
         :return:
         """
@@ -835,7 +836,8 @@ class Utilities:
         match workday.accept_mode:
             case ASSETS.AcceptMode.AUTO.value:
                 if next_workday.date < workday.date:
-                    print("FF")
+                    if (cls.TODAY.weekday(), next_workday.date.weekday(), workday.date.weekday()) in ((4,5,0),):
+                        return datetime.now().time() < var_time_recept_apps.time
                     return True
                 elif next_workday.date == workday.date:
                     return datetime.now().time() < var_time_recept_apps.time
