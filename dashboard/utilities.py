@@ -92,7 +92,8 @@ class Utilities:
         context['next_work_day'] = WorkDayService.get_next_workday(current_workday.date)
         context['weekday'] = cls.get_ru_weekday(current_workday.date)
         context['VIEW_MODE'] = cls.get_view_mode(current_workday.date)
-        context['ACCEPT_MODE'] = cls.get_accept_mode_by_date(workday=current_workday)
+        context['ACCEPT_MODE'] = cls.get_accept_mode_by_date(
+            workday=current_workday, next_workday=WorkDayService.get_next_workday(cls.TODAY))
         context['current_day'] = current_workday
         return context
 
@@ -816,7 +817,7 @@ class Utilities:
             return 'None'
 
     @classmethod
-    def get_accept_mode_by_date(cls, workday: WorkDaySchema) -> bool:
+    def get_accept_mode_by_date(cls, workday: WorkDaySchema, next_workday: WorkDaySchema) -> bool:
         """
         Получить режим accept mode
         True - заявки принимаются
@@ -828,27 +829,35 @@ class Utilities:
         var_time_recept_apps = ParameterService.get_object(
             name=VAR.VAR_TIME_RECEPTION_OF_TECHNICS['name']
         )
-        if var_time_recept_apps:
-            if workday.accept_mode == ASSETS.AcceptMode.AUTO.value:
-                if var_time_recept_apps.time < datetime.now().time():
+        if var_time_recept_apps is None:
+            return False
+
+        match workday.accept_mode:
+            case ASSETS.AcceptMode.AUTO.value:
+                if next_workday.date < workday.date:
+                    print("FF")
                     return True
+                elif next_workday.date == workday.date:
+                    return datetime.now().time() < var_time_recept_apps.time
                 else:
                     return False
-            elif workday.accept_mode == ASSETS.AcceptMode.MANUAL.value:
+
+            case ASSETS.AcceptMode.OPEN.value:
                 return True
-            elif workday.accept_mode == ASSETS.AcceptMode.OFF.value:
+
+            case ASSETS.AcceptMode.CLOSE.value:
                 return False
-        return False
+
 
     @classmethod
-    def get_accept_mode(cls, accept_mode: str) -> Literal[AcceptMode.AUTO, AcceptMode.MANUAL, AcceptMode.OFF]:
+    def get_accept_mode(cls, accept_mode: str) -> Literal[AcceptMode.AUTO, AcceptMode.CLOSE, AcceptMode.OPEN]:
         """ Получить режим accept mode"""
         if accept_mode == ASSETS.AcceptMode.AUTO.value:
             return ASSETS.AcceptMode.AUTO
-        elif accept_mode == ASSETS.AcceptMode.MANUAL.value:
-            return ASSETS.AcceptMode.MANUAL
-        elif accept_mode == ASSETS.AcceptMode.OFF.value:
-            return ASSETS.AcceptMode.OFF
+        elif accept_mode == ASSETS.AcceptMode.CLOSE.value:
+            return ASSETS.AcceptMode.CLOSE
+        elif accept_mode == ASSETS.AcceptMode.OPEN.value:
+            return ASSETS.AcceptMode.OPEN
         else:
             return ASSETS.AcceptMode.AUTO
 

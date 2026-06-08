@@ -113,8 +113,8 @@ class WorkDaysSheetSerializer(serializers.Serializer):
     is_all_application_send = serializers.BooleanField()
     accept_mode = serializers.ChoiceField(choices=(
         (A.AcceptMode.AUTO.value, A.AcceptMode.AUTO.value),
-        (A.AcceptMode.MANUAL.value, A.AcceptMode.MANUAL.value),
-        (A.AcceptMode.OFF.value, A.AcceptMode.OFF.value)))
+        (A.AcceptMode.CLOSE.value, A.AcceptMode.CLOSE.value),
+        (A.AcceptMode.OPEN.value, A.AcceptMode.OPEN.value)))
     weekday = serializers.CharField(max_length=30)
 
 
@@ -207,5 +207,5 @@ class ApplicationTodaySerializer(serializers.ModelSerializer):
 class AcceptModeSerializer(serializers.Serializer):
     accept_mode = serializers.ChoiceField(choices=(
         (A.AcceptMode.AUTO.value, A.AcceptMode.AUTO.value),
-        (A.AcceptMode.MANUAL.value, A.AcceptMode.MANUAL.value),
-        (A.AcceptMode.OFF.value, A.AcceptMode.OFF.value)))
+        (A.AcceptMode.CLOSE.value, A.AcceptMode.CLOSE.value),
+        (A.AcceptMode.OPEN.value, A.AcceptMode.OPEN.value)))

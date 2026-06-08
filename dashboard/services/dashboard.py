@@ -75,9 +75,9 @@ class DashboardService:
 
         if request.POST.get("operation") == "change_read_only_mode":
             if request.POST.get("read_only") == "0":
-                Utilities.set_accept_mode(current_day, ASSETS.AcceptMode.OFF)
+                Utilities.set_accept_mode(current_day, ASSETS.AcceptMode.OPEN)
             if request.POST.get("read_only") == "1":
-                Utilities.set_accept_mode(current_day, ASSETS.AcceptMode.MANUAL)
+                Utilities.set_accept_mode(current_day, ASSETS.AcceptMode.CLOSE)
 
         if request.POST.get("operation") == "toggle_panel":
             _hide_panel = "change"

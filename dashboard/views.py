@@ -249,7 +249,7 @@ def edit_application_view(request):
         context['weekday'] = ASSETS.WEEKDAY[current_day.date.weekday()]
 
         context = Utilities.get_prepared_data(context, current_day)
-        if not Utilities.is_admin(current_user) and context['ACCEPT_MODE']:
+        if not Utilities.is_admin(current_user) and not context['ACCEPT_MODE']:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
         constr_site_id = request.GET.get('constr_site_id')
