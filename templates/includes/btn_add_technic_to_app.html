@@ -1,7 +1,7 @@
-<div class="btn-group mt-3" {% if not ACCEPT_MODE %} style="box-shadow: 2px 2px 10px 2px;"{% endif %} >
+<div class="btn-group mt-3" {% if ACCEPT_MODE %} style="box-shadow: 2px 2px 10px 2px;"{% endif %} >
     <a type="button" 
         href="{% url 'edit_application' %}?constr_site_id=35&current_day={{ current_day.date.isoformat }}"
-       class="btn btn-sm btn-success {% if ACCEPT_MODE %}disabled btn-outline-secondary{% endif %}">
+       class="btn btn-sm btn-success {% if not ACCEPT_MODE %}disabled btn-outline-secondary{% endif %}">
         <span class=""><i class="fa-solid fa-plus"></i> ЗАЯВКУ НА ТЕХНИКУ</span>
     </a>
 </div>
