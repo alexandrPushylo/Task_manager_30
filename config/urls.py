@@ -29,7 +29,6 @@ from dashboard.views import login_view, logout_view, register_view, restore_pass
 from dashboard.views import change_status_application_today, change_weekend_to_workday, validate_application_today_view
 from dashboard.views import settings_view
 from dashboard.views import maintenance_view
-from dashboard.views import def_test
 from dashboard.views import routing
 from dashboard.views import task_desc_for_spec_constr_site_view
 from dashboard.views import calculate_all_applications
@@ -70,7 +69,6 @@ urlpatterns = [
     # path('ck_app_stat/', check_application_status, name='check_application_status'),
     path('validate_app_today', validate_application_today_view, name='validate_application_today'),
     path('clear_cache', clear_cache_view, name='clear_cache'),
-    path('test/', def_test, name='test'),
 
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     # path('api/', include('dashboard.rest_api.urls')),

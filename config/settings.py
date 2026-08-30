@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'Europe/Minsk'
 
@@ -126,7 +126,6 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_files')]
 # This is the directory where collectstatic will gather all static files.
 # It should be served by Whitenoise.
 STATIC_ROOT = BASE_DIR / '../static'
-
 # No STATICFILES_STORAGE needed – Django's default is fine,
 # and Whitenoise will serve the files via its middleware.
 
