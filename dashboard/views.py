@@ -1582,51 +1582,6 @@ def profile_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 
-def def_test(request):  # TODO: def TEST
-    context = {}
-    # current_day = WORK_DAY_SERVICE.get_current_day(request)
-    # context = U.get_prepared_data(context, current_day)
-    # context['current_day'] = current_day
-    # _current_day = request.GET.get('current_day')
-    # if _current_day:
-    #     current_day = WorkDaySheet.objects.get(date=_current_day)
-    # else:
-    #     current_day = WorkDaySheet.objects.get(date=U.TODAY)
-    # work_days = U.get_work_days().values()
-    # for work_day in work_days:
-    #     work_day['weekday'] = ASSETS.WEEKDAY[work_day['date'].weekday()][:3]
-
-    # if request.GET.get('chat_id'):
-    #     chat_id = request.GET.get('chat_id')
-    #     print(
-    #         f"{request.user.id} -- {chat_id}"
-    #     )
-    #     return HttpResponse(chat_id)
-    # context = {
-    #     'title': 'Test',
-    #     'today': U.TODAY,
-    #     'current_day': current_day,
-    #     'work_days': work_days,
-    #     # 'weekday': ASSETS.WEEKDAY
-    # }
-
-    # driver_mess = request.POST.get('driver')
-    # foreman_mess = request.POST.get('foreman')
-    # admin_mess = request.POST.get('admin')
-    #
-    # wd = WORK_DAY_SERVICE.get_current_day(request)
-    #
-    # if U.is_valid_get_request(driver_mess):
-    #     U.send_application_by_telegram_for_driver(wd, messages=driver_mess)
-    #
-    # if U.is_valid_get_request(foreman_mess):
-    #     U.send_application_by_telegram_for_foreman(wd, messages=foreman_mess)
-    #
-    # if U.is_valid_get_request(admin_mess):
-    #     U.send_application_by_telegram_for_admin(wd, messages=admin_mess)
-    return render(request, 'content/tests/change_workday.html', context)
-
-
 def maintenance_view(request):
     template = 'content/spec/maintenance.html'
     context = {}
@@ -1743,16 +1698,14 @@ def spec_page_view(request):
         else:
             return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
 
-        # file = ''
-
         try:
             with open(file_url, 'rt', encoding="utf-8") as f:
-                file = f.readlines()[-200:]
+                file = f.readlines()#[-200:]
         except FileNotFoundError:
             file = 'FileNotFoundError'
             log.error('spec_page_view(): FileNotFoundError')
 
-        return HttpResponse(file, content_type='text/plain', charset='windows-1251')
+        return HttpResponse(file, content_type='text/plain', charset='utf-8')
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 def clear_cache_view(request):
@@ -1766,6 +1719,7 @@ def clear_cache_view(request):
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
 def test_page_view(request):
+
     import time
     start_time = time.time()
 
