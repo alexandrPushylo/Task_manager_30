@@ -42,7 +42,6 @@ log = getLogger(__name__)
 
 
 class Utilities:
-    TODAY: date = date.today()
     NOW = lambda: datetime.now().time()
     USE_CACHE = USE_CACHE
     CACHE_TTL = 10
@@ -98,16 +97,21 @@ class Utilities:
         :return:
         """
         context['work_days'] = WorkDayService.get_range_of_workdays_with_weekdays(
-            cls.TODAY, 1, 3, short_weekdays=True, revers=True
+            today = cls.get_today(),
+            start_date = cls.get_today(),
+            before_days = 1,
+            after_days = 3,
+            short_weekdays = True,
+            revers = True
         )
-        context['today'] = cls.TODAY
-        context['current_weekday'] = cls.get_ru_weekday(cls.TODAY)
+        context['today'] = cls.get_today()
+        context['current_weekday'] = cls.get_ru_weekday(cls.get_today())
         context['prev_work_day'] = WorkDayService.get_prev_workday(current_workday.date)
         context['next_work_day'] = WorkDayService.get_next_workday(current_workday.date)
         context['weekday'] = cls.get_ru_weekday(current_workday.date)
         context['VIEW_MODE'] = cls.get_view_mode(current_workday.date)
         context['ACCEPT_MODE'] = cls.get_accept_mode_by_date(
-            workday=current_workday, next_workday=WorkDayService.get_next_workday(cls.TODAY))
+            workday=current_workday, next_workday=WorkDayService.get_next_workday(cls.get_today()))
         context['current_day'] = current_workday
         return context
 
@@ -821,11 +825,11 @@ class Utilities:
         :param date_:
         :return:
         """
-        if date_ == cls.TODAY:
+        if date_ == cls.get_today():
             return ASSETS.ViewMode.CURRENT.value
-        elif date_ < cls.TODAY:
+        elif date_ < cls.get_today():
             return ASSETS.ViewMode.ARCHIVE.value
-        elif date_ > cls.TODAY:
+        elif date_ > cls.get_today():
             return ASSETS.ViewMode.FUTURE.value
         else:
             return 'None'
@@ -850,7 +854,7 @@ class Utilities:
         match workday.accept_mode:
             case ASSETS.AcceptMode.AUTO.value:
                 if next_workday.date < workday.date:
-                    if (cls.TODAY.weekday(), next_workday.date.weekday(), workday.date.weekday()) in ((4,5,0),):
+                    if (cls.get_today().weekday(), next_workday.date.weekday(), workday.date.weekday()) in ((4,5,0),):
                         return datetime.now().time() < var_time_recept_apps.time
                     return True
                 elif next_workday.date == workday.date:
@@ -991,7 +995,7 @@ class Utilities:
             is_accept = True
             log.debug("get_accept_to_change_materials_app(): C1")
 
-        elif cls.TODAY.weekday() in (4,) and current_workday.date.weekday() in (0,) and cls.NOW() < time_limit:
+        elif cls.get_today().weekday() in (4,) and current_workday.date.weekday() in (0,) and cls.NOW() < time_limit:
             is_accept = True
             log.debug("get_accept_to_change_materials_app(): C2")
 
@@ -1010,7 +1014,7 @@ class Utilities:
         """
         user = UserService.delete(id=user_id)
         if user:
-            DriverSheetService.get_queryset(driver_id=user_id, date__date__gte=cls.TODAY).delete()
+            DriverSheetService.get_queryset(driver_id=user_id, date__date__gte=cls.get_today()).delete()
 
     @classmethod
     def delete_technic(cls, technic_id: int):
@@ -1023,13 +1027,13 @@ class Utilities:
         if technic:
             _technic_sheet = TechnicSheetService.get_queryset(
                 technic=technic,
-                date__date__gte=cls.TODAY
+                date__date__gte=cls.get_today()
             )
             _application_technic = ApplicationTechnicService.get_queryset(
                 technic_sheet__in=_technic_sheet
             )
             _application_today = ApplicationTodayService.get_queryset(
-                date__date__gte=cls.TODAY
+                date__date__gte=cls.get_today()
             )
 
             _application_technic.delete()
@@ -1040,11 +1044,11 @@ class Utilities:
 
     @classmethod
     def delete_construction_site(cls, construction_site_id: int) -> bool:
-        cs = ConstructionSiteService.delete(id=construction_site_id)
+        cs = ConstructionSiteService.delete(deleted_date=cls.get_today(), id=construction_site_id)
         if cs:
             app_today = ApplicationTodayService.get_queryset(
                 construction_site=cs,
-                date__date__gte=cls.TODAY
+                date__date__gte=cls.get_today()
             )
             app_technic = ApplicationTechnicService.get_queryset(
                 application_today__in=app_today
@@ -1194,11 +1198,11 @@ class Utilities:
         :return: WorkDaySchema
         """
         if data_str is None or data_str == "":
-            return WorkDayService.get_current_date_data(cls.TODAY)
+            return WorkDayService.get_current_date_data(cls.get_today())
         else:
             work_day = WorkDayService.get_current_date_data(data_str)
             if work_day is None:
-                return WorkDayService.get_current_date_data(cls.TODAY)
+                return WorkDayService.get_current_date_data(cls.get_today())
             else:
                 return WorkDayService.get_current_date_data(data_str)
 

@@ -1,4 +1,5 @@
 import enum
+from datetime import date
 
 from django.core.cache import cache
 
@@ -66,7 +67,7 @@ class ConstructionSiteService(BaseService):
         return False
 
     @classmethod
-    def delete(cls, *args, **kwargs) -> ConstructionSite | None:
+    def delete(cls, deleted_date: date, *args, **kwargs) -> ConstructionSite | None:
         cs = cls.get_object(*args, **kwargs)
         if cs:
             if cs.isArchive:
@@ -77,7 +78,7 @@ class ConstructionSiteService(BaseService):
                 )
             else:
                 cs.isArchive = True
-                cs.deleted_date = cls.TODAY
+                cs.deleted_date = deleted_date
                 log.info(
                     f"The {cs.address} construction site  (pk={cs.pk}) has been archived"
                 )
