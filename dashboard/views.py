@@ -51,7 +51,7 @@ def routing(request):
         return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
     current_user = UserService.get_current_user(request.user.pk)
-    next_work_day = WorkDayService.get_next_workday()
+    next_work_day = WorkDayService.get_next_workday(Utilities.get_today())
     next_app_today = ApplicationTodayService.get_queryset(
         isArchive=False,
         date=next_work_day.id
@@ -628,7 +628,11 @@ def workday_sheet_view(request):
         current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
         context = Utilities.get_prepared_data(context=context, current_workday=current_day)
         current_date = current_day.date
-        context['workdays'] = WorkDayService.get_range_of_workdays_with_weekdays(current_date, 3, 7)
+        context['workdays'] = WorkDayService.get_range_of_workdays_with_weekdays(
+            Utilities.get_today(),
+            current_date,
+            before_days=3,
+            after_days=7)
         return render(request, 'content/sheet/workday_sheet.html', context)
     return HttpResponseRedirect(ENDPOINTS.LOGIN)
 
@@ -651,7 +655,7 @@ def driver_sheet_view(request):
         current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
         context = Utilities.get_prepared_data(context, current_day)
 
-        if current_day.date >= Utilities.TODAY and current_day.status:
+        if current_day.date >= Utilities.get_today() and current_day.status:
             Utilities.prepare_driver_sheet(current_day)
         driver_sheet = DriverSheetService.get_driver_sheet_for_date(current_day)
         drivers_list = UserService.get_driver_list()
@@ -702,7 +706,7 @@ def technic_sheet_view(request):
         current_day = Utilities.get_current_day_data(request.GET.get('current_day'))
         context = Utilities.get_prepared_data(context, current_day)
 
-        if current_day.date >= Utilities.TODAY and current_day.status:
+        if current_day.date >= Utilities.get_today() and current_day.status:
             Utilities.prepare_driver_sheet(current_day)
             Utilities.prepare_technic_sheet(current_day)
 
