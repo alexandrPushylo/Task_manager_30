@@ -45,10 +45,24 @@ class Utilities:
     TODAY: date = date.today()
     NOW = lambda: datetime.now().time()
     USE_CACHE = USE_CACHE
+    CACHE_TTL = 10
 
 
     class CacheKeys(enum.Enum):
-        pass
+        TODAY = "today"
+
+    @classmethod
+    def get_today(cls) -> date:
+        cache_key = f"{cls.CacheKeys.TODAY.value}"
+        cache_ttl = 60 * 60
+
+        today_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
+        if today_from_cache is None:
+            today: date = date.today()
+            if cls.USE_CACHE:
+                cache.set(cache_key, today, cache_ttl)
+            return today
+        return today_from_cache
 
 
     @classmethod
