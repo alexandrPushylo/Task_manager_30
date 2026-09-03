@@ -988,7 +988,7 @@ class Utilities:
             return False
 
         time_limit = var_time_limit.time
-        next_workday = WorkDayService.get_next_workday()
+        next_workday = WorkDayService.get_next_workday(cls.get_today())
 
         if (current_workday == next_workday
                 and cls.NOW() < time_limit):
