@@ -1732,3 +1732,55 @@ def test_page_view(request):
     end_time = time.time()
     print(end_time - start_time)
     return HttpResponse('mess')
+
+
+def logs_view(request):
+    if request.user.is_authenticated:
+        from config.settings import BASE_DIR
+
+        INFO_LOG = f'{BASE_DIR}/logs/info.log'
+        ERROR_LOG = f'{BASE_DIR}/logs/errors.log'
+
+        # page_type = request.GET.get('page_type')
+        #
+        # if page_type == 'info':
+        #     file_url = f'{BASE_DIR}/logs/info.log'
+        # elif page_type == 'error':
+        #     file_url = f'{BASE_DIR}/logs/errors.log'
+        # else:
+        #     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
+
+        INFO_PREF = "[INFO]"
+        BODY_PREF = "=>\t"
+
+        l = []
+
+        try:
+            with open(INFO_LOG, 'rt', encoding="utf-8") as f:
+                file = f.readlines()#[-200:]
+
+                for item in file:
+                    if item.startswith(INFO_PREF):
+                        head = item.replace(INFO_PREF, '').strip()
+
+                    elif item.startswith(BODY_PREF):
+                        body = item.replace(BODY_PREF, '').strip()
+                    else:
+                        body = body + item
+                        # print(body)
+
+                    l.append({
+                        'head': head,
+                        'body': body
+                    })
+
+
+
+
+        except FileNotFoundError:
+            file = 'FileNotFoundError'
+            log.error('spec_page_view(): FileNotFoundError')
+        print(l)
+
+        return HttpResponse(file, content_type='text/plain', charset='utf-8')
+    return HttpResponseRedirect(ENDPOINTS.LOGIN)
