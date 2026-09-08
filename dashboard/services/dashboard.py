@@ -4,7 +4,7 @@ import enum
 from django.core.cache import cache
 from django.core.handlers.wsgi import WSGIRequest
 
-import dashboard.assets as ASSETS
+import dashboard.assets as assets
 from dashboard.schemas.application_technic_schema import ApplicationTechnicForMechanicSchema
 from dashboard.schemas.application_today_schema import CreateApplicationTodaySchema
 from dashboard.schemas.user_schema import UserSchema
@@ -17,7 +17,8 @@ from dashboard.services.driver_sheet import DriverSheetService
 from dashboard.services.technic import TechnicService
 from dashboard.services.technic_sheet import TechnicSheetService
 from dashboard.services.user import UserService
-from dashboard.utilities import Utilities
+from dashboard.services.common import CommonService
+from dashboard.utilities import Utilities as Utils
 from logger import getLogger
 
 log = getLogger(__name__)
@@ -41,19 +42,19 @@ class DashboardService:
             user_data: UserSchema
     ) -> tuple[Callable[[ WSGIRequest | Any, WorkDaySchema, dict], dict], str] :
         match user_data.post:
-            case ASSETS.UserPosts.ADMINISTRATOR.title:
+            case assets.UserPosts.ADMINISTRATOR.title:
                 return cls.get_dashboard_for_admin, cls.TemplateDashboardFor.ADMIN.value
-            case ASSETS.UserPosts.MASTER.title:
+            case assets.UserPosts.MASTER.title:
                 return cls.get_dashboard_for_foreman_or_master, cls.TemplateDashboardFor.MASTER.value
-            case ASSETS.UserPosts.FOREMAN.title:
+            case assets.UserPosts.FOREMAN.title:
                 return cls.get_dashboard_for_foreman_or_master, cls.TemplateDashboardFor.FOREMAN.value
-            case ASSETS.UserPosts.MECHANIC.title:
+            case assets.UserPosts.MECHANIC.title:
                 return cls.get_dashboard_for_mechanic, cls.TemplateDashboardFor.MECHANIC.value
-            case ASSETS.UserPosts.SUPPLY.title:
+            case assets.UserPosts.SUPPLY.title:
                 return cls.get_dashboard_for_supply, cls.TemplateDashboardFor.SUPPLY.value
-            case ASSETS.UserPosts.EMPLOYEE.title:
+            case assets.UserPosts.EMPLOYEE.title:
                 return cls.get_dashboard_for_employee, cls.TemplateDashboardFor.EMPLOYEE.value
-            case ASSETS.UserPosts.DRIVER.title:
+            case assets.UserPosts.DRIVER.title:
                 return cls.get_dashboard_for_driver, cls.TemplateDashboardFor.DRIVER.value
             case _:
                 return cls.get_dashboard_for_employee, cls.TemplateDashboardFor.EMPLOYEE.value
@@ -71,13 +72,13 @@ class DashboardService:
         if request.POST.get("operation") == "set_spec_task":
             technic_sheet_id = request.POST.get("technic_sheet_id")
             if technic_sheet_id:
-                Utilities.set_spec_task(technic_sheet_id)
+                CommonService.set_spec_task(technic_sheet_id)
 
         if request.POST.get("operation") == "change_read_only_mode":
             if request.POST.get("read_only") == "0":
-                Utilities.set_accept_mode(current_day, ASSETS.AcceptMode.OPEN)
+                CommonService.set_accept_mode(current_day, assets.AcceptMode.OPEN)
             if request.POST.get("read_only") == "1":
-                Utilities.set_accept_mode(current_day, ASSETS.AcceptMode.CLOSE)
+                CommonService.set_accept_mode(current_day, assets.AcceptMode.CLOSE)
 
         if request.POST.get("operation") == "toggle_panel":
             _hide_panel = "change"
@@ -96,7 +97,7 @@ class DashboardService:
         user_list = UserService.get_all_users_list()
         cs_active = ConstructionSiteService.get_showed_cs_list()
 
-        if view_mode_ == ASSETS.ViewMode.ARCHIVE.value:
+        if view_mode_ == assets.ViewMode.ARCHIVE.value:
             app_today_for_date_ids = [at.construction_site for at in app_today_for_date]
             construction_sites = [cs for cs in cs_active if cs.id in app_today_for_date_ids]
         else:
@@ -106,14 +107,14 @@ class DashboardService:
             app_today_for_date_ids = [
                 at.construction_site
                 for at in app_today_for_date
-                if at.status != ASSETS.ApplicationTodayStatus.ABSENT.title
+                if at.status != assets.ApplicationTodayStatus.ABSENT.title
             ]
 
             if not current_user.is_show_deleted_app:
                 app_today_for_date_ids = [
                     at.construction_site
                     for at in app_today_for_date
-                    if at.status != ASSETS.ApplicationTodayStatus.DELETED.title
+                    if at.status != assets.ApplicationTodayStatus.DELETED.title
                 ]
             construction_sites = [
                 cs for cs in construction_sites if cs.id in app_today_for_date_ids
@@ -123,7 +124,7 @@ class DashboardService:
             app_today_for_date_ids = [
                 at.construction_site
                 for at in app_today_for_date
-                if at.status != ASSETS.ApplicationTodayStatus.SAVED.title
+                if at.status != assets.ApplicationTodayStatus.SAVED.title
             ]
             construction_sites = [
                 cs for cs in construction_sites if cs.id in app_today_for_date_ids
@@ -135,7 +136,7 @@ class DashboardService:
         if not current_user.is_show_deleted_app:
             applications_today = [at for at in applications_today if not at.isArchive]
 
-        status_list_application_today = Utilities.get_status_lists_of_app_today(
+        status_list_application_today = CommonService.get_status_lists_of_app_today(
             applications_today=applications_today
         )
         context["status_list_application_today"] = status_list_application_today
@@ -152,7 +153,7 @@ class DashboardService:
             application_material = []
 
         context["table_working_technic_sheet"] = (
-            Utilities.get_table_working_technic_sheet(current_day)
+            CommonService.get_table_working_technic_sheet(current_day)
         )
 
         applications_today_list = [at.model_dump() for at in applications_today]
@@ -193,15 +194,15 @@ class DashboardService:
         context["construction_sites"] = construction_sites
 
         context["construction_sites"] = sorted(
-            context["construction_sites"], key=Utilities.sort_applications_by_status
+            context["construction_sites"], key=Utils.sort_applications_by_status
         )
 
-        priority_id_list = Utilities.get_priority_ids_list(current_day)
+        priority_id_list = CommonService.get_priority_ids_list(current_day)
         context["priority_id_list"] = priority_id_list
 
-        busiest_technic_title_list = Utilities.get_busiest_technic_title(current_day)
+        busiest_technic_title_list = CommonService.get_busiest_technic_title(current_day)
 
-        conflict_technic_sheet = Utilities.get_conflict_list_of_technic_sheet(
+        conflict_technic_sheet = CommonService.get_conflict_list_of_technic_sheet(
             busiest_technic_title=busiest_technic_title_list,
             priority_id_list=priority_id_list,
             get_only_id_list=True,
@@ -218,7 +219,7 @@ class DashboardService:
     ) -> dict:
         view_mode_ = context.get("VIEW_MODE")
         current_user = UserService.get_current_user(request.user.id)
-        current_foreman_id = current_user.id if Utilities.is_foreman(current_user) else current_user.supervisor_user_id
+        current_foreman_id = current_user.id if Utils.is_foreman(current_user) else current_user.supervisor_user_id
 
         cs_active = ConstructionSiteService.get_showed_cs_list()
         app_today_for_date = ApplicationTodayService.get_app_today_for_date(current_day)
@@ -229,7 +230,7 @@ class DashboardService:
         technic_list = TechnicService.get_all_technic_data()
         user_list = UserService.get_all_users_list()
 
-        if view_mode_ == ASSETS.ViewMode.ARCHIVE.value:
+        if view_mode_ == assets.ViewMode.ARCHIVE.value:
             app_today_for_date_ids = [at.construction_site for at in app_today_for_date if at.date == current_day.id]
             construction_sites = [
                 cs for cs in cs_active
@@ -247,13 +248,13 @@ class DashboardService:
             app_today_for_date_ids = [
                 at.construction_site
                 for at in app_today_for_date
-                if at.status != ASSETS.ApplicationTodayStatus.ABSENT.title
+                if at.status != assets.ApplicationTodayStatus.ABSENT.title
             ]
             if not current_user.is_show_deleted_app:
                 app_today_for_date_ids = [
                     at.construction_site
                     for at in app_today_for_date
-                    if at.status != ASSETS.ApplicationTodayStatus.DELETED.title
+                    if at.status != assets.ApplicationTodayStatus.DELETED.title
                 ]
             construction_sites = [
                 cs for cs in construction_sites if cs.id in app_today_for_date_ids
@@ -263,7 +264,7 @@ class DashboardService:
             app_today_for_date_ids = [
                 at.construction_site
                 for at in app_today_for_date
-                if at.status != ASSETS.ApplicationTodayStatus.SAVED.title
+                if at.status != assets.ApplicationTodayStatus.SAVED.title
             ]
             construction_sites = [
                 cs for cs in construction_sites if cs.id in app_today_for_date_ids
@@ -279,7 +280,7 @@ class DashboardService:
         if not current_user.is_show_deleted_app:
             applications_today = [at for at in applications_today if not at.isArchive]
 
-        status_list_application_today = Utilities.get_status_lists_of_app_today(
+        status_list_application_today = CommonService.get_status_lists_of_app_today(
             applications_today=applications_today
         )
         context["status_list_application_today"] = status_list_application_today
@@ -340,7 +341,7 @@ class DashboardService:
 
         context["construction_sites"] = construction_sites
         context["construction_sites"] = sorted(
-            context["construction_sites"], key=Utilities.sort_applications_by_status
+            context["construction_sites"], key=Utils.sort_applications_by_status
         )
         return context
 
@@ -358,13 +359,13 @@ class DashboardService:
         ).select_related("technic__attached_driver", "driver_sheet__driver")
 
         if not technic_sheet_list.exists():
-            Utilities.prepare_sheets(current_day)
+            CommonService.prepare_sheets(current_day)
         context["technic_sheet_list"] = technic_sheet_list
 
         application_technic_list = (
             ApplicationTechnicService.get_queryset(
                 application_today__date_id=current_day.id,
-                application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_MECHANIC_WITH_STATUSES,
+                application_today__status__in=assets.SHOW_APPLICATIONS_FOR_MECHANIC_WITH_STATUSES,
                 isArchive=False,
                 is_cancelled=False,
             )
@@ -406,7 +407,7 @@ class DashboardService:
             application_today = application_today if application_today and not application_today.isArchive else None
 
         if application_today:
-            status_list_application_today = Utilities.get_status_lists_of_app_today(
+            status_list_application_today = CommonService.get_status_lists_of_app_today(
                 applications_today=[application_today]
             )
             context["status_list_application_today"] = status_list_application_today
@@ -452,7 +453,7 @@ class DashboardService:
                         create_data
                     )
                     _application_today.status = (
-                        ASSETS.ApplicationTodayStatus.SAVED.title
+                        assets.ApplicationTodayStatus.SAVED.title
                     )
                     _application_today.save(update_fields=["status"])
                     cache.delete(
@@ -460,13 +461,12 @@ class DashboardService:
                     )
                     application_today_id = _application_today.id
 
-                Utilities.accept_app_tech_to_supply(
+                CommonService.accept_app_tech_to_supply(
                     application_technic_id, application_today_id
                 )
-        #   TODO ============================================================================
 
         count_not_checked_app_mater = ApplicationMaterialService.get_queryset(
-            application_today__status__in=ASSETS.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
+            application_today__status__in=assets.SHOW_APPLICATIONS_FOR_SUPPLY_WITH_STATUSES,
             isArchive=False,
             application_today__date_id=current_day.id,
             isChecked=False,
@@ -477,7 +477,7 @@ class DashboardService:
         technic_list = TechnicService.get_all_technic_data()
         supply_technic_list = [
             t.model_dump() for t in technic_list
-            if t.supervisor_technic == ASSETS.UserPosts.SUPPLY.title and not t.isArchive
+            if t.supervisor_technic == assets.UserPosts.SUPPLY.title and not t.isArchive
         ]
         for technic in supply_technic_list:
             driver = UserService.filter_user_by_id_from_data(
@@ -496,7 +496,7 @@ class DashboardService:
             .exclude(application_today__construction_site=construction_site.id)
         )
         _app_tech = _app_tech.exclude(
-            application_today__status=ASSETS.ApplicationTodayStatus.SAVED.title
+            application_today__status=assets.ApplicationTodayStatus.SAVED.title
         )
 
         for _technic in supply_technic_list:
@@ -536,7 +536,7 @@ class DashboardService:
         applications_today = [
             at for at in app_today_for_date
             if not at.isArchive
-               and at.status in ASSETS.SHOW_APPLICATIONS_WITH_STATUSES
+               and at.status in assets.SHOW_APPLICATIONS_WITH_STATUSES
         ]
         app_today_ids = [at.id for at in applications_today]
 
@@ -621,7 +621,7 @@ class DashboardService:
         context["construction_sites"] = construction_sites
 
         context["construction_sites"] = sorted(
-            context["construction_sites"], key=Utilities.sort_applications_by_status
+            context["construction_sites"], key=Utils.sort_applications_by_status
         )
         return context
 
@@ -632,7 +632,7 @@ class DashboardService:
             current_day: WorkDaySchema,
             context: dict
     ) -> dict:
-        if Utilities.is_valid_str(request.GET.get("driver_id")):
+        if Utils.is_valid_str(request.GET.get("driver_id")):
             current_driver = UserService.get_current_user(request.GET.get("driver_id"))
         else:
             current_driver = UserService.get_current_user(request.user.id)
@@ -651,7 +651,7 @@ class DashboardService:
         )
         supply_technic_list_id_list = [s_tl.id for s_tl in supply_technic_list]
 
-        is_supply_driver = Utilities.is_supply_driver(
+        is_supply_driver = Utils.is_supply_driver(
             current_technic_sheet_id_list, supply_technic_list_id_list
         )
 
@@ -660,7 +660,7 @@ class DashboardService:
             isChecked=False,
             is_cancelled=False,
             application_today__date_id=current_day.id,
-            application_today__status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
+            application_today__status__in=assets.SHOW_APPLICATIONS_WITH_STATUSES,
         ).select_related("application_today__construction_site__foreman")
 
         technic_application_list = []
@@ -679,7 +679,7 @@ class DashboardService:
             application_today_id_list = ApplicationTodayService.get_queryset(
                 date_id=current_day.id,
                 isArchive=False,
-                status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
+                status__in=assets.SHOW_APPLICATIONS_WITH_STATUSES,
             ).values_list("id", flat=True)
         else:
             application_today_id_list = applications_technic.filter(
@@ -688,7 +688,7 @@ class DashboardService:
 
         applications_today = ApplicationTodayService.get_queryset(
             id__in=application_today_id_list,
-            status__in=ASSETS.SHOW_APPLICATIONS_WITH_STATUSES,
+            status__in=assets.SHOW_APPLICATIONS_WITH_STATUSES,
         ).values(
             "id",
             "construction_site__address",

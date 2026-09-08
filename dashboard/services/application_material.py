@@ -64,7 +64,8 @@ class ApplicationMaterialService(BaseService):
 
     @classmethod
     def get_app_mat_for_date(
-        cls, workday_data: WorkDaySchema
+            cls,
+            workday_data: WorkDaySchema
     ) -> list[ApplicationMaterialSchema]:
         cache_key = f"{cls.CacheKeys.APP_MAT_FOR_DATE.value}:{workday_data.date}"
         cache_ttl = 60 * 60
@@ -84,7 +85,9 @@ class ApplicationMaterialService(BaseService):
 
     @classmethod
     def get_app_mat_by_at_id_from_data(
-        cls, app_today_id: int, data: list[ApplicationMaterialSchema]
+            cls,
+            app_today_id: int,
+            data: list[ApplicationMaterialSchema]
     ) -> ApplicationMaterialSchema | None:
         for am in data:
             if am.application_today == app_today_id:

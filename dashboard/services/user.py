@@ -6,7 +6,7 @@ from django.db.models import Q
 
 from dashboard.models import User
 
-import dashboard.assets as A
+import dashboard.assets as assets
 from django.db.models import QuerySet  # type: ignore
 
 from dashboard.schemas.user_schema import UserSchema, EditUserSchema
@@ -64,15 +64,15 @@ class UserService(BaseService):
         return current_user_from_cache
 
     @classmethod
-    def create(cls, user_data: EditUserSchema) -> tuple[User | None, A.UserEditResult]:
+    def create(cls, user_data: EditUserSchema) -> tuple[User | None, assets.UserEditResult]:
         validated_user_data = cls._prepare_user_data(user_data)
         if validated_user_data is None:
-            return None, A.UserEditResult.ERROR
+            return None, assets.UserEditResult.ERROR
 
         user_with_phone = cls.get_user_by_phone(telephone=user_data.telephone)
 
         if user_with_phone:
-            return None, A.UserEditResult.EXISTS
+            return None, assets.UserEditResult.EXISTS
 
         try:
             new_user = cls.model.objects.create(**validated_user_data.model_dump())
@@ -80,19 +80,19 @@ class UserService(BaseService):
             new_user.save(update_fields=['password'])
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
             log.info(f"User {validated_user_data.last_name} has been added")
-            return new_user, A.UserEditResult.OK
+            return new_user, assets.UserEditResult.OK
         except IntegrityError:
             log.error(f"create_new_user(): IntegrityError; | username= [{validated_user_data.username}]")
-            return None, A.UserEditResult.EXISTS
+            return None, assets.UserEditResult.EXISTS
         except Exception as e:
             log.error("create_new_user(): Unexpected error", e)
-            return None, A.UserEditResult.ERROR
+            return None, assets.UserEditResult.ERROR
 
     @classmethod
-    def edit(cls, user_id: int, user_data: EditUserSchema) -> tuple[User | None, A.UserEditResult]:
+    def edit(cls, user_id: int, user_data: EditUserSchema) -> tuple[User | None, assets.UserEditResult]:
         validate_data = cls._prepare_user_data(user_data)
         if validate_data is None:
-            return None, A.UserEditResult.ERROR
+            return None, assets.UserEditResult.ERROR
         user = cls.get_object(pk=user_id)
         if user:
             user.username = validate_data.username
@@ -107,8 +107,8 @@ class UserService(BaseService):
             cache.delete(cls.CacheKeys.ALL_USER_LIST.value)
             cache.delete(f"{cls.CacheKeys.CURRENT_USER.value}:{user_id}")
             log.info(f"User {user.last_name} {user.first_name} has been edit")
-            return user, A.UserEditResult.OK
-        return None, A.UserEditResult.ERROR
+            return user, assets.UserEditResult.OK
+        return None, assets.UserEditResult.ERROR
 
     @classmethod
     def delete(cls, *args, **kwargs) -> bool:
@@ -154,7 +154,7 @@ class UserService(BaseService):
         last_name = str(user_data.last_name).strip().capitalize()
         raw_telephone = user_data.telephone
         password = user_data.password
-        post = user_data.post if user_data.post is not None else A.UserPosts.EMPLOYEE.title
+        post = user_data.post if user_data.post is not None else assets.UserPosts.EMPLOYEE.title
         supervisor_user_id = int(user_data.supervisor_user_id) if user_data.supervisor_user_id is not None else None
 
         telephone = cls.validate_telephone(raw_telephone)
@@ -210,7 +210,7 @@ class UserService(BaseService):
     def get_driver_list(cls) -> list[UserSchema | None]:
         all_users_list = cls.get_all_users_list()
         if all_users_list:
-            driver_list_data = [user for user in all_users_list if user.post == A.UserPosts.DRIVER.title]
+            driver_list_data = [user for user in all_users_list if user.post == assets.UserPosts.DRIVER.title]
             return driver_list_data
         return []
 
@@ -218,7 +218,7 @@ class UserService(BaseService):
     def get_foreman_list(cls) -> list[UserSchema | None]:
         all_users_list = cls.get_all_users_list()
         if all_users_list:
-            foreman_list_data = [user for user in all_users_list if user.post == A.UserPosts.FOREMAN.title]
+            foreman_list_data = [user for user in all_users_list if user.post == assets.UserPosts.FOREMAN.title]
             return foreman_list_data
         return []
 

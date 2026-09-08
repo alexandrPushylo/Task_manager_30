@@ -15,4 +15,4 @@ class BaseService:
     CACHE_TTL = 10
     USE_CACHE = USE_CACHE
 
-    NOW = lambda: datetime.now().time()
+    # NOW = lambda: datetime.now().time()

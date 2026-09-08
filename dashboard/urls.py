@@ -33,5 +33,6 @@ urlpatterns = [
     path('edit_construction_sites/', V.edit_construction_sites, name='edit_construction_sites'),
 
     path('spec_page/', V.spec_page_view, name='spec_page'),
+    path('logs_page/', V.logs_view, name='logs_page'),
     path('test/', V.test_page_view, name='test'),
 ]

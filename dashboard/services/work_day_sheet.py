@@ -4,7 +4,7 @@ from django.db.models import QuerySet  # type: ignore
 from django.core.cache import cache
 
 from dashboard.models import WorkDaySheet
-import dashboard.assets as A
+import dashboard.assets as assets
 from dashboard.schemas.work_day_sheet_schema import (
     WorkDaySchema,
     WorkDaysWithWeekdaySchema,
@@ -126,9 +126,9 @@ class WorkDayService(BaseService):
             WorkDaysWithWeekdaySchema(
                 **workday.model_dump(),
                 weekday=(
-                    A.WEEKDAY[workday.date.weekday()][:3]
+                    assets.WEEKDAY[workday.date.weekday()][:3]
                     if short_weekdays
-                    else A.WEEKDAY[workday.date.weekday()]
+                    else assets.WEEKDAY[workday.date.weekday()]
                 ),
             )
             for workday in range_of_workdays

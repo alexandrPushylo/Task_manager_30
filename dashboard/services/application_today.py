@@ -4,7 +4,7 @@ from typing import Literal
 from django.core.cache import cache
 from django.db.models import QuerySet  # type: ignore
 
-import dashboard.assets as ASSETS
+import dashboard.assets as assets
 from dashboard.models import ApplicationToday
 from dashboard.schemas.application_today_schema import (
     ApplicationTodaySchema,
@@ -85,7 +85,7 @@ class ApplicationTodayService(BaseService):
         at = cls.get_object(**kwargs)
         if at:
             at.isArchive = True
-            at.status = ASSETS.ApplicationTodayStatus.DELETED.title
+            at.status = assets.ApplicationTodayStatus.DELETED.title
             at.save(update_fields=['status', 'isArchive'])
             cache.delete(f"{cls.CacheKeys.APPLICATIONS_TODAY_FOR_DATE.value}:{at.date.date}")
             return at

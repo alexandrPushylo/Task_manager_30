@@ -101,11 +101,12 @@ class TechnicSheetService(BaseService):
             return workload_list_from_cache
 
     @classmethod
-    def get_freelist_of_technic_sheet(cls,
-                                      technic_title: str,
-                                      workload_list: list[WorkloadTechnicSheetSchema],
-                                      get_only_free: bool = True
-                                      ) -> list[WorkloadTechnicSheetSchema]:
+    def get_freelist_of_technic_sheet(
+            cls,
+            technic_title: str,
+            workload_list: list[WorkloadTechnicSheetSchema],
+            get_only_free: bool = True
+    ) -> list[WorkloadTechnicSheetSchema]:
         """
         Получить список незанятых (get_only_free=True)
         или любых (get_only_free=False) данных technic_sheet для technic_title
