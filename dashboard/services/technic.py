@@ -11,7 +11,7 @@ from dashboard.types import Any
 
 from dashboard.models import Technic, User
 from dashboard.models import TemplateDescForTechnic
-import dashboard.assets as ASSETS
+import dashboard.assets as assets
 from django.db.models import QuerySet  # type: ignore
 from dashboard.schemas.technic_schema import (
     TechnicSchema,
@@ -122,7 +122,7 @@ class TechnicService(BaseService):
             supply_technic_list_data = [
                 technic
                 for technic in all_technic_data
-                if technic.supervisor_technic == ASSETS.UserPosts.SUPPLY.title
+                if technic.supervisor_technic == assets.UserPosts.SUPPLY.title
             ]
             return supply_technic_list_data
         return None
@@ -216,8 +216,8 @@ class TechnicService(BaseService):
         supervisor_technic = technic_data.supervisor_technic
         attached_driver = technic_data.attached_driver
 
-        if supervisor_technic not in (ASSETS.UserPosts.MECHANIC.title, ASSETS.UserPosts.SUPPLY.title):
-            out["supervisor"] = ASSETS.UserPosts.MECHANIC.title
+        if supervisor_technic not in (assets.UserPosts.MECHANIC.title, assets.UserPosts.SUPPLY.title):
+            out["supervisor"] = assets.UserPosts.MECHANIC.title
 
         if attached_driver:
             try:
@@ -327,15 +327,15 @@ class TemplateDescService(BaseService):
             task_description = TemplateDescForTechnic()
             task_description.technic_id = technic_id
         match type_mode:
-            case ASSETS.TaskDescriptionMode.AUTO.value:
+            case assets.TaskDescriptionMode.AUTO.value:
                 task_description.is_auto_mode = True
                 task_description.is_default_mode = False
                 task_description.save()
-            case ASSETS.TaskDescriptionMode.DEFAULT.value:
+            case assets.TaskDescriptionMode.DEFAULT.value:
                 task_description.is_auto_mode = False
                 task_description.is_default_mode = True
                 task_description.save()
-            case ASSETS.TaskDescriptionMode.MANUAL.value:
+            case assets.TaskDescriptionMode.MANUAL.value:
                 task_description.is_auto_mode = False
                 task_description.is_default_mode = False
                 task_description.description = (
@@ -351,7 +351,7 @@ class TemplateDescService(BaseService):
     def get_description_mode_for_spec_app(
             cls,
             technic_id: int,
-    ) -> str | ASSETS.TaskDescriptionMode:
+    ) -> str | assets.TaskDescriptionMode:
         """
         Получить шаблон описания для "спец объекта" с помощью technic_id.
         :param technic_id:
@@ -361,11 +361,11 @@ class TemplateDescService(BaseService):
         templ_desc = cls.get_object(technic__id=technic_id)
         if templ_desc:
             if templ_desc.is_default_mode:
-                return ASSETS.TaskDescriptionMode.DEFAULT
+                return assets.TaskDescriptionMode.DEFAULT
             elif templ_desc.is_auto_mode:
-                return ASSETS.TaskDescriptionMode.AUTO
+                return assets.TaskDescriptionMode.AUTO
             elif all((not templ_desc.is_auto_mode, not templ_desc.is_default_mode)):
-                return ASSETS.TaskDescriptionMode.MANUAL
+                return assets.TaskDescriptionMode.MANUAL
             else:
                 return ""
         return ""

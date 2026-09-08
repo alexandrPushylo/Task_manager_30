@@ -1,6 +1,6 @@
 import random
 
-import dashboard.assets as ASSETS
+import dashboard.assets as assets
 import dashboard.telegram_bot as telegram
 from config.creds import USE_TELEGRAM
 from dashboard.schemas.work_day_sheet_schema import WorkDaySchema
@@ -46,7 +46,7 @@ class TelegramService:
     @classmethod
     def send_application_by_telegram_for_driver(cls, workday_data: WorkDaySchema, messages=None, application_today_id=None):
         all_already_send = workday_data.is_all_application_send
-        template_date = f'{ASSETS.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {ASSETS.MONTHS_T[workday_data.date.month - 1]}'
+        template_date = f'{assets.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {assets.MONTHS_T[workday_data.date.month - 1]}'
         driver_list = TechnicSheetService.get_queryset(
             date_id=workday_data.id,
             status=True,
@@ -59,7 +59,7 @@ class TelegramService:
             application_today = ApplicationTodayService.get_queryset(
                 isArchive=False,
                 date_id=workday_data.id,
-                status=ASSETS.ApplicationTodayStatus.SEND.title)
+                status=assets.ApplicationTodayStatus.SEND.title)
 
         application_technic_list = ApplicationTechnicService.get_queryset(
             isArchive=False,
@@ -109,10 +109,10 @@ class TelegramService:
     @classmethod
     def send_application_by_telegram_for_foreman(cls, workday_data: WorkDaySchema, messages=None, application_today_id=None):
         all_already_send = workday_data.is_all_application_send
-        template_date = f'{ASSETS.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {ASSETS.MONTHS_T[workday_data.date.month - 1]}'
+        template_date = f'{assets.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {assets.MONTHS_T[workday_data.date.month - 1]}'
         foreman_list = UserService.get_queryset(
             isArchive=False,
-            post__in=(ASSETS.UserPosts.FOREMAN.title, ASSETS.UserPosts.MASTER.title, ASSETS.UserPosts.SUPPLY.title)
+            post__in=(assets.UserPosts.FOREMAN.title, assets.UserPosts.MASTER.title, assets.UserPosts.SUPPLY.title)
         ).values(
             'id',
             'last_name',
@@ -130,11 +130,11 @@ class TelegramService:
             application_today = ApplicationTodayService.get_queryset(
                 isArchive=False,
                 date_id=workday_data.id,
-                status=ASSETS.ApplicationTodayStatus.SEND.title
+                status=assets.ApplicationTodayStatus.SEND.title
             ).select_related('construction_site__foreman')
 
         for item in foreman_list:
-            if item['post'] == ASSETS.UserPosts.FOREMAN.title:
+            if item['post'] == assets.UserPosts.FOREMAN.title:
                 foreman_id = item['id']
             else:
                 foreman_id = item['supervisor_user_id']
@@ -144,7 +144,7 @@ class TelegramService:
                 )
             else:
                 app_today = application_today.filter(
-                    construction_site__address=ASSETS.MessagesAssets.CS_SUPPLY_TITLE.value
+                    construction_site__address=assets.MessagesAssets.CS_SUPPLY_TITLE.value
                 )
             item['applications'] = app_today.values(
                 'construction_site__address',
@@ -168,10 +168,10 @@ class TelegramService:
 
     @classmethod
     def send_application_by_telegram_for_admin(cls, workday_data: WorkDaySchema, messages=None, application_today_id=None):
-        template_date = f'{ASSETS.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {ASSETS.MONTHS_T[workday_data.date.month - 1]}'
+        template_date = f'{assets.WEEKDAY[workday_data.date.weekday()]}, {workday_data.date.day} {assets.MONTHS_T[workday_data.date.month - 1]}'
         administrators_list = UserService.get_queryset(
             isArchive=False,
-            post=ASSETS.UserPosts.ADMINISTRATOR.title
+            post=assets.UserPosts.ADMINISTRATOR.title
         )
 
         if workday_data.is_all_application_send:

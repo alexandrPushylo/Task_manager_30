@@ -13,7 +13,8 @@ from dashboard.services.application_material import ApplicationMaterialService
 from dashboard.services.application_technic import ApplicationTechnicService
 from dashboard.services.application_today import ApplicationTodayService
 from dashboard.services.technic_sheet import TechnicSheetService
-from dashboard.utilities import Utilities
+from dashboard.services.common import CommonService
+from dashboard.utilities import Utilities as Utils
 from logger import getLogger
 
 log = getLogger(__name__)
@@ -40,8 +41,8 @@ class EditApplicationService:
                 technic_driver_list_json, ensure_ascii=False
             ),
         }
-        if Utilities.is_valid_str(post_technic_title_shrt):
-            if not Utilities.is_valid_str(post_technic_sheet_id):
+        if Utils.is_valid_str(post_technic_title_shrt):
+            if not Utils.is_valid_str(post_technic_sheet_id):
                 technic_title_dict = [
                     *filter(
                         lambda item: item.short_title == post_technic_title_shrt,
@@ -71,7 +72,7 @@ class EditApplicationService:
             cache.delete(f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{current_day.date}")
             if some_technic_sheet:
                 TechnicSheetService.increment_count_application(some_technic_sheet)
-            default_status = Utilities.get_default_status_for_apps_today(current_user)
+            default_status = CommonService.get_default_status_for_apps_today(current_user)
             ApplicationTodayService.make_edited(app_today_inst, default_status)
 
             data["status"] = "ok"
@@ -94,12 +95,12 @@ class EditApplicationService:
         app_today_inst: ApplicationToday,
     ):
         try:
-            if Utilities.is_valid_str(post_application_technic_id):
+            if Utils.is_valid_str(post_application_technic_id):
                 status = ApplicationTechnicService.reject_or_accept(
                     app_technic_id=int(post_application_technic_id),
                     workday_data=current_day,
                 )
-                default_status = Utilities.get_default_status_for_apps_today(
+                default_status = CommonService.get_default_status_for_apps_today(
                     current_user
                 )
                 ApplicationTodayService.make_edited(app_today_inst, default_status)
@@ -117,13 +118,13 @@ class EditApplicationService:
             app_today_inst: ApplicationToday,
             current_user: UserSchema
     ):
-        if Utilities.is_valid_str(post_application_technic_id):
+        if Utils.is_valid_str(post_application_technic_id):
             status = ApplicationTechnicService.delete(id=post_application_technic_id)
             if status == "success":
                 cache.delete(
                     f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{app_today_inst.date.date}"
                 )
-                default_status = Utilities.get_default_status_for_apps_today(
+                default_status = CommonService.get_default_status_for_apps_today(
                     current_user
                 )
                 ApplicationTodayService.make_edited(app_today_inst, default_status)
@@ -145,13 +146,13 @@ class EditApplicationService:
         app_today_inst: ApplicationToday,
     ) -> dict:
         data = {"status": "fail", "driver_status": "true"}
-        if Utilities.is_valid_str(post_technic_title_shrt):
+        if Utils.is_valid_str(post_technic_title_shrt):
             try:
                 application_technic = ApplicationTechnicService.get_object(
                     id=post_application_technic_id
                 )
 
-                if not Utilities.is_valid_str(post_technic_sheet_id):
+                if not Utils.is_valid_str(post_technic_sheet_id):
                     technic_title_dict = [
                         *filter(
                             lambda item: item["short_title"] == post_technic_title_shrt,
@@ -187,7 +188,7 @@ class EditApplicationService:
                 cache.delete(
                     f"{ApplicationTechnicService.CacheKeys.APP_TECH_FOR_DATE.value}:{current_day.date}"
                 )
-                default_status = Utilities.get_default_status_for_apps_today(current_user)
+                default_status = CommonService.get_default_status_for_apps_today(current_user)
                 ApplicationTodayService.make_edited(app_today_inst, default_status)
                 data["status"] = "ok"
                 return data
@@ -209,7 +210,7 @@ class EditApplicationService:
             "app_today_id": app_today_inst.pk,
         }
 
-        if Utilities.is_valid_str(post_application_today_description):
+        if Utils.is_valid_str(post_application_today_description):
             post_application_today_description = (
                 post_application_today_description.strip()
             )
@@ -248,7 +249,7 @@ class EditApplicationService:
             ApplicationTodayService.make_edited(app_today_inst)
             data["status"] = "deleted"
 
-        elif not app_material and Utilities.is_valid_str(
+        elif not app_material and Utils.is_valid_str(
             post_application_material_description
         ):
             create_data = EditApplicationMaterialSchema(
@@ -263,14 +264,14 @@ class EditApplicationService:
             data["status"] = "created"
             data["app_material_id"] = application_material.id
 
-        elif app_material and Utilities.is_valid_str(
+        elif app_material and Utils.is_valid_str(
             post_application_material_description
         ):
             app_material.description = post_application_material_description
             app_material.isChecked = False
             app_material.save(update_fields=["description", "isChecked"])
             cache.delete(f"{ApplicationMaterialService.CacheKeys.APP_MAT_FOR_DATE.value}:{app_today_inst.date.date}")
-            default_status = Utilities.get_default_status_for_apps_today(current_user)
+            default_status = CommonService.get_default_status_for_apps_today(current_user)
             ApplicationTodayService.make_edited(app_today_inst, default_status)
             data["status"] = "updated"
             data["app_material_id"] = app_material.id

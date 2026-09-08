@@ -7,7 +7,7 @@ from dashboard.models import ConstructionSite
 from dashboard.schemas.construction_site_schema import ConstructionSiteSchema, EditConstructionSiteSchema
 from django.db.models import QuerySet
 
-import dashboard.assets as A
+import dashboard.assets as assets
 from dashboard.services.base import BaseService
 
 from logger import getLogger
@@ -199,7 +199,7 @@ class ConstructionSiteService(BaseService):
 
     @classmethod
     def get_spec_construction_site(cls) -> ConstructionSite | None:
-        cs = cls.get_object(address=A.MessagesAssets.CS_SPEC_TITLE.value)
+        cs = cls.get_object(address=assets.MessagesAssets.CS_SPEC_TITLE.value)
         if cs:
             return cs
         else:
@@ -213,7 +213,7 @@ class ConstructionSiteService(BaseService):
         cache_ttl = 60 * 60
         cs_from_cache = cache.get(cache_key)
         if cs_from_cache is None:
-            cs = cls.get_object(address=A.MessagesAssets.CS_SUPPLY_TITLE.value)
+            cs = cls.get_object(address=assets.MessagesAssets.CS_SUPPLY_TITLE.value)
             if not cs:
                 log.error("The SPEC construction site does not exist")
             cs_data = cls.schema(**cs.to_dict())
