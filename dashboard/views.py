@@ -1293,7 +1293,8 @@ def show_technic_application(request):
             application_today__date_id=current_day.id,
             isArchive=False,
             is_cancelled=False,
-            isChecked=False
+            isChecked=False,
+            technic_sheet__isnull=False,
         ).select_related('application_today__construction_site__foreman')
                                     .exclude(application_today__status=assets.ApplicationTodayStatus.SAVED.title))
 
@@ -1339,12 +1340,19 @@ def show_technic_application(request):
         ).order_by('priority'))
 
         application_technics = []
-        for technic_sheet in technic_sheet_list:
+        for technic_sheet_item in technic_sheet_list:
+            technic_sheet_ = [
+                t for t in technic_sheet_queryset_list
+                if t['id']==technic_sheet_item['technic_sheet']]
+            technic_sheet__ = technic_sheet_[0] if technic_sheet_ else {}
+
+            applications_list_ = [
+                a for a in application_technic_list
+                if a['technic_sheet_id'] == technic_sheet_item['technic_sheet']]
+
             application_technics.append({
-                'technic_sheet': [t for t in technic_sheet_queryset_list
-                                  if t['id']==technic_sheet['technic_sheet']][0],
-                'applications_list': [a for a in application_technic_list
-                                      if a['technic_sheet_id'] == technic_sheet['technic_sheet']]
+                'technic_sheet': technic_sheet__,
+                'applications_list': applications_list_
             })
         context['application_technics'] = application_technics
         context['priority_id_list'] = CommonService.get_priority_ids_list(current_day)
