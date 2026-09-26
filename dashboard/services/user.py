@@ -47,7 +47,7 @@ class UserService(BaseService):
             return cls.model.objects.none()
 
     @classmethod
-    def get_current_user(cls, user_id) -> UserSchema | None:
+    def get_current_user(cls, user_id: int) -> UserSchema | None:
         cache_key = f"{cls.CacheKeys.CURRENT_USER.value}:{user_id}"
         cache_ttl = 60 * 60
 

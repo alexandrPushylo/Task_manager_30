@@ -91,7 +91,9 @@ class DriverSheetService(BaseService):
 
     @classmethod
     def filter_driver_sheet_by_id(
-        cls, driver_sheet_id: int, driver_sheet_list: list[DriverSheetSchema]
+            cls,
+            driver_sheet_id: int,
+            driver_sheet_list: list[DriverSheetSchema]
     ) -> DriverSheetSchema | None:
         for driver_sheet in driver_sheet_list:
             if driver_sheet.id == driver_sheet_id:

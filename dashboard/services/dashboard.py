@@ -175,7 +175,10 @@ class DashboardService:
             cs['application_today'] = app_today.model_dump() if app_today else None
 
             if cs['application_today']:
-                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(cs['application_today']['id'], application_material)
+                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(
+                    app_today_id=cs['application_today']['id'],
+                    data=application_material
+                )
                 cs['application_today']["application_material"] = am.model_dump() if am else None
 
                 at_list = [at.model_dump() for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(cs['application_today']['id'], applications_technic)]
@@ -316,13 +319,18 @@ class DashboardService:
         construction_sites = [cs.model_dump() for cs in construction_sites]
 
         for cs in construction_sites:
-            cs['foreman'] = UserService.get_current_user(current_foreman_id)
+            cs['foreman'] = UserService.get_current_user(user_id=current_foreman_id)
             app_today = ApplicationTodayService.get_app_today_by_cs_id_from_data(
-                cs["id"], applications_today
+                constr_site_id=cs["id"],
+                data=applications_today
             )
             cs["application_today"] = app_today.model_dump() if app_today else None
+
             if cs['application_today']:
-                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(cs['application_today']['id'], application_material)
+                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(
+                    app_today_id=cs['application_today']['id'],
+                    data=application_material
+                )
                 cs['application_today']["application_material"] = am.model_dump() if am else None
 
                 at_list = [at.model_dump() for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(cs['application_today']['id'], applications_technic)]
@@ -377,7 +385,10 @@ class DashboardService:
                 "description",
             ).order_by("priority")
         )
-        application_technic_data = [ApplicationTechnicForMechanicSchema(**at) for at in application_technic_list]
+        application_technic_data = [
+            ApplicationTechnicForMechanicSchema(**at)
+            for at in application_technic_list
+        ]
 
         applications_technic = []
         for technic_sheet in technic_sheet_list:
@@ -428,7 +439,10 @@ class DashboardService:
                 "technic_sheet__count_application"
             )) if application_today else None
         if application_today:
-            applications_material = ApplicationMaterialService.get_app_mat_by_at_id_from_data(application_today.id, app_mat_for_date)
+            applications_material = ApplicationMaterialService.get_app_mat_by_at_id_from_data(
+                app_today_id=application_today.id,
+                data=app_mat_for_date
+            )
             context["applications_material"] = applications_material
 
         if request.method == "POST":
