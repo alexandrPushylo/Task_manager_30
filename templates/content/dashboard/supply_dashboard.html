@@ -117,17 +117,38 @@
                                 {% if applications_technic %}
                                     <div class="ms-1 mt-1 {% if application_today.isArchive %}text-decoration-line-through{% endif %}">
                                         {% for app_technic in applications_technic %}
-                                            <div class="mt-2 {% if app_technic.is_cancelled %}AP-cancelled-title {% endif %}" style="background-color: #e7eefa; text-align: center;"   
-                                            >
-                                                <span class="ms-1">{{ app_technic.technic_sheet__technic__title }}</span>
-                                            {% if app_technic.technic_sheet__driver_sheet__driver__last_name %}
-                                                <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
-                                            {% else %}
-                                                <span class="text-warning">(Водитель не назначен)</span>                                                
-                                            {% endif %}
-                                                <span>[<span>{{ app_technic.priority }}</span>/
+                                            <div class="mt-2" style="background-color: #e7eefa; text-align: center;">
+
+                                            {% if app_technic.technic_sheet_id %}
+                                                {% if app_technic.is_cancelled %}
+                                                    <span class="AP-cancelled-title">{{ app_technic.technic_sheet__technic__title }}</span>
+                                                {% elif not app_technic.technic_sheet__status %}
+                                                    <span class="AP-not_work-title">{{ app_technic.technic_sheet__technic__title }}</span>
+                                                {% else %}
+                                                    <span class="">{{ app_technic.technic_sheet__technic__title }}</span>
+                                                {% endif %}
+
+                                                {% if app_technic.technic_sheet__driver_sheet_id %}
+                                                    {% if app_technic.technic_sheet.driver_sheet.status %}
+                                                        <span class=" {% if app_technic.isChecked %}AP-isChecked-title
+                                                                          {% elif app_technic.is_cancelled %}AP-cancelled-title
+                                                                          {% endif %}"
+                                                            >({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                        {% else %}
+                                                        <span>({{ app_technic.technic_sheet__driver_sheet__driver__last_name }})</span>
+                                                    {% endif %}
+
+                                                    <span>[<span>{{ app_technic.priority }}</span>/
                                                         <span>{{ app_technic.technic_sheet__count_application }}</span>]
                                                     </span>
+                                                {% else %}
+                                                    <span class="AP-empty-title">(Не назначен)</span>
+                                                {% endif %}
+
+                                            {% else %}
+                                                <span class="AP-empty-title">Не назначен</span>
+                                            {% endif %}
+
                                                 {% if app_technic.description %}
                                                     <label class="m-0 p-0 row">
                                                 <textarea readonly
