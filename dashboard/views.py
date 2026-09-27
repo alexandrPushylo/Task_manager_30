@@ -1718,49 +1718,106 @@ def logs_view(request):
     if request.user.is_authenticated:
         from config.settings import BASE_DIR
 
+        context = {
+            "data_output": "",
+        }
         INFO_LOG = f'{BASE_DIR}/logs/info.log'
         ERROR_LOG = f'{BASE_DIR}/logs/errors.log'
-
-        # page_type = request.GET.get('page_type')
-        #
-        # if page_type == 'info':
-        #     file_url = f'{BASE_DIR}/logs/info.log'
-        # elif page_type == 'error':
-        #     file_url = f'{BASE_DIR}/logs/errors.log'
-        # else:
-        #     return HttpResponseRedirect(ENDPOINTS.DASHBOARD)
-
         INFO_PREF = "[INFO]"
+        ERROR_PREF = "[ERROR]"
         BODY_PREF = "=>\t"
 
-        l = []
+        if request.method == 'POST':
+            data = request.POST
+            print(data)
+
+        out = []
+        prev_page = cur_page = next_page = 0
+        # page = 0
+
+        page = int(request.GET.get('page', 0))
+        stage = request.GET.get('stage')
+
+
 
         try:
-            with open(INFO_LOG, 'rt', encoding="utf-8") as f:
+            with open(ERROR_LOG, 'rt', encoding="utf-8") as f:
                 file = f.readlines()#[-200:]
+                head = ''
+                body = ''
+                bh = ''
+                bb = ''
+                W = False
 
                 for item in file:
-                    if item.startswith(INFO_PREF):
-                        head = item.replace(INFO_PREF, '').strip()
+                    if item.startswith(ERROR_PREF):
+                        bh = item.replace(ERROR_PREF, '').strip()
+                        if bh != head:
+                            if all((head, body)):
+                                out.append({
+                                    'head': head,
+                                    'body': body
+                                })
+                            head=bh
 
-                    elif item.startswith(BODY_PREF):
+
+                    if item.startswith(BODY_PREF):
                         body = item.replace(BODY_PREF, '').strip()
+
+                    # if not item.startswith(ERROR_PREF) and not item.startswith(BODY_PREF):
+                    #     body = body+item
                     else:
                         body = body + item
-                        # print(body)
 
-                    l.append({
-                        'head': head,
-                        'body': body
-                    })
-
-
-
-
+                    # if all((head, body)):
+                    #     out.append({
+                    #         'head': head,
+                    #         'body': body
+                    #     })
         except FileNotFoundError:
             file = 'FileNotFoundError'
             log.error('spec_page_view(): FileNotFoundError')
-        print(l)
 
-        return HttpResponse(file, content_type='text/plain', charset='utf-8')
+        # for i in out:
+        #     print('---'*30)
+        #     print(i['head'])
+        #     print(i['body'])
+        #     print('---'*30)
+
+        ii=1
+        print(out[ii]['head'])
+        print(out[ii]['body'])
+
+
+
+
+        if stage == 'prev_page':
+            page = page - 1 if page > 1 else 0
+        elif stage == 'next_page':
+            page = page + 1 if page < len(out) else len(out)
+        elif stage == 'cur_page':
+            page = page
+        else:
+            page = int(page)
+
+        context['prev_page'] = prev_page
+        context['cur_page'] = cur_page
+        context['next_page'] = next_page
+        context['page'] = page
+
+        context['data_output'] = out[page]
+        context['data_output_len'] = len(out)
+
+
+
+
+
+
+
+
+        # for i in out:
+        #     print(i['head'], i['body'])
+
+        # return HttpResponse(file, content_type='text/plain', charset='utf-8')
+        return render(request, "content/spec/logs_page.html", context)
     return HttpResponseRedirect(endpoints.LOGIN)

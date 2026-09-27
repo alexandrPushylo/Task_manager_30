@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title_p %}
+    {% include 'includes/btn_dashboard.html' %}
+{% endblock %}
+
+
+{% block content %}
+    <div id="logs_page" class="container container-fluid">
+        <div>
+            <p class="m-0 fs-3"><u>{{ title }}</u></p>
+        </div>
+        <form id="logs_form" method="post">{% csrf_token %}
+            <div>
+                <label>
+                    <input type="text" value="" name="input1">input1
+                </label>
+            </div>
+
+            <div>
+                <label>
+                    <input type="radio" value="info" name="type" checked>INFO
+                    <input type="radio" value="error" name="type">ERROR
+                </label>
+            </div>
+            <button class="btn btn-sm btn-success" type="submit">sent</button>
+        </form>
+        <div class="mt-5">
+            <div class="row">
+                <label>
+                    <input class="form-control" type="text" value="{{ data_output.head }}">
+                </label>
+            </div>
+            <div class="row">
+                <label for="data_output"><textarea class="form-control" name="" id="data_output">{{ data_output.body }}</textarea></label>
+            </div>
+        </div>
+        <div>
+            <div class="btn-group">
+                {% if page > 0 %}
+                    <a href="{% url 'logs_page' %}?page={{ page }}&stage=prev_page" class="btn"><<</a>
+                {% endif %}
+                <a href="{% url 'logs_page' %}?page={{ page }}&stage=cur_page" class="btn">{{ page }}</a>
+                {% if page < data_output_len %}
+                    <a href="{% url 'logs_page' %}?page={{ page }}&stage=next_page" class="btn">>></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block footer %}
+    <div></div>
+    <div>
+        <a class="btn btn-sm btn-primary" href="{% url 'dashboard' %}">Назад</a>
+        <button class="btn btn-sm btn-success" type="submit" form="save_form">Сохранить</button>
+    </div>
+    <div></div>
+{% endblock %}
