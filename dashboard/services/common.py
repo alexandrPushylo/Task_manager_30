@@ -206,7 +206,7 @@ class CommonService:
                 log.info("Duplicate Search")
                 list_ids_for_delete = []
                 for technic in technics_list:
-                    double_ts = technic_sheet.filter(date_id=workday_data.id, technic=technic)
+                    double_ts = technic_sheet.filter(date_id=workday_data.id, technic_id=technic.id)
                     if double_ts.count() > 1:
                         list_ids_for_delete.append(double_ts.first().id)
                 TechnicSheetService.get_queryset(id__in=list_ids_for_delete).delete()

@@ -87,16 +87,34 @@
                                         <div class="ms-1 mt-1">
                                             {% for app_technic in construction_site.application_today.application_technic %}
                                                 <div style="background-color: #e7eefa; text-align: center;">
-                                                    <span class="ms-1">{{ app_technic.technic_sheet.technic.title }}</span>
+
+{#                                                    <span class="ms-1">{{ app_technic.technic_sheet.technic.title }}</span>#}
+
+
+                                                    {% if app_technic.isChecked %}
+                                                        <span class="AP-isChecked-title"><small>(<i class="fa-solid fa-check"></i>)</small> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                    {% elif app_technic.is_cancelled %}
+                                                        <span class="AP-cancelled-title"><small>(<i class="fa-solid fa-xmark"></i>)</small> {{ app_technic.technic_sheet.technic.title }}</span>
+
+                                                    {% elif not app_technic.technic_sheet.status %}
+                                                        <span class="AP-not_work-title"> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                    {% else %}
+                                                        <span> {{ app_technic.technic_sheet.technic.title }}</span>
+                                                    {% endif %}
+
+
+
                                                     {% if app_technic.technic_sheet.driver_sheet.status %}
                                                         <span>({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
                                                     {% else %}
-                                                        <span class="text-warning">(Водитель не назначен)</span>
+                                                        <span class="text-warning">(Не назначен)</span>
                                                     {% endif %}
 
-                                                    <span class="text-dark">[<span>{{ app_technic.priority }}</span>/
-                                                        <span>{{ app_technic.technic_sheet.count_application }}</span>]
-                                                    </span>
+                                                    {% if app_technic.technic_sheet %}
+
+                                                        <span class="text-dark">[<span>{{ app_technic.priority }}</span>/<span>{{ app_technic.technic_sheet.count_application }}</span>]
+                                                        </span>
+                                                    {% endif %}
 
                                                     {% if app_technic.description %}
                                                         <label class="m-0 p-0 row">

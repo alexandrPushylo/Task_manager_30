@@ -13,14 +13,14 @@
                 </label>
 
                 <label class="">Тип техники*
-                    {#                    <input class="form-control" name="type" type="text" value="{{ technic.type }}" required/>#}
                     <select class="form-select" name="type" required>
                         <option></option>
                         {% for type in technic_type_list %}
                             {% if technic.type == type %}
                                 <option selected="selected" value="{{ type }}">{{ type }}</option>
+                            {% else %}
+                                <option value="{{ type }}">{{ type }}</option>
                             {% endif %}
-                            <option value="{{ type }}">{{ type }}</option>
                         {% endfor %}
 
                     </select>

@@ -20,7 +20,7 @@ class EditApplicationTechnicSchema(BaseModel):
 
 
 class ApplicationTechnicForMechanicSchema(BaseModel):
-    technic_sheet__id: int
+    technic_sheet__id: int | None
     application_today__construction_site__address: str
     application_today__construction_site__foreman__last_name: str | None
     description: str | None

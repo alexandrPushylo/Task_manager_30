@@ -138,7 +138,9 @@ class ApplicationTechnicService(BaseService):
 
     @classmethod
     def filter_app_tech_by_at_id_from_data(
-        cls, app_today_id: int, data: list[ApplicationTechnicSchema]
+            cls,
+            app_today_id: int,
+            data: list[ApplicationTechnicSchema]
     ) -> list[ApplicationTechnicSchema]:
         app_tech = [at for at in data if at.application_today == app_today_id]
         return app_tech

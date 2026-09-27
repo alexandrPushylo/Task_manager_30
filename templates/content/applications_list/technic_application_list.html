@@ -46,7 +46,11 @@
             {% for application_technic in application_technics %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet__driver__last_name }}</span>
+                        {% if application_technic.technic_sheet.driver_sheet__driver__last_name %}
+                            <span class="fw-bolder">{{ application_technic.technic_sheet.driver_sheet__driver__last_name }}</span>
+                        {% else %}
+                            <span class="fw-bolder text-warning">Не назначен</span>
+                        {% endif %}
                         <span class="fw-bolder">({{ application_technic.technic_sheet.technic__title }})</span>
                     </div>
                     <div class="card-title">

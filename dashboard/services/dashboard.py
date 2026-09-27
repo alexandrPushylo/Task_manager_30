@@ -175,22 +175,48 @@ class DashboardService:
             cs['application_today'] = app_today.model_dump() if app_today else None
 
             if cs['application_today']:
-                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(cs['application_today']['id'], application_material)
+                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(
+                    app_today_id=cs['application_today']['id'],
+                    data=application_material
+                )
                 cs['application_today']["application_material"] = am.model_dump() if am else None
 
-                at_list = [at.model_dump() for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(cs['application_today']['id'], applications_technic)]
-                cs['application_today']["application_technic"] = at_list
+                application_technic_list = [
+                    at.model_dump()
+                    for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(
+                        app_today_id=cs['application_today']['id'],
+                        data=applications_technic
+                    ) if at
+                ]
+                cs['application_today']["application_technic"] = application_technic_list
 
-                for at in at_list:
-                    ts = TechnicSheetService.filter_tech_sheet_by_id(at['technic_sheet'], tech_sheet_for_date)
-                    at['technic_sheet'] = ts.model_dump() if ts else None
-                    dt = DriverSheetService.filter_driver_sheet_by_id(ts.driver_sheet, driver_sheet_for_date)
-                    at["technic_sheet"]["driver_sheet"] = dt.model_dump() if dt else None
-                    t = TechnicService.filter_technic_by_id(ts.technic, technic_list)
-                    at["technic_sheet"]["technic"] = t.model_dump() if t else None
-                    if dt:
-                        dr = UserService.filter_user_by_id_from_data(dt.driver, user_list)
-                        at["technic_sheet"]["driver_sheet"]["driver"] = (dr.model_dump() if dr else None)
+                for app_tech_item in application_technic_list:
+                    if app_tech_item:
+                        tech_sheet_schema = TechnicSheetService.filter_tech_sheet_by_id(
+                            tech_sheet_id=app_tech_item['technic_sheet'],
+                            tech_sheet_list=tech_sheet_for_date
+                        )
+                        app_tech_item['technic_sheet'] = tech_sheet_schema.model_dump() if tech_sheet_schema else None
+
+                        driver_sheet_schema = DriverSheetService.filter_driver_sheet_by_id(
+                            driver_sheet_id=tech_sheet_schema.driver_sheet,
+                            driver_sheet_list=driver_sheet_for_date
+                        ) if tech_sheet_schema else None
+
+                        if tech_sheet_schema:
+                            app_tech_item["technic_sheet"]["driver_sheet"] = driver_sheet_schema.model_dump() if driver_sheet_schema else None
+                            technic_schema = TechnicService.filter_technic_by_id(
+                                technic_id=tech_sheet_schema.technic,
+                                technic_list=technic_list
+                            )
+                            app_tech_item["technic_sheet"]["technic"] = technic_schema.model_dump() if technic_schema else None
+
+                            if driver_sheet_schema:
+                                driver = UserService.filter_user_by_id_from_data(
+                                    user_id=driver_sheet_schema.driver,
+                                    data=user_list
+                                ) if driver_sheet_schema else None
+                                app_tech_item["technic_sheet"]["driver_sheet"]["driver"] = (driver.model_dump() if driver else None)
         context["construction_sites"] = construction_sites
 
         context["construction_sites"] = sorted(
@@ -316,28 +342,55 @@ class DashboardService:
         construction_sites = [cs.model_dump() for cs in construction_sites]
 
         for cs in construction_sites:
-            cs['foreman'] = UserService.get_current_user(current_foreman_id)
+            cs['foreman'] = UserService.get_current_user(user_id=current_foreman_id)
             app_today = ApplicationTodayService.get_app_today_by_cs_id_from_data(
-                cs["id"], applications_today
+                constr_site_id=cs["id"],
+                data=applications_today
             )
             cs["application_today"] = app_today.model_dump() if app_today else None
+
             if cs['application_today']:
-                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(cs['application_today']['id'], application_material)
+                am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(
+                    app_today_id=cs['application_today']['id'],
+                    data=application_material
+                )
                 cs['application_today']["application_material"] = am.model_dump() if am else None
 
-                at_list = [at.model_dump() for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(cs['application_today']['id'], applications_technic)]
-                cs['application_today']["application_technic"] = at_list
+                application_technic_list = [
+                    at.model_dump()
+                    for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(
+                        app_today_id=cs['application_today']['id'],
+                        data=applications_technic
+                    )
+                ]
+                cs['application_today']["application_technic"] = application_technic_list
 
-                for at in at_list:
-                    ts = TechnicSheetService.filter_tech_sheet_by_id(at['technic_sheet'], tech_sheet_for_date)
-                    at['technic_sheet'] = ts.model_dump() if ts else None
-                    dt = DriverSheetService.filter_driver_sheet_by_id(ts.driver_sheet, driver_sheet_for_date)
-                    at["technic_sheet"]["driver_sheet"] = dt.model_dump() if dt else None
-                    t = TechnicService.filter_technic_by_id(ts.technic, technic_list)
-                    at["technic_sheet"]["technic"] = t.model_dump() if t else None
-                    if dt:
-                        dr = UserService.filter_user_by_id_from_data(dt.driver, user_list)
-                        at["technic_sheet"]["driver_sheet"]["driver"] = (dr.model_dump() if dr else None)
+                for app_tech_item in application_technic_list:
+                    if app_tech_item:
+                        tech_sheet_schema = TechnicSheetService.filter_tech_sheet_by_id(
+                            tech_sheet_id=app_tech_item['technic_sheet'],
+                            tech_sheet_list=tech_sheet_for_date
+                        )
+                        app_tech_item['technic_sheet'] = tech_sheet_schema.model_dump() if tech_sheet_schema else None
+                        driver_sheet_schema = DriverSheetService.filter_driver_sheet_by_id(
+                            driver_sheet_id=tech_sheet_schema.driver_sheet,
+                            driver_sheet_list=driver_sheet_for_date
+                        ) if tech_sheet_schema else None
+
+                        if tech_sheet_schema:
+                            app_tech_item["technic_sheet"]["driver_sheet"] = driver_sheet_schema.model_dump() if driver_sheet_schema else None
+                            technic_schema = TechnicService.filter_technic_by_id(
+                                technic_id=tech_sheet_schema.technic,
+                                technic_list=technic_list
+                            )
+                            app_tech_item["technic_sheet"]["technic"] = technic_schema.model_dump() if technic_schema else None
+
+                            if driver_sheet_schema:
+                                driver = UserService.filter_user_by_id_from_data(
+                                    user_id=driver_sheet_schema.driver,
+                                    data=user_list
+                                ) if driver_sheet_schema else None
+                                app_tech_item["technic_sheet"]["driver_sheet"]["driver"] = (driver.model_dump() if driver else None)
 
         context["construction_sites"] = construction_sites
         context["construction_sites"] = sorted(
@@ -377,7 +430,10 @@ class DashboardService:
                 "description",
             ).order_by("priority")
         )
-        application_technic_data = [ApplicationTechnicForMechanicSchema(**at) for at in application_technic_list]
+        application_technic_data = [
+            ApplicationTechnicForMechanicSchema(**at)
+            for at in application_technic_list
+        ]
 
         applications_technic = []
         for technic_sheet in technic_sheet_list:
@@ -423,12 +479,20 @@ class DashboardService:
                 "isChecked",
                 "isArchive",
                 "is_cancelled",
+                "technic_sheet_id",
                 "technic_sheet__technic__title",
+                "technic_sheet__status",
+                "technic_sheet__driver_sheet_id",
                 "technic_sheet__driver_sheet__driver__last_name",
+                "technic_sheet__driver_sheet__status",
                 "technic_sheet__count_application"
             )) if application_today else None
+
         if application_today:
-            applications_material = ApplicationMaterialService.get_app_mat_by_at_id_from_data(application_today.id, app_mat_for_date)
+            applications_material = ApplicationMaterialService.get_app_mat_by_at_id_from_data(
+                app_today_id=application_today.id,
+                data=app_mat_for_date
+            )
             context["applications_material"] = applications_material
 
         if request.method == "POST":
@@ -605,19 +669,42 @@ class DashboardService:
                 am = ApplicationMaterialService.get_app_mat_by_at_id_from_data(cs['application_today']['id'], application_material)
                 cs['application_today']["application_material"] = am.model_dump() if am else None
 
-                at_list = [at.model_dump() for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(cs['application_today']['id'], applications_technic)]
-                cs['application_today']["application_technic"] = at_list
+                application_technic_list = [
+                    at.model_dump()
+                    for at in ApplicationTechnicService.filter_app_tech_by_at_id_from_data(
+                        app_today_id=cs['application_today']['id'],
+                        data=applications_technic
+                    ) if at
+                ]
+                cs['application_today']["application_technic"] = application_technic_list
 
-                for at in at_list:
-                    ts = TechnicSheetService.filter_tech_sheet_by_id(at['technic_sheet'], tech_sheet_for_date)
-                    at['technic_sheet'] = ts.model_dump() if ts else None
-                    dt = DriverSheetService.filter_driver_sheet_by_id(ts.driver_sheet, driver_sheet_for_date)
-                    at["technic_sheet"]["driver_sheet"] = dt.model_dump() if dt else None
-                    t = TechnicService.filter_technic_by_id(ts.technic, technic_list)
-                    at["technic_sheet"]["technic"] = t.model_dump() if t else None
-                    if dt:
-                        dr = UserService.filter_user_by_id_from_data(dt.driver, user_list)
-                        at["technic_sheet"]["driver_sheet"]["driver"] = (dr.model_dump() if dr else None)
+                for app_tech_item in application_technic_list:
+                    if app_tech_item:
+                        tech_sheet_schema = TechnicSheetService.filter_tech_sheet_by_id(
+                            tech_sheet_id=app_tech_item['technic_sheet'],
+                            tech_sheet_list=tech_sheet_for_date
+                        )
+                        app_tech_item['technic_sheet'] = tech_sheet_schema.model_dump() if tech_sheet_schema else None
+
+                        driver_sheet_schema = DriverSheetService.filter_driver_sheet_by_id(
+                            driver_sheet_id=tech_sheet_schema.driver_sheet,
+                            driver_sheet_list=driver_sheet_for_date
+                        ) if tech_sheet_schema else None
+
+                        if tech_sheet_schema:
+                            app_tech_item["technic_sheet"]["driver_sheet"] = driver_sheet_schema.model_dump() if driver_sheet_schema else None
+                            technic_schema = TechnicService.filter_technic_by_id(
+                                technic_id=tech_sheet_schema.technic,
+                                technic_list=technic_list
+                            )
+                            app_tech_item["technic_sheet"]["technic"] = technic_schema.model_dump() if technic_schema else None
+
+                            if driver_sheet_schema:
+                                driver = UserService.filter_user_by_id_from_data(
+                                    user_id=driver_sheet_schema.driver,
+                                    data=user_list
+                                )
+                                app_tech_item["technic_sheet"]["driver_sheet"]["driver"] = (driver.model_dump() if driver else None)
         context["construction_sites"] = construction_sites
 
         context["construction_sites"] = sorted(
