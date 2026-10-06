@@ -52,6 +52,7 @@
                 </thead>
                 <tbody>
                 {% for driver in driver_sheets %}
+                    {% if driver.driver.is_active or VIEW_MODE == "view_mode_archive" %}
                     <tr class="driver_sheet_row" id="driver_sheet_id__{{ driver.id }}"
                         {% if driver.status %} style="color: #018349" {% else %} style="text-decoration-line: line-through" {% endif %}
                     >
@@ -69,6 +70,7 @@
                                    {% if driver.status %}checked{% endif %}/>
                         </td>
                     </tr>
+                    {% endif %}
                 {% endfor %}
                 </tbody>
             </table>
