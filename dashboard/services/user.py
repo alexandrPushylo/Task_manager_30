@@ -207,10 +207,14 @@ class UserService(BaseService):
         return None
 
     @classmethod
-    def get_driver_list(cls) -> list[UserSchema | None]:
+    def get_driver_list(cls, only_active: bool = True) -> list[UserSchema | None]:
         all_users_list = cls.get_all_users_list()
         if all_users_list:
-            driver_list_data = [user for user in all_users_list if user.post == assets.UserPosts.DRIVER.title]
+            driver_list_data = [
+                user for user in all_users_list
+                if user.post == assets.UserPosts.DRIVER.title and
+                   (user.is_active or not only_active)
+            ]
             return driver_list_data
         return []
 
@@ -229,7 +233,7 @@ class UserService(BaseService):
 
         all_users_list_from_cache = cache.get(cache_key) if cls.USE_CACHE else None
         if all_users_list_from_cache is None:
-            all_users_list = cls.get_queryset(isArchive=False)
+            all_users_list = cls.get_queryset()
             all_users_list_data = [UserSchema(**user.to_dict()) for user in all_users_list]
             if cls.USE_CACHE:
                 cache.set(cache_key, all_users_list_data, cache_ttl)

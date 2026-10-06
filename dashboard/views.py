@@ -658,7 +658,7 @@ def driver_sheet_view(request):
         if current_day.date >= Utils.get_today() and current_day.status:
             CommonService.prepare_driver_sheet(current_day)
         driver_sheet = DriverSheetService.get_driver_sheet_for_date(current_day)
-        drivers_list = UserService.get_driver_list()
+        drivers_list = UserService.get_driver_list(only_active=False)
         context['drivers_list'] = drivers_list
 
         context['driver_sheets'] = [
