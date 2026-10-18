@@ -105,7 +105,11 @@
 
 
                                                     {% if app_technic.technic_sheet.driver_sheet.status %}
-                                                        <span>({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
+                                                        <a href="{% url 'dashboard' %}?current_day={{ current_day.date.isoformat }}&driver_id={{ app_technic.technic_sheet.driver_sheet.driver.id }}"
+                                                           style="text-decoration: none; color: black;">
+
+                                                            <span>({{ app_technic.technic_sheet.driver_sheet.driver.last_name }})</span>
+                                                        </a>
                                                     {% else %}
                                                         <span class="text-warning">(Не назначен)</span>
                                                     {% endif %}
