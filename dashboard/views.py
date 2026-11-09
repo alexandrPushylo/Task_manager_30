@@ -1,4 +1,5 @@
 import json
+from operator import and_
 
 from django.core.cache import cache
 from django.shortcuts import render
@@ -1479,16 +1480,24 @@ def application_for_driver_view(request):
         ).order_by("priority").values(
             "application_today__construction_site__address",
             "application_today__construction_site__foreman__last_name",
+            "application_today__status",
             "description",
             "technic_sheet_id"
         ))
+
+        current_user = UserService.get_current_user(request.user.id)
+        status_list = Utils.get_tuple_status_for_app_today(current_user)
 
         applications_technic = []
         for technic_sheet in technic_sheet_list:
             applications_technic.append(
                 {
                     "technic_sheet_id": technic_sheet.id,
-                    "applications": [at for at in application_technic_list if technic_sheet.id == at["technic_sheet_id"]]
+                    "applications": [
+                        at for at in application_technic_list
+                        if technic_sheet.id == at["technic_sheet_id"] and
+                           at["application_today__status"] in status_list
+                    ]
                 }
             )
         context["applications_technic"] = applications_technic

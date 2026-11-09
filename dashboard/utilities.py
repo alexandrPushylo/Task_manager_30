@@ -143,6 +143,25 @@ class Utilities:
             return assets.AcceptMode.AUTO
 
     @classmethod
+    def get_tuple_status_for_app_today(cls, user: UserSchema | None) -> tuple:
+        if user is None:
+            return (assets.ApplicationTodayStatus.SEND.title,)
+        if cls.is_admin(current_user=user):
+            return (
+                assets.ApplicationTodayStatus.ABSENT.title,
+                assets.ApplicationTodayStatus.SAVED.title,
+                assets.ApplicationTodayStatus.SUBMITTED.title,
+                assets.ApplicationTodayStatus.APPROVED.title,
+                assets.ApplicationTodayStatus.SEND.title,
+            )
+        if cls.is_master(current_user=user) or cls.is_foreman(current_user=user):
+            return (
+                assets.ApplicationTodayStatus.APPROVED.title,
+                assets.ApplicationTodayStatus.SEND.title,
+            )
+        return (assets.ApplicationTodayStatus.SEND.title,)
+
+    @classmethod
     def is_valid_str(cls, value: str | None) -> bool:
         """
         Проверка : value is not None and value != ''
